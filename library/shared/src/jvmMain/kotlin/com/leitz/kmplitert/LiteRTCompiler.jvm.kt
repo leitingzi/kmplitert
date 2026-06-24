@@ -10,14 +10,15 @@ actual class LiteRTCompiler {
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
-        TODO("Not yet implemented")
+        return compiledModel.getInputBuffers()
     }
 
     actual suspend fun getOutputBuffers(): List<TFBuffer> {
-        TODO("Not yet implemented")
+        return compiledModel.getOutputBuffers()
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
+        compiledModel.run(0, inputs, outputs)
     }
 
     actual suspend fun close() {

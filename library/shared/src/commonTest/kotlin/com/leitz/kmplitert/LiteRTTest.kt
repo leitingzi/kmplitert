@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 
 class LiteRTTest {
 
-    private val testFilePath = "src/commonTest/resources/kotlin/CelsiusToFahrenheit.tflite"
+    private val testFilePath = "src/commonTest/resources/CelsiusToFahrenheit.tflite"
 
     @Test
     fun runModel() {

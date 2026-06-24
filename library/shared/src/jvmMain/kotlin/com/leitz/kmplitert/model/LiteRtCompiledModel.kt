@@ -2,14 +2,17 @@
 
 package com.leitz.kmplitert.model
 
+import com.leitz.kmplitert.JvmTFBuffer
 import com.leitz.kmplitert.LITERT_ELEMENT_TYPE_FLOAT32
+import com.leitz.kmplitert.TFBuffer
 import com.leitz.kmplitert.newApi.LiteRtLibrary
-import com.sun.jna.Memory
-import com.sun.jna.Pointer
+import com.sun.jna.Platform
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
 
 class LiteRtCompiledModel : PointerType() {
+
+    lateinit var env: LiteRtEnvironment
 
     fun destroy() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyCompiledModel(this)
@@ -89,7 +92,6 @@ class LiteRtCompiledModel : PointerType() {
 
     // TODO 需要移动到其他地方 比如TensorBuffer
     fun createManagedTensorBufferFromRequirements(
-        env: LiteRtEnvironment,
         tensor_type: LiteRtRankedTensorType,
         requirements: LiteRtTensorBufferRequirements,
     ): LiteRtTensorBuffer {
@@ -109,22 +111,83 @@ class LiteRtCompiledModel : PointerType() {
         return liteRtTensorBuffer
     }
 
-    fun run(
-        signature_index: Long,
-        num_input_buffers: Long,
-        input_buffers: LiteRtTensorBuffer,
-        num_output_buffers: Long,
-        output_buffers: LiteRtTensorBuffer
-    ) {
+    fun run(signature_index: Long, input_buffers: List<TFBuffer>, output_buffers: List<TFBuffer>) {
+        val input = Array(input_buffers.size) { index ->
+            (input_buffers[index] as JvmTFBuffer).buffer
+        }
+
+        val output = Array(output_buffers.size) { index ->
+            (output_buffers[index] as JvmTFBuffer).buffer
+        }
+
         val status = LiteRtLibrary.INSTANCE.LiteRtRunCompiledModel(
             compiled_model = this,
             signature_index = signature_index,
-            num_input_buffers = num_input_buffers,
-            input_buffers = arrayOf(input_buffers),
-            num_output_buffers = num_output_buffers,
-            output_buffers = arrayOf(output_buffers),
+            num_input_buffers = input_buffers.size.toLong(),
+            input_buffers = input,
+            num_output_buffers = output_buffers.size.toLong(),
+            output_buffers = output,
         )
-        check(status == 0) { "Failed to run model: $status" }
+        check(status == 0) {
+            "Failed to run model: $status"
+        }
+    }
+
+    fun getInputBuffers(): List<TFBuffer> {
+        val inputBufferRequirements = getInputBufferRequirements(
+            signature_index = 0,
+            input_index = 0
+        )
+
+        val inputLayout = getInputTensorLayout(signature_index = 0, input_index = 0)
+
+        val inputRankedType = LiteRtRankedTensorType()
+        inputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
+        // 直接从 inputLayout 拷贝数据
+        inputRankedType.layout.flags = inputLayout.flags
+        if (Platform.isWindows()) {
+            inputRankedType.layout.padding = inputLayout.padding
+        }
+        for (i in 0 until 8) {
+            inputRankedType.layout.dimensions[i] = inputLayout.dimensions[i]
+            inputRankedType.layout.strides[i] = inputLayout.strides[i]
+        }
+        inputRankedType.write()
+
+        val intputTensorBuffer = createManagedTensorBufferFromRequirements(
+            tensor_type = inputRankedType,
+            requirements = inputBufferRequirements
+        )
+
+        return listOf(JvmTFBuffer(intputTensorBuffer))
+    }
+
+    fun getOutputBuffers(): List<TFBuffer> {
+        val outputBufferRequirements = getOutputBufferRequirements(
+            signature_index = 0,
+            output_index = 0
+        )
+
+        val outputLayout = getOutputTensorLayout(0, 1)
+
+        val outputRankedType = LiteRtRankedTensorType()
+        outputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
+        outputRankedType.layout.flags = outputLayout.flags
+        if (Platform.isWindows()) {
+            outputRankedType.layout.padding = outputLayout.padding
+        }
+        for (i in 0 until 8) {
+            outputRankedType.layout.dimensions[i] = outputLayout.dimensions[i]
+            outputRankedType.layout.strides[i] = outputLayout.strides[i]
+        }
+        outputRankedType.write()
+
+        val outputTensorBuffer = createManagedTensorBufferFromRequirements(
+            tensor_type = outputRankedType,
+            requirements = outputBufferRequirements
+        )
+
+        return listOf(JvmTFBuffer(outputTensorBuffer))
     }
 
     companion object {
@@ -141,10 +204,13 @@ class LiteRtCompiledModel : PointerType() {
                 compilation_options = options,
                 compiled_model = ref
             )
-            check(status == 0) { "Failed to create compiled model: $status" }
+            check(status == 0) {
+                "Failed to create compiled model: $status"
+            }
 
             val compiledModel = LiteRtCompiledModel()
             compiledModel.pointer = ref.value
+            compiledModel.env = env
             return compiledModel
         }
 
@@ -164,7 +230,10 @@ class LiteRtCompiledModel : PointerType() {
 
             val compiledModel = LiteRtCompiledModel()
             compiledModel.pointer = ref.value
+            compiledModel.env = env
             return compiledModel
         }
     }
+
+
 }
