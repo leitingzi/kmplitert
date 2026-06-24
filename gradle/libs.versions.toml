@@ -36,11 +36,13 @@ compose-components-resources = { module = "org.jetbrains.compose.components:comp
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 kotlinx-coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 
 litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.5" }
 jna = { module = "net.java.dev.jna:jna", version = "5.19.1" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.19.1" }
+koin-core = { module = "io.insert-koin:koin-core", version = "4.2.0" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
