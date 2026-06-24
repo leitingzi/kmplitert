@@ -2,7 +2,6 @@
 
 package com.leitz.kmplitert.newApi
 
-import com.leitz.kmplitert.LiteRtStatus
 import com.leitz.kmplitert.model.*
 import com.sun.jna.Library
 import com.sun.jna.Native
@@ -10,6 +9,7 @@ import com.sun.jna.Pointer
 import com.sun.jna.ptr.PointerByReference
 
 typealias LiteRtParamIndex = Long
+typealias LiteRtStatus = Int
 
 interface LiteRtLibrary : Library {
 

@@ -1,22 +1,12 @@
 package com.leitz.kmplitert
 
-import com.sun.jna.Pointer
+import com.leitz.kmplitert.model.LiteRtCompiledModel
 
 actual class LiteRTCompiler {
-
-    private val env = LiteRtUtils.createEnvironment()
-    private lateinit var model: Pointer
-    private val option = LiteRtUtils.createOptions()
-
-    private lateinit var compiledModel: Pointer
+    private lateinit var compiledModel: LiteRtCompiledModel
 
     actual suspend fun init(filePath: String) {
-        model = LiteRtUtils.createModel(filePath)
-        compiledModel = LiteRtUtils.createCompiledModel(
-            environment = env,
-            model = model,
-            options = option
-        )
+        compiledModel = LiteRtCompiledModel.create(filePath = filePath)
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
@@ -31,11 +21,6 @@ actual class LiteRTCompiler {
     }
 
     actual suspend fun close() {
-        LiteRtUtils.destroy(
-            environment = env,
-            model = model,
-            options = option,
-            compiledModel = compiledModel
-        )
+        compiledModel.destroy()
     }
 }
