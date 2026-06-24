@@ -3,8 +3,6 @@ package com.leitz.kmplitert
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
-import com.sun.jna.ptr.IntByReference
-import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 
 typealias LiteRtStatus = Int
@@ -23,13 +21,19 @@ interface LibLiteRt: Library {
     fun LiteRtDestroyEnvironment(environment: Pointer)
 
 
-    fun LiteRtCreateModelFromFile(fileName: String, model: PointerByReference): LiteRtStatus
+    fun LiteRtCreateModelFromFile(
+        fileName: String,
+        model: PointerByReference
+    ): LiteRtStatus
 
     fun LiteRtDestroyModel(model: Pointer?)
 
     fun LiteRtCreateOptions(options: PointerByReference): LiteRtStatus
 
-    fun LiteRtSetOptionsHardwareAccelerators(options: Pointer?, hardwareAccelerators: Int): LiteRtStatus
+    fun LiteRtSetOptionsHardwareAccelerators(
+        options: Pointer?,
+        hardwareAccelerators: Int
+    ): LiteRtStatus
 
     fun LiteRtDestroyOptions(options: Pointer?)
 
@@ -41,4 +45,12 @@ interface LibLiteRt: Library {
     ): LiteRtStatus
 
     fun LiteRtDestroyCompiledModel(compiledModel: Pointer?)
+
+
+    fun LiteRtGetCompiledModelInputBufferRequirements(
+        compiledModel: Pointer,
+        signatureIndex: Int,
+        inputIndex: Int,
+        bufferRequirements: PointerByReference
+    )
 }

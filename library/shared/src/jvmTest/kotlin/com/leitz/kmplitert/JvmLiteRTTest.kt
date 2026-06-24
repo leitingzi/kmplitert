@@ -5,7 +5,7 @@ import junit.framework.TestCase.assertEquals
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
-class LiteRTTest {
+class JvmLiteRTTest {
 
     private val lib = LibLiteRt.INSTANCE
 
@@ -143,7 +143,20 @@ class LiteRTTest {
         val env = LiteRtUtils.createEnvironment()
         val model = LiteRtUtils.createModel(modelFilePath)
         val options = LiteRtUtils.createOptions()
-        val compiledModel = LiteRtUtils.createCompiledModel(env, model, options)
+        val compiledModel = LiteRtUtils.createCompiledModel(
+            environment = env,
+            model = model,
+            options = options
+        )
+
+        val inputBufferRequirements = LiteRtUtils.getInputBufferRequirements(
+            compiledModel = compiledModel,
+            signatureIndex = 0,
+            inputIndex = 0
+        )
+
+        println("InputBufferRequirements = $inputBufferRequirements")
+
         LiteRtUtils.destroy(env, model, options, compiledModel)
     }
 }

@@ -50,5 +50,10 @@ kotlin {
             implementation(libs.kotlinx.coroutinesCore)
             implementation(projects.library.shared)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutinesTest)
+            implementation(libs.koin.test)
+        }
     }
 }

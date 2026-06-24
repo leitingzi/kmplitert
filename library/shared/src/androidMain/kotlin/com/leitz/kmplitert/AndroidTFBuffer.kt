@@ -2,7 +2,7 @@ package com.leitz.kmplitert
 
 import com.google.ai.edge.litert.TensorBuffer
 
-class AndroidTFBuffer(val buffer: TensorBuffer): TFBuffer {
+internal class AndroidTFBuffer(val buffer: TensorBuffer): TFBuffer {
     override fun writeInt(data: IntArray) = buffer.writeInt(data)
     override fun writeFloat(data: FloatArray) = buffer.writeFloat(data)
     override fun writeInt8(data: ByteArray) = buffer.writeInt8(data)
