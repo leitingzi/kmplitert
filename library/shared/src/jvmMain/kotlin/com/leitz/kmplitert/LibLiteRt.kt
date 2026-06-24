@@ -52,5 +52,37 @@ interface LibLiteRt: Library {
         signatureIndex: Int,
         inputIndex: Int,
         bufferRequirements: PointerByReference
-    )
+    ): LiteRtStatus
+
+    fun LiteRtGetCompiledModelOutputBufferRequirements(
+        compiledModel: Pointer,
+        signatureIndex: Int,
+        outputIndex: Int,
+        bufferRequirements: PointerByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetCompiledModelInputTensorLayout(
+        compiledModel: Pointer,
+        signatureIndex: Int,
+        inputIndex: Int,
+        layout: LiteRtLayout
+    ): LiteRtStatus
+
+    fun LiteRtGetCompiledModelOutputTensorLayouts(
+        compiledModel: Pointer,
+        signatureIndex: Int,
+        numLayouts: Int,
+        layouts: LiteRtLayout,
+        updateAllocation: Boolean
+    ): LiteRtStatus
+
+
+    fun LiteRtCreateManagedTensorBufferFromRequirements(
+        env: Pointer,
+        tensorType: LiteRtRankedTensorType,
+        requirements: Pointer,
+        buffer: PointerByReference
+    ): LiteRtStatus
+
+    fun LiteRtDestroyTensorBuffer(buffer: Pointer?)
 }

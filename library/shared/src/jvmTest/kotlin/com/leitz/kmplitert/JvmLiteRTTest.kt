@@ -139,6 +139,28 @@ class JvmLiteRTTest {
     }
 
     @Test
+    fun testLiteRtLayout() {
+        val layout = LiteRtLayout()
+        layout.apply {
+            setRank(4)
+            setHasStrides(true)
+
+            dimensions[0] = 1
+            dimensions[1] = 224
+            dimensions[2] = 224
+            dimensions[3] = 3
+
+            strides[0] = 150528
+            strides[1] = 672
+            strides[2] = 3
+            strides[3] = 1
+
+            write()
+        }
+        println("layout = ${layout.pointer}")
+    }
+
+    @Test
     fun shouldLiteRTUtils() {
         val env = LiteRtUtils.createEnvironment()
         val model = LiteRtUtils.createModel(modelFilePath)
@@ -149,14 +171,59 @@ class JvmLiteRTTest {
             options = options
         )
 
+        println("compiledModel ptr = $compiledModel")
+
         val inputBufferRequirements = LiteRtUtils.getInputBufferRequirements(
             compiledModel = compiledModel,
             signatureIndex = 0,
             inputIndex = 0
         )
 
-        println("InputBufferRequirements = $inputBufferRequirements")
+        println("inputBufferRequirements = $inputBufferRequirements")
 
+        val outputBufferRequirements = LiteRtUtils.getOutputBufferRequirements(
+            compiledModel = compiledModel,
+            signatureIndex = 0,
+            outputIndex = 0
+        )
+
+        println("outputBufferRequirements = $outputBufferRequirements")
+
+        val layout = LiteRtUtils.getInputTensorLayout(
+            compiledModel = compiledModel,
+            signatureIndex = 0,
+            inputIndex = 0
+        )
+
+        println("layout = ${layout.pointer}")
+
+        val outputLayouts = LiteRtUtils.getOutputTensorLayout(
+            compiledModel = compiledModel,
+            signatureIndex = 0,
+            numLayouts = 1,
+            updateAllocation = true
+        )
+
+        println("outputLayouts = ${outputLayouts.pointer}")
+
+        val inputRankedType = LiteRtRankedTensorType()
+        inputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
+        inputRankedType.layout.flags = layout.flags
+        for (i in 0 until 8) {
+            inputRankedType.layout.dimensions[i] = layout.dimensions[i]
+            inputRankedType.layout.strides[i] = layout.strides[i]
+        }
+        inputRankedType.write()
+
+        val inputTensorBuffer = LiteRtUtils.createTensorBufferFromRequirements(
+            env = env,
+            tensorType = inputRankedType,
+            requirements = inputBufferRequirements
+        )
+
+        println("inputTensorBuffer = $inputTensorBuffer")
+
+        lib.LiteRtDestroyTensorBuffer(inputTensorBuffer)
         LiteRtUtils.destroy(env, model, options, compiledModel)
     }
 }

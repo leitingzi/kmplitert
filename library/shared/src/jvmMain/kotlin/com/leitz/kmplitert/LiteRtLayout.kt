@@ -2,15 +2,9 @@ package com.leitz.kmplitert
 
 import com.sun.jna.Structure
 
-@Structure.FieldOrder(
-    "rankAndFlags",
-    "dimensions",
-    "strides"
-)
-class LiteRtLayout : Structure() {
-
+open class LiteRtLayout : Structure() {
     @JvmField
-    var rankAndFlags: Int = 0
+    var flags: Int = 0
 
     @JvmField
     var dimensions = IntArray(8)
@@ -18,15 +12,30 @@ class LiteRtLayout : Structure() {
     @JvmField
     var strides = IntArray(8)
 
-    var rank: Int
-        get() = rankAndFlags and 0x7F
-        set(value) {
-            rankAndFlags = (rankAndFlags and 0xFFFFFF80.toInt()) or (value and 0x7F)
-        }
+    override fun getFieldOrder(): List<String> {
+        return listOf("flags", "dimensions", "strides")
+    }
 
-    var hasStrides: Boolean
-        get() = (rankAndFlags and 0x80) != 0
-        set(value) {
-            rankAndFlags = if (value) rankAndFlags or 0x80 else rankAndFlags and 0x7F
+    fun getRank(): Int {
+        return flags and 0x7F
+    }
+
+    fun setRank(rank: Int) {
+        flags = (flags and (0x1 shl 7)) or (rank and 0x7F)
+    }
+
+    fun hasStrides(): Boolean {
+        return (flags shr 7) and 0x1 == 1
+    }
+
+    fun setHasStrides(value: Boolean) {
+        flags = if (value) {
+            flags or (1 shl 7)
+        } else {
+            flags and (1 shl 7).inv()
         }
+    }
+
+    class ByReference : LiteRtLayout(), Structure.ByReference
+    class ByValue : LiteRtLayout(), Structure.ByValue
 }
