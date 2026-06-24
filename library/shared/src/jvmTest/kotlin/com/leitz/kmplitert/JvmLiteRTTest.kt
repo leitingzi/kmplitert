@@ -16,7 +16,7 @@ class JvmLiteRTTest {
         val envRef = PointerByReference()
 
         val status = lib.LiteRtCreateEnvironment(
-            numOptions = 0,
+            num_options = 0,
             options = null,
             environment = envRef
         )

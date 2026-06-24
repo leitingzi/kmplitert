@@ -1,3 +1,5 @@
+@file:Suppress("LocalVariableName")
+
 package com.leitz.kmplitert
 
 import com.sun.jna.Library
@@ -13,13 +15,12 @@ interface LibLiteRt: Library {
     }
 
     fun LiteRtCreateEnvironment(
-        numOptions: Int,
+        num_options: Int,
         options: Pointer?,
         environment: PointerByReference
     ): LiteRtStatus
 
     fun LiteRtDestroyEnvironment(environment: Pointer)
-
 
     fun LiteRtCreateModelFromFile(
         fileName: String,

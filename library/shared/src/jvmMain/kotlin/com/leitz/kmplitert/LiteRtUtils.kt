@@ -8,7 +8,7 @@ object LiteRtUtils {
 
     fun createEnvironment(): Pointer {
         val envRef = PointerByReference()
-        val status = lib.LiteRtCreateEnvironment(numOptions = 0, options = null, environment = envRef)
+        val status = lib.LiteRtCreateEnvironment(num_options = 0, options = null, environment = envRef)
         if (status != 0) {
             throw RuntimeException("Failed to create environment: $status")
         }
