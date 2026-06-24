@@ -172,4 +172,41 @@ object LiteRtUtils {
         }
         return tensorBufferRef.value
     }
+
+    fun run(
+        compiledModel: Pointer,
+        signatureIndex: Int,
+        numInputBuffers: Int,
+        inputBuffers: Pointer,
+        numOutputBuffers: Int,
+        outputBuffers: Pointer
+    ) {
+        val status = lib.LiteRtRunCompiledModel(
+            compiledModel = compiledModel,
+            signatureIndex = signatureIndex,
+            numInputBuffers = numInputBuffers,
+            inputBuffers = arrayOf(inputBuffers),
+            numOutputBuffers = numOutputBuffers,
+            outputBuffers = arrayOf(outputBuffers)
+        )
+        if (status != 0) {
+            throw RuntimeException("Failed to run compiled model: $status")
+        }
+    }
+
+    fun lock(tensorBuffer: Pointer, lockMode: Int): Pointer {
+        val hostMemAddrRef = PointerByReference()
+        val status = lib.LiteRtLockTensorBuffer(tensorBuffer, hostMemAddrRef, lockMode)
+        if (status != 0) {
+            throw RuntimeException("Failed to lock tensor buffer: $status")
+        }
+        return hostMemAddrRef.value
+    }
+
+    fun unlock(tensorBuffer: Pointer) {
+        val status = lib.LiteRtUnlockTensorBuffer(tensorBuffer)
+        if (status != 0) {
+            throw RuntimeException("Failed to unlock tensor buffer: $status")
+        }
+    }
 }

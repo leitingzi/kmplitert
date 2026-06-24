@@ -7,13 +7,20 @@ open class LiteRtLayout : Structure() {
     var flags: Int = 0
 
     @JvmField
+    var padding: Int = 0
+
+    @JvmField
     var dimensions = IntArray(8)
 
     @JvmField
     var strides = IntArray(8)
 
     override fun getFieldOrder(): List<String> {
-        return listOf("flags", "dimensions", "strides")
+        return if (com.sun.jna.Platform.isWindows()) {
+            listOf("flags", "padding", "dimensions", "strides")
+        } else {
+            listOf("flags", "dimensions", "strides")
+        }
     }
 
     fun getRank(): Int {

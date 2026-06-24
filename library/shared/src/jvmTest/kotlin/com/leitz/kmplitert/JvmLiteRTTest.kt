@@ -223,7 +223,42 @@ class JvmLiteRTTest {
 
         println("inputTensorBuffer = $inputTensorBuffer")
 
+        val floats = floatArrayOf(100f)
+        val inputAddr = LiteRtUtils.lock(inputTensorBuffer, LITERT_TENSOR_BUFFER_LOCK_MODE_WRITE)
+        inputAddr.write(0, floats, 0, floats.size)
+        LiteRtUtils.unlock(inputTensorBuffer)
+
+        val outputTensorBuffer = LiteRtUtils.createTensorBufferFromRequirements(
+            env = env,
+            tensorType = inputRankedType,
+            requirements = outputBufferRequirements
+        )
+
+        println("outputTensorBuffer = $outputTensorBuffer")
+
+
+        LiteRtUtils.run(
+            compiledModel = compiledModel,
+            signatureIndex = 0,
+            numInputBuffers = 1,
+            inputBuffers = inputTensorBuffer,
+            numOutputBuffers = 1,
+            outputBuffers = outputTensorBuffer
+        )
+
+        val outputAddr = LiteRtUtils.lock(outputTensorBuffer, LITERT_TENSOR_BUFFER_LOCK_MODE_READ)
+        val results = FloatArray(1)
+        outputAddr.read(0, results, 0, 1)
+        LiteRtUtils.unlock(outputTensorBuffer)
+
+        println("Result = ${results[0]}")
+        assertEquals(212f, results[0], 1f)
+
+
         lib.LiteRtDestroyTensorBuffer(inputTensorBuffer)
+        lib.LiteRtDestroyTensorBuffer(outputTensorBuffer)
+
+
         LiteRtUtils.destroy(env, model, options, compiledModel)
     }
 }

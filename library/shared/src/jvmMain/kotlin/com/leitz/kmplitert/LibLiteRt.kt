@@ -85,4 +85,22 @@ interface LibLiteRt: Library {
     ): LiteRtStatus
 
     fun LiteRtDestroyTensorBuffer(buffer: Pointer?)
+
+
+    fun LiteRtRunCompiledModel(
+        compiledModel: Pointer,
+        signatureIndex: Int,
+        numInputBuffers: Int,
+        inputBuffers: Array<Pointer?>,
+        numOutputBuffers: Int,
+        outputBuffers: Array<Pointer?>
+    ): LiteRtStatus
+
+    fun LiteRtLockTensorBuffer(
+        tensorBuffer: Pointer,
+        hostMemAddr: PointerByReference,
+        lockMode: Int
+    ): LiteRtStatus
+
+    fun LiteRtUnlockTensorBuffer(buffer: Pointer): LiteRtStatus
 }
