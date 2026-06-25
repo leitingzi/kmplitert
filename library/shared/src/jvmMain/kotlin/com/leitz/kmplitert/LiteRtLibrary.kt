@@ -1,11 +1,12 @@
 @file:Suppress("LocalVariableName", "FunctionName")
 
-package com.leitz.kmplitert.newApi
+package com.leitz.kmplitert
 
 import com.leitz.kmplitert.model.*
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 
 typealias LiteRtParamIndex = Long
@@ -75,28 +76,25 @@ interface LiteRtLibrary : Library {
     ): LiteRtStatus
 
     fun LiteRtClearTensorBuffer(buffer: LiteRtTensorBuffer): LiteRtStatus
+    fun LiteRtDestroyTensorBuffer(buffer: LiteRtTensorBuffer)
+
     fun LiteRtGetModelSignature(
         model: LiteRtModel,
         signature_index: LiteRtParamIndex,
         signature: PointerByReference
     ): LiteRtStatus
-
     fun LiteRtGetNumSignatureInputs(
         signature: Pointer,
-        num_inputs: com.sun.jna.ptr.LongByReference
+        num_inputs: LongByReference
     ): LiteRtStatus
-
     fun LiteRtGetNumSignatureOutputs(
         signature: Pointer,
-        num_outputs: com.sun.jna.ptr.LongByReference
+        num_outputs: LongByReference
     ): LiteRtStatus
-
     fun LiteRtGetTensorBufferPackedSize(
         tensor_buffer: LiteRtTensorBuffer,
-        size: com.sun.jna.ptr.LongByReference
+        size: LongByReference
     ): LiteRtStatus
-
-    fun LiteRtDestroyTensorBuffer(buffer: LiteRtTensorBuffer)
 
 
     fun LiteRtRunCompiledModel(

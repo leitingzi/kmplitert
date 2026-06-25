@@ -1,7 +1,7 @@
 package com.leitz.kmplitert.model
 
-import com.leitz.kmplitert.newApi.LiteRtLibrary
-import com.leitz.kmplitert.newApi.LiteRtStatus
+import com.leitz.kmplitert.LiteRtLibrary
+import com.leitz.kmplitert.LiteRtStatus
 import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference

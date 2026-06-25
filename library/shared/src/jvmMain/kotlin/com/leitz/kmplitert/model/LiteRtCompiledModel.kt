@@ -5,7 +5,7 @@ package com.leitz.kmplitert.model
 import com.leitz.kmplitert.JvmTFBuffer
 import com.leitz.kmplitert.LITERT_ELEMENT_TYPE_FLOAT32
 import com.leitz.kmplitert.TFBuffer
-import com.leitz.kmplitert.newApi.LiteRtLibrary
+import com.leitz.kmplitert.LiteRtLibrary
 import com.sun.jna.Platform
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference

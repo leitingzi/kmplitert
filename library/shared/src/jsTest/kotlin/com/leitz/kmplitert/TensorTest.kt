@@ -1,8 +1,6 @@
 package com.leitz.kmplitert
 
 import kotlinx.coroutines.test.runTest
-import org.khronos.webgl.Float32Array
-import org.khronos.webgl.set
 import kotlin.test.Test
 
 class TensorTest {
@@ -11,13 +9,8 @@ class TensorTest {
         LiteRtInit.awaitInit()
         println(LiteRtInit.isLoaded)
 
-        val data = Float32Array(3)
-        data[0] = 1f
-        data[1] = 2f
-        data[2] = 3f
-
-        val shape = arrayOf(1, 3)
-        val tensor = Tensor(data, shape)
-        println(tensor)
+        val jsTFBuffer = JsTFBuffer()
+        jsTFBuffer.writeFloat(floatArrayOf(1f, 2f, 3f))
+        println(jsTFBuffer.tensor)
     }
 }

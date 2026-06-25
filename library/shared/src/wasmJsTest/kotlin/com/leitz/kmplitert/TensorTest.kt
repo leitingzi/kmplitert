@@ -13,17 +13,8 @@ class TensorTest {
         LiteRtInit.awaitInit()
         println(LiteRtInit.isLoaded)
 
-        val data = Float32Array(3)
-        data[0] = 1f
-        data[1] = 2f
-        data[2] = 3f
-
-        val shape = arrayOf(1, 3).map {
-            it.toJsNumber()
-        }.toJsArray()
-
-        val tensor = Tensor(data, shape)
-
-        println(tensor)
+        val wasmTFBuffer = WasmTFBuffer()
+        wasmTFBuffer.writeFloat(floatArrayOf(1f, 2f, 3f))
+        println(wasmTFBuffer.tensor)
     }
 }

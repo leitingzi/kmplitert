@@ -1,6 +1,6 @@
 package com.leitz.kmplitert.model
 
-import com.leitz.kmplitert.newApi.LiteRtLibrary
+import com.leitz.kmplitert.LiteRtLibrary
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.LongByReference
 

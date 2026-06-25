@@ -1,5 +1,6 @@
 package com.leitz.kmplitert
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 
@@ -7,6 +8,13 @@ import androidx.compose.ui.window.ComposeViewport
 fun main() {
     ComposeViewport {
         WithFontResourcesLoaded {
+            LaunchedEffect(Unit) {
+                val compiler = LiteRTCompiler()
+                compiler.init("CelsiusToFahrenheit.tflite")
+
+                println(compiler)
+            }
+
             App()
         }
     }
