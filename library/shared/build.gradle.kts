@@ -1,3 +1,6 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -54,6 +57,16 @@ kotlin {
         withHostTest {
             isIncludeAndroidResources = true
         }
+    }
+
+    swiftPMDependencies {
+        iosMinimumDeploymentTarget = "26.3"
+
+        swiftPackage(
+            url = url("https://github.com/google-ai-edge/litert"),
+            version = branch("main"),
+            products = listOf(product("LiteRT")),
+        )
     }
 
     sourceSets {

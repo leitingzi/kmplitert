@@ -4,7 +4,7 @@ import com.leitz.kmplitert.model.*
 import junit.framework.TestCase.assertEquals
 import kotlin.test.Test
 
-class JvmLiteRTNewTest {
+class JvmLiteRTTest {
 
     private val modelFilePath = "src/jvmTest/resources/CelsiusToFahrenheit.tflite"
 
