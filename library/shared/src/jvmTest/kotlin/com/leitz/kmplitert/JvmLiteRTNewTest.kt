@@ -45,7 +45,7 @@ class JvmLiteRTNewTest {
     fun testGetCompiledModelTensorLayout() {
         val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
         compiledModel.getInputTensorLayout(0, 0)
-        compiledModel.getOutputTensorLayout(0, 1)
+        compiledModel.getOutputTensorLayout(0, 1, false)
         compiledModel.destroy()
     }
 
@@ -58,7 +58,7 @@ class JvmLiteRTNewTest {
 
         val outputBuffers = compiledModel.getOutputBuffers()
 
-        compiledModel.run(0, inputBuffers, outputBuffers,)
+        compiledModel.run(0, inputBuffers, outputBuffers)
 
         val result = outputBuffers[0].readFloat()
 
@@ -67,5 +67,28 @@ class JvmLiteRTNewTest {
         assertEquals(212f, result[0], 1f)
 
         compiledModel.destroy()
+    }
+
+    @Test
+    fun testExModel() {
+        val modelPath = "src/jvmTest/resources/CelsiusToFahrenheitEx.tflite"
+        val compiledModel = LiteRtCompiledModel.create(filePath = modelPath)
+        val inputBuffers = compiledModel.getInputBuffers()
+        println("inputBuffersSize = ${inputBuffers.size}")
+
+        inputBuffers[0].writeFloat(floatArrayOf(100f, 0f, -40f))
+
+        val outputBuffers = compiledModel.getOutputBuffers()
+
+        println("outputBuffersSize = ${outputBuffers.size}")
+
+        compiledModel.run(0, inputBuffers, outputBuffers)
+
+        val result = outputBuffers[0].readFloat()
+
+        println("Result = ${result[0]}")
+        println("Result = ${result[1]}")
+        println("Result = ${result[2]}")
+        println("ResultSize = ${result.size}")
     }
 }

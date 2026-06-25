@@ -9,10 +9,28 @@ class LiteRtModel: PointerType() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyModel(this)
     }
 
+    fun getSignature(index: Long): LiteRtSignature {
+        val ref = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetModelSignature(this, index, ref)
+        check(status == 0) {
+            "Failed to get model signature: $status"
+        }
+        val signature = LiteRtSignature()
+        signature.pointer = ref.value
+        return signature
+    }
+
     companion object {
         fun create(filePath: String): LiteRtModel {
             val ref = PointerByReference()
-            LiteRtLibrary.INSTANCE.LiteRtCreateModelFromFile(fileName = filePath, model = ref)
+            val status = LiteRtLibrary.INSTANCE.LiteRtCreateModelFromFile(
+                fileName = filePath,
+                model = ref
+            )
+
+            check(status == 0) {
+                "Failed to create model from file: $status"
+            }
 
             val model = LiteRtModel()
             model.pointer = ref.value

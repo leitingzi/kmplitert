@@ -13,15 +13,14 @@ import com.sun.jna.ptr.PointerByReference
 class LiteRtCompiledModel : PointerType() {
 
     lateinit var env: LiteRtEnvironment
+    var model: LiteRtModel? = null
 
     fun destroy() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyCompiledModel(this)
+        model?.destroy()
     }
 
-    fun getInputBufferRequirements(
-        signature_index: Long,
-        input_index: Long
-    ): LiteRtTensorBufferRequirements {
+    fun getInputBufferRequirements(signature_index: Long, input_index: Long): LiteRtTensorBufferRequirements {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelInputBufferRequirements(
             compiled_model = this,
@@ -29,17 +28,15 @@ class LiteRtCompiledModel : PointerType() {
             input_index = input_index,
             buffer_requirements = ref
         )
-        check(status == 0) { "Failed to get input buffer requirements: $status" }
-
+        check(status == 0) {
+            "Failed to get input buffer requirements: $status"
+        }
         val liteRtTensorBufferRequirements = LiteRtTensorBufferRequirements()
         liteRtTensorBufferRequirements.pointer = ref.value
         return liteRtTensorBufferRequirements
     }
 
-    fun getOutputBufferRequirements(
-        signature_index: Long,
-        output_index: Long
-    ): LiteRtTensorBufferRequirements {
+    fun getOutputBufferRequirements(signature_index: Long, output_index: Long): LiteRtTensorBufferRequirements {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelOutputBufferRequirements(
             compiled_model = this,
@@ -47,16 +44,15 @@ class LiteRtCompiledModel : PointerType() {
             output_index = output_index,
             buffer_requirements = ref
         )
-        check(status == 0) { "Failed to get output buffer requirements: $status" }
+        check(status == 0) {
+            "Failed to get output buffer requirements: $status"
+        }
         val liteRtTensorBufferRequirements = LiteRtTensorBufferRequirements()
         liteRtTensorBufferRequirements.pointer = ref.value
         return liteRtTensorBufferRequirements
     }
 
-    fun getInputTensorLayout(
-        signature_index: Long,
-        input_index: Long
-    ): LiteRtLayout {
+    fun getInputTensorLayout(signature_index: Long, input_index: Long): LiteRtLayout {
         val layout = LiteRtLayout()
         layout.write()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelInputTensorLayout(
@@ -65,16 +61,14 @@ class LiteRtCompiledModel : PointerType() {
             input_index = input_index,
             layout = layout.pointer
         )
-        check(status == 0) { "Failed to get input tensor layout: $status" }
+        check(status == 0) {
+            "Failed to get input tensor layout: $status"
+        }
         layout.read()
         return layout
     }
 
-    fun getOutputTensorLayout(
-        signature_index: Long,
-        num_layouts: Long,
-        update_allocation: Boolean = true
-    ): LiteRtLayout {
+    fun getOutputTensorLayout(signature_index: Long, num_layouts: Long, update_allocation: Boolean): LiteRtLayout {
         val layout = LiteRtLayout()
         layout.write()
 
@@ -85,12 +79,13 @@ class LiteRtCompiledModel : PointerType() {
             layouts = layout.pointer,
             update_allocation = update_allocation
         )
-        check(status == 0) { "Failed to get output tensor layout: $status" }
+        check(status == 0) {
+            "Failed to get output tensor layout: $status"
+        }
         layout.read()
         return layout
     }
 
-    // TODO 需要移动到其他地方 比如TensorBuffer
     fun createManagedTensorBufferFromRequirements(
         tensor_type: LiteRtRankedTensorType,
         requirements: LiteRtTensorBufferRequirements,
@@ -133,61 +128,89 @@ class LiteRtCompiledModel : PointerType() {
         }
     }
 
-    fun getInputBuffers(): List<TFBuffer> {
-        val inputBufferRequirements = getInputBufferRequirements(
-            signature_index = 0,
-            input_index = 0
-        )
+    fun getInputBuffers(signatureIndex: Long = 0): List<TFBuffer> {
+        val model = this.model ?: throw IllegalStateException("Model is not set")
+        val signature = model.getSignature(signatureIndex)
+        val numInputs = signature.getNumInputs()
 
-        val inputLayout = getInputTensorLayout(signature_index = 0, input_index = 0)
+        println("numInputs = $numInputs")
 
-        val inputRankedType = LiteRtRankedTensorType()
-        inputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
-        // 直接从 inputLayout 拷贝数据
-        inputRankedType.layout.flags = inputLayout.flags
-        if (Platform.isWindows()) {
-            inputRankedType.layout.padding = inputLayout.padding
+        val buffers = mutableListOf<TFBuffer>()
+        for (i in 0 until numInputs) {
+            val inputBufferRequirements = getInputBufferRequirements(
+                signature_index = signatureIndex,
+                input_index = i
+            )
+
+            val inputLayout = getInputTensorLayout(signature_index = signatureIndex, input_index = i)
+
+            val inputRankedType = LiteRtRankedTensorType()
+            inputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
+            inputRankedType.layout.flags = inputLayout.flags
+            if (Platform.isWindows()) {
+                inputRankedType.layout.padding = inputLayout.padding
+            }
+            for (j in 0 until 8) {
+                inputRankedType.layout.dimensions[j] = inputLayout.dimensions[j]
+                inputRankedType.layout.strides[j] = inputLayout.strides[j]
+            }
+            inputRankedType.write()
+
+            val intputTensorBuffer = createManagedTensorBufferFromRequirements(
+                tensor_type = inputRankedType,
+                requirements = inputBufferRequirements
+            )
+            buffers.add(JvmTFBuffer(intputTensorBuffer))
         }
-        for (i in 0 until 8) {
-            inputRankedType.layout.dimensions[i] = inputLayout.dimensions[i]
-            inputRankedType.layout.strides[i] = inputLayout.strides[i]
-        }
-        inputRankedType.write()
-
-        val intputTensorBuffer = createManagedTensorBufferFromRequirements(
-            tensor_type = inputRankedType,
-            requirements = inputBufferRequirements
-        )
-
-        return listOf(JvmTFBuffer(intputTensorBuffer))
+        return buffers
     }
 
-    fun getOutputBuffers(): List<TFBuffer> {
-        val outputBufferRequirements = getOutputBufferRequirements(
-            signature_index = 0,
-            output_index = 0
+    fun getOutputBuffers(signatureIndex: Long = 0): List<TFBuffer> {
+        val model = this.model ?: throw IllegalStateException("Model is not set")
+        val signature = model.getSignature(signatureIndex)
+        val numOutputs = signature.getNumOutputs()
+
+        // Get all layouts at once
+        val layouts = LiteRtLayout().toArray(numOutputs.toInt()) as Array<LiteRtLayout>
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelOutputTensorLayouts(
+            compiled_model = this,
+            signature_index = signatureIndex,
+            num_layouts = numOutputs,
+            layouts = layouts[0].pointer,
+            update_allocation = false
         )
+        check(status == 0) { "Failed to get output tensor layouts: $status" }
 
-        val outputLayout = getOutputTensorLayout(0, 1)
+        val buffers = mutableListOf<TFBuffer>()
+        for (i in 0 until numOutputs.toInt()) {
+            val outputBufferRequirements = getOutputBufferRequirements(
+                signature_index = signatureIndex,
+                output_index = i.toLong()
+            )
 
-        val outputRankedType = LiteRtRankedTensorType()
-        outputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
-        outputRankedType.layout.flags = outputLayout.flags
-        if (Platform.isWindows()) {
-            outputRankedType.layout.padding = outputLayout.padding
+            val outputLayout = layouts[i]
+            outputLayout.read() // MUST call read() to sync from native memory
+
+            val outputRankedType = LiteRtRankedTensorType()
+            outputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
+            outputRankedType.layout.flags = outputLayout.flags
+            if (Platform.isWindows()) {
+                outputRankedType.layout.padding = outputLayout.padding
+            }
+            for (j in 0 until 8) {
+                outputRankedType.layout.dimensions[j] = outputLayout.dimensions[j]
+                outputRankedType.layout.strides[j] = outputLayout.strides[j]
+            }
+            outputRankedType.write()
+
+            val outputTensorBuffer = createManagedTensorBufferFromRequirements(
+                tensor_type = outputRankedType,
+                requirements = outputBufferRequirements
+            )
+            buffers.add(JvmTFBuffer(outputTensorBuffer))
         }
-        for (i in 0 until 8) {
-            outputRankedType.layout.dimensions[i] = outputLayout.dimensions[i]
-            outputRankedType.layout.strides[i] = outputLayout.strides[i]
-        }
-        outputRankedType.write()
 
-        val outputTensorBuffer = createManagedTensorBufferFromRequirements(
-            tensor_type = outputRankedType,
-            requirements = outputBufferRequirements
-        )
-
-        return listOf(JvmTFBuffer(outputTensorBuffer))
+        return buffers
     }
 
     companion object {
@@ -211,29 +234,8 @@ class LiteRtCompiledModel : PointerType() {
             val compiledModel = LiteRtCompiledModel()
             compiledModel.pointer = ref.value
             compiledModel.env = env
-            return compiledModel
-        }
-
-        fun create(env: LiteRtEnvironment, filePath: String): LiteRtCompiledModel {
-            val model = LiteRtModel.create(filePath = filePath)
-            val options = LiteRtOptions.create()
-            options.setAccelerators(LiteRtHwAcceleratorSet.CPU)
-
-            val ref = PointerByReference()
-            val status = LiteRtLibrary.INSTANCE.LiteRtCreateCompiledModel(
-                environment = env,
-                model = model,
-                compilation_options = options,
-                compiled_model = ref
-            )
-            check(status == 0) { "Failed to create compiled model: $status" }
-
-            val compiledModel = LiteRtCompiledModel()
-            compiledModel.pointer = ref.value
-            compiledModel.env = env
+            compiledModel.model = model
             return compiledModel
         }
     }
-
-
 }

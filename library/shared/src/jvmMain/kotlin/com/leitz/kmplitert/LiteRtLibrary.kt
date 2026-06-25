@@ -75,6 +75,27 @@ interface LiteRtLibrary : Library {
     ): LiteRtStatus
 
     fun LiteRtClearTensorBuffer(buffer: LiteRtTensorBuffer): LiteRtStatus
+    fun LiteRtGetModelSignature(
+        model: LiteRtModel,
+        signature_index: LiteRtParamIndex,
+        signature: PointerByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetNumSignatureInputs(
+        signature: Pointer,
+        num_inputs: com.sun.jna.ptr.LongByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetNumSignatureOutputs(
+        signature: Pointer,
+        num_outputs: com.sun.jna.ptr.LongByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetTensorBufferPackedSize(
+        tensor_buffer: LiteRtTensorBuffer,
+        size: com.sun.jna.ptr.LongByReference
+    ): LiteRtStatus
+
     fun LiteRtDestroyTensorBuffer(buffer: LiteRtTensorBuffer)
 
 

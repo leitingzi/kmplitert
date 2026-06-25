@@ -8,7 +8,11 @@ import com.sun.jna.ptr.PointerByReference
 
 class LiteRtTensorBuffer: PointerType() {
     fun clear(): LiteRtStatus {
-        return LiteRtLibrary.INSTANCE.LiteRtClearTensorBuffer(this)
+        val status = LiteRtLibrary.INSTANCE.LiteRtClearTensorBuffer(this)
+        check(status == 0) {
+            "Failed to clear tensor buffer: $status"
+        }
+        return 0
     }
 
     fun destroy() {
@@ -22,8 +26,22 @@ class LiteRtTensorBuffer: PointerType() {
             host_mem_addr = hostMemAddrRef,
             lock_mode = 1
         )
-        check(status == 0) { "Failed to lock tensor buffer: $status" }
+        check(status == 0) {
+            "Failed to lock tensor buffer: $status"
+        }
         return hostMemAddrRef.value
+    }
+
+    fun getPackedSize(): Long {
+        val sizeRef = com.sun.jna.ptr.LongByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferPackedSize(
+            tensor_buffer = this,
+            size = sizeRef
+        )
+        check(status == 0) {
+            "Failed to get tensor buffer packed size: $status"
+        }
+        return sizeRef.value
     }
 
     fun unlock() {

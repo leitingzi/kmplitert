@@ -10,16 +10,23 @@ class LiteRtOptions : PointerType() {
     }
 
     fun setAccelerators(liteRtHwAcceleratorSet: LiteRtHwAcceleratorSet) {
-        LiteRtLibrary.INSTANCE.LiteRtSetOptionsHardwareAccelerators(
+        val status = LiteRtLibrary.INSTANCE.LiteRtSetOptionsHardwareAccelerators(
             options = this,
             hardware_accelerators = liteRtHwAcceleratorSet.value
         )
+        check(status == 0) {
+            "Failed to set hardware accelerators: $status"
+        }
     }
 
     companion object {
         fun create(): LiteRtOptions {
             val ref = PointerByReference()
-            LiteRtLibrary.INSTANCE.LiteRtCreateOptions(ref)
+            val status = LiteRtLibrary.INSTANCE.LiteRtCreateOptions(ref)
+
+            check(status == 0) {
+                "Failed to create options: $status"
+            }
 
             val options = LiteRtOptions()
             options.pointer = ref.value
