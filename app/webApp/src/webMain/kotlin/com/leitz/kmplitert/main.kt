@@ -10,11 +10,14 @@ fun main() {
         WithFontResourcesLoaded {
             LaunchedEffect(Unit) {
                 val compiler = LiteRTCompiler()
-                compiler.init("CelsiusToFahrenheit.tflite")
+                compiler.init("CelsiusToFahrenheitEx.tflite")
                 println("compiler = $compiler")
-                compiler.getInputBuffers()
-                compiler.getOutputBuffers()
-                compiler.run(emptyList(), emptyList())
+                val inputs = compiler.getInputBuffers()
+                val outputs = compiler.getOutputBuffers()
+                inputs[0].writeFloat(floatArrayOf(10f, 20f, 100f))
+
+                compiler.run(inputs, outputs)
+                println("result = ${arrayToString(outputs[0].readFloat())}")
             }
 
             App()

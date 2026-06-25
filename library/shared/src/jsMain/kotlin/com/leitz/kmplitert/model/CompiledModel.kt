@@ -10,6 +10,6 @@ import kotlin.js.Promise
 external class CompiledModel {
     fun getInputDetails(): JsArray<TensorDetails>
     fun getOutputDetails(): JsArray<TensorDetails>
-    fun run(tensor: Tensor): Promise<JsArray<Tensor>>
+    fun run(tensor: JsArray<Tensor>): Promise<JsArray<Tensor>>
     fun delete()
 }
