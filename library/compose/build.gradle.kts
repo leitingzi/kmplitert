@@ -4,6 +4,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
@@ -12,7 +14,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "Shared"
+            baseName = "Compose"
             isStatic = true
         }
     }
@@ -20,28 +22,16 @@ kotlin {
     jvm()
 
     js {
-        browser {
-            testTask {
-                useKarma {
-                    useChrome()
-                }
-            }
-        }
+        browser()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        browser {
-            testTask {
-                useKarma {
-                    useChrome()
-                }
-            }
-        }
+        browser()
     }
 
     androidLibrary {
-        namespace = "com.leitz.kmplitert.shared"
+        namespace = "com.leitz.kmplitert.compose"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -58,22 +48,27 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.litert)
+            implementation(libs.compose.uiToolingPreview)
         }
-        jvmMain.dependencies {
-            implementation(libs.jna)
-            implementation(libs.jna.platform)
-        }
-        webMain.dependencies {
-            implementation(libs.kotlinx.browser)
-            implementation(npm("@litertjs/core", "2.5.2"))
+        jsMain.dependencies {
+            implementation(libs.wrappers.browser)
         }
         commonMain.dependencies {
-            implementation(libs.kotlinx.coroutinesCore)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.androidx.lifecycle.runtimeCompose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutinesTest)
         }
     }
+}
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.uiTooling)
 }
