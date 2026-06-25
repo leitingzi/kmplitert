@@ -11,8 +11,9 @@ fun main() {
             LaunchedEffect(Unit) {
                 val compiler = LiteRTCompiler()
                 compiler.init("CelsiusToFahrenheit.tflite")
-
-                println(compiler)
+                println("compiler = $compiler")
+                val inputs = compiler.getInputBuffers()
+                val outputs = compiler.getOutputBuffers()
             }
 
             App()

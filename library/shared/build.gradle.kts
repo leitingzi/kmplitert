@@ -68,6 +68,7 @@ kotlin {
             implementation(libs.jna.platform)
         }
         webMain.dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-browser:0.5.0")
             implementation(npm("@litertjs/core", "2.5.1"))
         }
         jsMain.dependencies {
