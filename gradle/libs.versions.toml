@@ -44,6 +44,7 @@ jna = { module = "net.java.dev.jna:jna", version = "5.19.1" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.19.1" }
 koin-core = { module = "io.insert-koin:koin-core", version = "4.2.0" }
 koin-test = { module = "io.insert-koin:koin-test", version = "4.2.0" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

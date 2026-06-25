@@ -12,8 +12,9 @@ fun main() {
                 val compiler = LiteRTCompiler()
                 compiler.init("CelsiusToFahrenheit.tflite")
                 println("compiler = $compiler")
-                val inputs = compiler.getInputBuffers()
-                val outputs = compiler.getOutputBuffers()
+                compiler.getInputBuffers()
+                compiler.getOutputBuffers()
+                compiler.run(emptyList(), emptyList())
             }
 
             App()

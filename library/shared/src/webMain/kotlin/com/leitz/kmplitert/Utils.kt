@@ -6,5 +6,6 @@ import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.js.JsAny
 import kotlin.js.js
 
-fun createAccelerator(name: String): JsAny =
-    js("({ accelerator: name })")
+expect fun <T> arrayToString(array: T): String
+
+fun jsTypeOf(o: JsAny): String = js("typeof o")

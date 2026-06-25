@@ -1,13 +1,15 @@
+@file:JsModule("@litertjs/core")
+@file:JsNonModule
+@file:Suppress("FunctionName")
 @file:OptIn(ExperimentalWasmJsInterop::class)
 
 package com.leitz.kmplitert.model
 
-import kotlin.js.ExperimentalWasmJsInterop
-import kotlin.js.JsAny
-import kotlin.js.JsArray
+import kotlin.js.Promise
 
-external class CompiledModel: JsAny {
+external class CompiledModel {
     fun getInputDetails(): JsArray<TensorDetails>
     fun getOutputDetails(): JsArray<TensorDetails>
+    fun run(tensor: Tensor): Promise<JsArray<Tensor>>
     fun delete()
 }

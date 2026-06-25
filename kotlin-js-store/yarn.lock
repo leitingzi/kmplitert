@@ -235,7 +235,14 @@
   dependencies:
     "@litertjs/wasm-utils" "^2.4.0"
 
-"@litertjs/wasm-utils@^2.4.0":
+"@litertjs/core@2.5.2":
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/@litertjs/core/-/core-2.5.2.tgz#391dfe724b30bcb74141193ee8631b2302d27419"
+  integrity sha512-2O4p5Me8B3KbW9EPU9Xe6iKl2jZ5nZeGxRBvhm5x42Wj7qb3xk2CjibPLA0eSyt2HuELu2hCIZ+7gHZM5cipcw==
+  dependencies:
+    "@litertjs/wasm-utils" "^2.0.0"
+
+"@litertjs/wasm-utils@^2.0.0", "@litertjs/wasm-utils@^2.4.0":
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/@litertjs/wasm-utils/-/wasm-utils-2.5.0.tgz#64a718191513325ca783d4fb1d1cd2fe3e3ccd14"
   integrity sha512-zhMAqJRJ3ROi48flZxYx+K2MiMllJVuH7oeumpSIfQMBeOb6JyLV/7ltLbY6E+nERUAfNwzIBqjslWAeXcO6iQ==
