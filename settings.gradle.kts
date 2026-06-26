@@ -14,6 +14,7 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        mavenLocal()
     }
 }
 
@@ -27,6 +28,7 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        mavenLocal()
     }
 }
 
@@ -34,9 +36,11 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include("app:androidApp")
-include("app:desktopApp")
-include("app:webApp")
+include(":app:androidApp")
+include(":app:desktopApp")
+include(":app:webApp")
 
-include("library:shared")
-include("library:compose")
+include(":library:shared")
+project(":library:shared").name = "kmplitert"
+
+include(":library:compose")

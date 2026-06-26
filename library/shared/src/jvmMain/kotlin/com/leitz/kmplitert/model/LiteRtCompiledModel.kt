@@ -8,6 +8,7 @@ import com.leitz.kmplitert.TFBuffer
 import com.leitz.kmplitert.LiteRtLibrary
 import com.sun.jna.Platform
 import com.sun.jna.PointerType
+import com.sun.jna.Structure
 import com.sun.jna.ptr.PointerByReference
 
 class LiteRtCompiledModel : PointerType() {
@@ -171,7 +172,7 @@ class LiteRtCompiledModel : PointerType() {
         val numOutputs = signature.getNumOutputs()
 
         // Get all layouts at once
-        val layouts = LiteRtLayout().toArray(numOutputs.toInt()) as Array<LiteRtLayout>
+        val layouts = LiteRtLayout().newArray(numOutputs.toInt())
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelOutputTensorLayouts(
             compiled_model = this,
             signature_index = signatureIndex,
@@ -211,6 +212,11 @@ class LiteRtCompiledModel : PointerType() {
         }
 
         return buffers
+    }
+
+    private inline fun <reified T : Structure> T.newArray(size: Int): Array<T> {
+        @Suppress("UNCHECKED_CAST")
+        return toArray(size) as Array<T>
     }
 
     companion object {

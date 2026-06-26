@@ -15,6 +15,7 @@ kotlin = "2.4.0"
 kotlin-wrappers = "2026.6.1"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
+kmplitert = "0.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -45,6 +46,8 @@ jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.19.1" }
 koin-core = { module = "io.insert-koin:koin-core", version = "4.2.0" }
 koin-test = { module = "io.insert-koin:koin-test", version = "4.2.0" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
+
+kmplitert = { module = "io.github.leitingzi:kmplitert", version.ref = "kmplitert" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
