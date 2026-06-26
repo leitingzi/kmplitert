@@ -8,10 +8,10 @@ plugins {
 
 dependencies {
     implementation(projects.library.compose)
+    implementation(projects.library.kmplitert)
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
-
     implementation(libs.compose.uiToolingPreview)
 }
 

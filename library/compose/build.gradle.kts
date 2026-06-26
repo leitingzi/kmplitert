@@ -56,7 +56,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation(libs.kmplitert)
+            implementation(projects.library.kmplitert)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

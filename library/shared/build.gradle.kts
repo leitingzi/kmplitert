@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "io.github.leitingzi"
-version = libs.versions.kmplitert.get()
+version = "0.1"
 
 mavenPublishing {
     publishToMavenCentral()
@@ -47,18 +47,6 @@ mavenPublishing {
     }
 }
 
-publishing {
-    repositories {
-        mavenLocal()
-    }
-}
-
-dokka {
-    dokkaPublications.html {
-        outputDirectory.set(layout.projectDirectory.dir("dokka"))
-    }
-}
-
 kotlin {
     androidLibrary {
         namespace = "io.github.leitingzi.${project.name}"
@@ -85,16 +73,6 @@ kotlin {
             isStatic = true
         }
     }
-
-//    swiftPMDependencies {
-//        iosMinimumDeploymentTarget = "26.3"
-//
-//        swiftPackage(
-//            url = url("https://github.com/google-ai-edge/litert"),
-//            version = branch("main"),
-//            products = listOf(product("LiteRT")),
-//        )
-//    }
 
     jvm()
 
