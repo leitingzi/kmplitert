@@ -47,33 +47,33 @@ interface TFBuffer {
      *
      * @return A new int array containing buffer integer data
      */
-    fun readInt(): IntArray
+    suspend fun readInt(): IntArray
 
     /**
      * Read all stored float values from the tensor buffer.
      *
      * @return A new float array containing buffer float data
      */
-    fun readFloat(): FloatArray
+    suspend fun readFloat(): FloatArray
 
     /**
      * Read all stored int8 byte values from the tensor buffer.
      *
      * @return A new byte array containing signed 8-bit tensor data
      */
-    fun readInt8(): ByteArray
+    suspend fun readInt8(): ByteArray
 
     /**
      * Read all stored boolean values from the tensor buffer.
      *
      * @return A new boolean array containing buffer boolean data
      */
-    fun readBoolean(): BooleanArray
+    suspend fun readBoolean(): BooleanArray
 
     /**
      * Read all stored long values from the tensor buffer.
      *
      * @return A new long array containing buffer long data
      */
-    fun readLong(): LongArray
+    suspend fun readLong(): LongArray
 }

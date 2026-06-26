@@ -2,8 +2,11 @@
 
 package com.leitz.kmplitert
 
-import com.leitz.kmplitert.model.Accelerator
 import com.leitz.kmplitert.model.CompiledModel
+import com.leitz.kmplitert.model.createCompileOptions
+import com.leitz.kmplitert.model.createCpuOptions
+import com.leitz.kmplitert.model.createLiteRtCompileOptions
+import com.leitz.kmplitert.model.isWebGPUSupported
 import kotlinx.coroutines.await
 
 actual class LiteRTCompiler {
@@ -11,15 +14,11 @@ actual class LiteRTCompiler {
 
     actual suspend fun init(filePath: String) {
         LiteRtInit.awaitInit()
-
         val load = loadAndCompile(
             model = filePath,
-            compileOptions = Accelerator.create(Accelerator.CPU)
+            compileOptions = createCompileOptions(cpuOptions = createCpuOptions(4))
         )
-
         compiledModel = load.await()
-
-        println("LiteRTCompiler $compiledModel")
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
@@ -29,7 +28,6 @@ actual class LiteRTCompiler {
             val details = inputs[i]
             list.add(JsTFBuffer(details.shape))
         }
-        println("getInputBuffers ${list.size}")
         return list
     }
 
@@ -40,22 +38,20 @@ actual class LiteRTCompiler {
             val details = outputs[i]
             list.add(JsTFBuffer(details.shape))
         }
-        println("getOutputBuffers ${list.size}")
         return list
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
-        val inputs = inputs.map {
+        val inputTensors = inputs.map {
             (it as JsTFBuffer).tensor
         }.toJsArray()
 
-        val promise = compiledModel.run(inputs)
+        val promise = compiledModel.run(inputTensors)
         val modelOutputs = promise.await()
 
-        modelOutputs.forEach { tensor ->
-            outputs.forEach { buffer ->
-                (buffer as JsTFBuffer).tensor = tensor
-            }
+        for (i in 0 until modelOutputs.length) {
+            val outputTensor = modelOutputs[i]
+            (outputs[i] as JsTFBuffer).tensor = outputTensor
         }
     }
 

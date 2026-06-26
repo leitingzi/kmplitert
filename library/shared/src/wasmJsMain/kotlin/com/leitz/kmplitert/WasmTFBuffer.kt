@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmJsInterop::class)
+
 package com.leitz.kmplitert
 
 import com.leitz.kmplitert.model.Tensor
@@ -7,7 +9,7 @@ import org.khronos.webgl.Int32Array
 import org.khronos.webgl.toFloat32Array
 import org.khronos.webgl.toFloatArray
 
-class JsTFBuffer(val shape: Int32Array) : TFBuffer {
+class WasmTFBuffer(val shape: Int32Array) : TFBuffer {
 
     lateinit var tensor: Tensor
 

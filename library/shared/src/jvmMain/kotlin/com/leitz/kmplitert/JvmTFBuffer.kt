@@ -34,7 +34,7 @@ class JvmTFBuffer (val buffer: LiteRtTensorBuffer): TFBuffer {
         buffer.unlock()
     }
 
-    override fun readInt(): IntArray {
+    override suspend fun readInt(): IntArray {
         val size = buffer.getPackedSize()
         val numElements = (size / 4).toInt()
         val outputAddr = buffer.lock()
@@ -44,7 +44,7 @@ class JvmTFBuffer (val buffer: LiteRtTensorBuffer): TFBuffer {
         return results
     }
 
-    override fun readFloat(): FloatArray {
+    override suspend fun readFloat(): FloatArray {
         val size = buffer.getPackedSize()
         val numElements = (size / 4).toInt()
         val outputAddr = buffer.lock()
@@ -54,7 +54,7 @@ class JvmTFBuffer (val buffer: LiteRtTensorBuffer): TFBuffer {
         return results
     }
 
-    override fun readInt8(): ByteArray {
+    override suspend fun readInt8(): ByteArray {
         val size = buffer.getPackedSize()
         val numElements = size.toInt()
         val outputAddr = buffer.lock()
@@ -64,7 +64,7 @@ class JvmTFBuffer (val buffer: LiteRtTensorBuffer): TFBuffer {
         return results
     }
 
-    override fun readBoolean(): BooleanArray {
+    override suspend fun readBoolean(): BooleanArray {
         val size = buffer.getPackedSize()
         val numElements = size.toInt()
         val outputAddr = buffer.lock()
@@ -74,7 +74,7 @@ class JvmTFBuffer (val buffer: LiteRtTensorBuffer): TFBuffer {
         return BooleanArray(numElements) { bytes[it] != 0.toByte() }
     }
 
-    override fun readLong(): LongArray {
+    override suspend fun readLong(): LongArray {
         val size = buffer.getPackedSize()
         val numElements = (size / 8).toInt()
         val outputAddr = buffer.lock()

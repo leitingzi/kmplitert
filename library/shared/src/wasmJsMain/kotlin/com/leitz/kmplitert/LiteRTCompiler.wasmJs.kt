@@ -2,60 +2,64 @@
 
 package com.leitz.kmplitert
 
-import com.leitz.kmplitert.model.Accelerator
 import com.leitz.kmplitert.model.CompiledModel
+import com.leitz.kmplitert.model.createCompileOptions
+import com.leitz.kmplitert.model.createCpuOptions
 import kotlinx.coroutines.await
-import org.khronos.webgl.Float32Array
 
 actual class LiteRTCompiler {
-    private lateinit var model: CompiledModel
+    private lateinit var compiledModel: CompiledModel
 
     actual suspend fun init(filePath: String) {
         LiteRtInit.awaitInit()
-
-        model = loadAndCompile(
+        val load = loadAndCompile(
             model = filePath,
-            accelerator = Accelerator.create(Accelerator.CPU)
-        ).await()
+            compileOptions = createCompileOptions(cpuOptions = createCpuOptions(4))
+        )
+        compiledModel = load.await()
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
-        val details = model.getInputDetails()
-        val bufferList = mutableListOf<TFBuffer>()
-
-        details.toList().forEach { details ->
-            val tensor = Tensor(Float32Array(1), details.shape)
-            val buffer = WasmTFBuffer(tensor)
-            bufferList.add(buffer)
+        val inputs = compiledModel.getInputDetails()
+        val list = mutableListOf<TFBuffer>()
+        for (i in 0 until inputs.length) {
+            val details = inputs[i]
+            details?.let {
+                list.add(WasmTFBuffer(it.shape))
+            }
         }
-
-        println("getInputBuffers: ${bufferList.size}")
-        return bufferList
+        return list
     }
 
     actual suspend fun getOutputBuffers(): List<TFBuffer> {
-        val details = model.getOutputDetails()
-        val bufferList = mutableListOf<TFBuffer>()
-
-        details.toList().forEach { details ->
-            val tensor = Tensor(Float32Array(1), details.shape)
-            val buffer = WasmTFBuffer(tensor)
-            bufferList.add(buffer)
+        val outputs = compiledModel.getOutputDetails()
+        val list = mutableListOf<TFBuffer>()
+        for (i in 0 until outputs.length) {
+            val details = outputs[i]
+            details?.let {
+                list.add(WasmTFBuffer(it.shape))
+            }
         }
-
-        println("getOutputBuffers: ${bufferList.size}")
-        return bufferList
+        return list
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
-        val inputs = inputs.map {
+        val inputTensors = inputs.map {
             (it as WasmTFBuffer).tensor
         }.toJsArray()
-        val output = model.run(inputs).await()
-        println("output = $output")
+
+        val promise = compiledModel.run(inputTensors)
+        val modelOutputs = promise.await()
+
+        for (i in 0 until modelOutputs.length) {
+            val outputTensor = modelOutputs[i]
+            outputTensor?.let {
+                (outputs[i] as WasmTFBuffer).tensor = it
+            }
+        }
     }
 
     actual suspend fun close() {
-        model.delete()
+        compiledModel.delete()
     }
 }
