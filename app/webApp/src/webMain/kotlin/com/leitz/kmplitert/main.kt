@@ -4,6 +4,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import com.leitz.kmplitert.compose.App
+import com.leitz.kmplitert.compose.WithFontResourcesLoaded
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {

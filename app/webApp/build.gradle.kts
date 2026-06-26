@@ -24,7 +24,6 @@ kotlin {
             implementation(projects.library.compose)
 
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
         }
     }
 }
