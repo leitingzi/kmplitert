@@ -1,11 +1,13 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package com.leitz.kmplitert
 
 import com.leitz.kmplitert.model.LiteRtCompiledModel
 
-actual class LiteRTCompiler {
+actual class LiteRTCompiler actual constructor(val filePath: String) {
     private lateinit var compiledModel: LiteRtCompiledModel
 
-    actual suspend fun init(filePath: String) {
+    actual suspend fun init() {
         compiledModel = LiteRtCompiledModel.create(filePath = filePath)
     }
 

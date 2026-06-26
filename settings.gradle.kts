@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 rootProject.name = "kmplitert"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
@@ -35,6 +37,6 @@ plugins {
 include("app:androidApp")
 include("app:desktopApp")
 include("app:webApp")
+
 include("library:shared")
-include("library:koin")
 include("library:compose")

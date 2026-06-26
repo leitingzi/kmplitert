@@ -1,44 +1,62 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package com.leitz.kmplitert
 
 /**
- * Cross-platform compiler wrapper for LiteRT model inference.
+ * Compiles and executes a LiteRT model.
  *
- * Provides suspend APIs to initialize model, manage input/output buffers,
- * execute inference and release native resources.
+ * This class provides a platform-independent API for loading a LiteRT model,
+ * querying its input and output buffers, executing inference, and releasing
+ * associated resources.
+ *
+ * Instances must be initialized by calling [init] before any other operations.
+ *
+ * @property filePath Path to the LiteRT model file.
  */
-expect class LiteRTCompiler() {
-    /**
-     * Initialize the LiteRT model from specified file path.
-     *
-     * @param filePath Absolute path to the LiteRT model file.
-     */
-    suspend fun init(filePath: String)
+expect class LiteRTCompiler(filePath: String) {
 
     /**
-     * Retrieve all input tensor buffers of the loaded model.
+     * Initializes the compiler and prepares the model for inference.
      *
-     * @return List of input TFBuffer instances.
+     * This method must be called before invoking [getInputBuffers],
+     * [getOutputBuffers], or [run].
+     */
+    suspend fun init()
+
+    /**
+     * Returns the input buffers required by the compiled model.
+     *
+     * The returned buffers describe the expected input tensors and can be
+     * populated with data before calling [run].
+     *
+     * @return A list of input buffers.
      */
     suspend fun getInputBuffers(): List<TFBuffer>
 
     /**
-     * Retrieve all output tensor buffers of the loaded model.
+     * Returns the output buffers required by the compiled model.
      *
-     * @return List of output TFBuffer instances.
+     * The returned buffers receive inference results after [run] completes.
+     *
+     * @return A list of output buffers.
      */
     suspend fun getOutputBuffers(): List<TFBuffer>
 
     /**
-     * Run model inference with given input and output buffers.
+     * Executes inference using the provided input and output buffers.
      *
-     * @param inputs Prepared input data buffers
-     * @param outputs Buffers to receive inference result data
+     * The input and output buffer lists must match the model's expected tensor
+     * layout and ordering.
+     *
+     * @param inputs The input buffers containing tensor data.
+     * @param outputs The output buffers that will receive inference results.
      */
     suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>)
 
     /**
-     * Release all allocated native memory and model resources.
-     * Call this method when the compiler is no longer used.
+     * Releases all resources associated with this compiler.
+     *
+     * After calling this method, the instance must not be used again.
      */
     suspend fun close()
 }

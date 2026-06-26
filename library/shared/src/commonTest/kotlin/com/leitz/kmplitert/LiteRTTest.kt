@@ -11,16 +11,13 @@ class LiteRTTest {
     @Test
     fun runModel() {
         runTest {
-            val compiler = LiteRTCompiler()
-            compiler.init(testFilePath)
-
+            val compiler = LiteRTCompiler(testFilePath)
             val inputs = compiler.getInputBuffers()
             val outputs = compiler.getOutputBuffers()
-
             inputs[0].writeFloat(floatArrayOf(100f))
             compiler.run(inputs, outputs)
-
             println(outputs[0].readFloat().contentToString())
+            compiler.close()
         }
     }
 }

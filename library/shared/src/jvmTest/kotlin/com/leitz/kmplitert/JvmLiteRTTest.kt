@@ -2,6 +2,7 @@ package com.leitz.kmplitert
 
 import com.leitz.kmplitert.model.*
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 class JvmLiteRTTest {
@@ -51,44 +52,48 @@ class JvmLiteRTTest {
 
     @Test
     fun testCreateManagedTensorBufferFromRequirements() {
-        val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
+        runTest {
+            val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
 
-        val inputBuffers = compiledModel.getInputBuffers()
-        inputBuffers[0].writeFloat(floatArrayOf(100f))
+            val inputBuffers = compiledModel.getInputBuffers()
+            inputBuffers[0].writeFloat(floatArrayOf(100f))
 
-        val outputBuffers = compiledModel.getOutputBuffers()
+            val outputBuffers = compiledModel.getOutputBuffers()
 
-        compiledModel.run(0, inputBuffers, outputBuffers)
+            compiledModel.run(0, inputBuffers, outputBuffers)
 
-        val result = outputBuffers[0].readFloat()
+            val result = outputBuffers[0].readFloat()
 
-        println("Result = ${result[0]}")
+            println("Result = ${result[0]}")
 
-        assertEquals(212f, result[0], 1f)
+            assertEquals(212f, result[0], 1f)
 
-        compiledModel.destroy()
+            compiledModel.destroy()
+        }
     }
 
     @Test
     fun testExModel() {
-        val modelPath = "src/jvmTest/resources/CelsiusToFahrenheitEx.tflite"
-        val compiledModel = LiteRtCompiledModel.create(filePath = modelPath)
-        val inputBuffers = compiledModel.getInputBuffers()
-        println("inputBuffersSize = ${inputBuffers.size}")
+        runTest {
+            val modelPath = "src/jvmTest/resources/CelsiusToFahrenheitEx.tflite"
+            val compiledModel = LiteRtCompiledModel.create(filePath = modelPath)
+            val inputBuffers = compiledModel.getInputBuffers()
+            println("inputBuffersSize = ${inputBuffers.size}")
 
-        inputBuffers[0].writeFloat(floatArrayOf(100f, 0f, -40f))
+            inputBuffers[0].writeFloat(floatArrayOf(100f, 0f, -40f))
 
-        val outputBuffers = compiledModel.getOutputBuffers()
+            val outputBuffers = compiledModel.getOutputBuffers()
 
-        println("outputBuffersSize = ${outputBuffers.size}")
+            println("outputBuffersSize = ${outputBuffers.size}")
 
-        compiledModel.run(0, inputBuffers, outputBuffers)
+            compiledModel.run(0, inputBuffers, outputBuffers)
 
-        val result = outputBuffers[0].readFloat()
+            val result = outputBuffers[0].readFloat()
 
-        println("Result = ${result[0]}")
-        println("Result = ${result[1]}")
-        println("Result = ${result[2]}")
-        println("ResultSize = ${result.size}")
+            println("Result = ${result[0]}")
+            println("Result = ${result[1]}")
+            println("Result = ${result[2]}")
+            println("ResultSize = ${result.size}")
+        }
     }
 }

@@ -1,14 +1,16 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package com.leitz.kmplitert
 
 import com.google.ai.edge.litert.CompiledModel
 import com.google.ai.edge.litert.Environment
 import com.google.ai.edge.litert.TensorBuffer
 
-actual class LiteRTCompiler {
+actual class LiteRTCompiler actual constructor(val filePath: String) {
     private lateinit var env: Environment
     private lateinit var compiledModel: CompiledModel
 
-    actual suspend fun init(filePath: String) {
+    actual suspend fun init() {
         env = Environment.create()
         compiledModel = CompiledModel.create(filePath = filePath, optionalEnv = env)
     }

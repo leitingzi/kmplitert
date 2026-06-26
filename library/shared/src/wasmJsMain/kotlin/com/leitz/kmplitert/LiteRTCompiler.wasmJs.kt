@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalWasmJsInterop::class)
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
 package com.leitz.kmplitert
 
@@ -7,10 +8,10 @@ import com.leitz.kmplitert.model.createCompileOptions
 import com.leitz.kmplitert.model.createCpuOptions
 import kotlinx.coroutines.await
 
-actual class LiteRTCompiler {
+actual class LiteRTCompiler actual constructor(val filePath: String){
     private lateinit var compiledModel: CompiledModel
 
-    actual suspend fun init(filePath: String) {
+    actual suspend fun init() {
         LiteRtInit.awaitInit()
         val load = loadAndCompile(
             model = filePath,
