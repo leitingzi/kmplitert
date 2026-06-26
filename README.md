@@ -1,49 +1,73 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
+# KMPLiteRT
 
-* [/iosApp](app/iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+> Run LiteRT (TensorFlow Lite) models with a unified Kotlin Multiplatform API.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-      For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-      Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-      folder is the appropriate location.
+KMPLiteRT is a Kotlin Multiplatform library for running LiteRT models on Android, iOS, JVM, JavaScript, and WasmJS using a single, consistent API.
 
-### Running the apps
+## Features
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and
-options:
+- 🚀 Kotlin Multiplatform
+- 📱 Android / iOS / JVM / JavaScript / WasmJS
+- 📦 Type-safe tensor APIs
+- ⚡ Coroutine-friendly
+- 🔒 Unified `expect/actual` implementation
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-    - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-    - Standard run: `./gradlew :desktopApp:run`
-- Web app:
-    - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-    - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
-- iOS app: open the [/iosApp](app/iosApp) directory in Xcode and run it from there.
+## Platform Support
 
-### Running tests
+| Platform | Support |
+|----------|:-------:|
+| Android | ✅ |
+| iOS | ✅ |
+| JVM | ✅ |
+| JavaScript | ✅ |
+| WasmJS | ✅ |
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+## Installation
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- Web tests:
-    - Wasm target: `./gradlew :shared:wasmJsTest`
-    - JS target: `./gradlew :shared:jsTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+```kotlin
+commonMain.dependencies {
+    // The library is currently under development.
+    implementation("")
+}
+```
 
----
+## Usage
 
-Learn more
-about [Kotlin Multiplatform](https://www.jetbrains.com.cn/en-us/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+```kotlin
+suspend fun inference() {
+    val compiler = LiteRTCompiler("model.tflite")
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack
-channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+    compiler.init()
+
+    val inputs = compiler.getInputBuffers()
+    val outputs = compiler.getOutputBuffers()
+
+    inputs[0].writeFloat(
+        floatArrayOf(
+            // input data
+        )
+    )
+
+    compiler.run(inputs, outputs)
+
+    val result = outputs[0].readFloat()
+
+    println(result.joinToString())
+
+    compiler.close()
+}
+```
+
+Inference follows a simple workflow:
+
+1. Create a `LiteRTCompiler`
+2. Call `init()`
+3. Obtain input and output buffers
+4. Write input tensor data
+5. Execute `run()`
+6. Read output tensor data
+7. Call `close()` to release resources
+
+## License
+
+Apache License 2.0
