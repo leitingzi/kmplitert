@@ -8,4 +8,4 @@ import kotlin.js.js
 
 expect fun <T> arrayToString(array: T): String
 
-fun jsTypeOf(o: JsAny): String = js("typeof o")
+internal fun jsTypeOf(o: JsAny): String = js("typeof o")

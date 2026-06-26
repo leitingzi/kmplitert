@@ -220,11 +220,12 @@ class LiteRtCompiledModel : PointerType() {
     }
 
     companion object {
-        fun create(filePath: String): LiteRtCompiledModel {
+        fun create(filePath: String, accelerator: LiteRtHwAcceleratorSet): LiteRtCompiledModel {
             val env = LiteRtEnvironment.create()
             val model = LiteRtModel.create(filePath = filePath)
+
             val options = LiteRtOptions.create()
-            options.setAccelerators(LiteRtHwAcceleratorSet.CPU)
+            options.setAccelerators(accelerator)
 
             val ref = PointerByReference()
             val status = LiteRtLibrary.INSTANCE.LiteRtCreateCompiledModel(

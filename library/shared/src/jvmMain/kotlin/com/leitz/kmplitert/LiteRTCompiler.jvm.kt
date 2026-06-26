@@ -2,13 +2,18 @@
 
 package com.leitz.kmplitert
 
+import com.leitz.kmplitert.LiteRTAccelerator.*
 import com.leitz.kmplitert.model.LiteRtCompiledModel
+import com.leitz.kmplitert.model.LiteRtHwAcceleratorSet
 
-actual class LiteRTCompiler actual constructor(val filePath: String) {
+actual class LiteRTCompiler actual constructor(
+    val filePath: String,
+    val accelerator: LiteRTAccelerator
+) {
     private lateinit var compiledModel: LiteRtCompiledModel
 
     actual suspend fun init() {
-        compiledModel = LiteRtCompiledModel.create(filePath = filePath)
+        compiledModel = LiteRtCompiledModel.create(filePath = filePath, accelerator = accelerator.toJvm())
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
@@ -25,5 +30,14 @@ actual class LiteRTCompiler actual constructor(val filePath: String) {
 
     actual suspend fun close() {
         compiledModel.destroy()
+    }
+
+    @Suppress("SameReturnValue")
+    private fun LiteRTAccelerator.toJvm(): LiteRtHwAcceleratorSet {
+        return when (this) {
+            CPU -> LiteRtHwAcceleratorSet.CPU
+            GPU -> LiteRtHwAcceleratorSet.CPU
+            NPU -> LiteRtHwAcceleratorSet.CPU
+        }
     }
 }

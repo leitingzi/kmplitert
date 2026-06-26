@@ -1,9 +1,11 @@
 package com.leitz.kmplitert
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.await
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.js.ExperimentalWasmJsInterop
 
 object LiteRtInit {
     private val mutex = Mutex()

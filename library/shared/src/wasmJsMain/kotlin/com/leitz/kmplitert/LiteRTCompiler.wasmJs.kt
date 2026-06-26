@@ -3,20 +3,20 @@
 
 package com.leitz.kmplitert
 
-import com.leitz.kmplitert.model.CompiledModel
-import com.leitz.kmplitert.model.createCompileOptions
-import com.leitz.kmplitert.model.createCpuOptions
+import com.leitz.kmplitert.model.*
 import kotlinx.coroutines.await
 
-actual class LiteRTCompiler actual constructor(val filePath: String){
+actual class LiteRTCompiler actual constructor(
+    val filePath: String,
+    val accelerator: LiteRTAccelerator
+){
     private lateinit var compiledModel: CompiledModel
 
     actual suspend fun init() {
         LiteRtInit.awaitInit()
-        val load = loadAndCompile(
-            model = filePath,
-            compileOptions = createCompileOptions(cpuOptions = createCpuOptions(4))
-        )
+//        val compileOptions = getCompileOptions(accelerator = accelerator)
+        val compileOptions = getLiteRtCompileOptions(accelerator = accelerator)
+        val load = loadAndCompile(model = filePath, compileOptions = compileOptions)
         compiledModel = load.await()
     }
 
@@ -62,5 +62,59 @@ actual class LiteRTCompiler actual constructor(val filePath: String){
 
     actual suspend fun close() {
         compiledModel.delete()
+    }
+
+    private fun getCompileOptions(accelerator: LiteRTAccelerator): JsAny {
+
+        val cpuOptions = if (accelerator == LiteRTAccelerator.CPU) {
+            createCpuOptions()
+        } else {
+            null
+        }
+
+        val gpuOptions = if (accelerator == LiteRTAccelerator.GPU) {
+            if (isWebGPUSupported()) createLiteRtGpuOptions() else null
+        } else {
+            null
+        }
+
+        val webNNOptions = if (accelerator == LiteRTAccelerator.NPU) {
+            createLiteRtWebNNOptions()
+        } else {
+            null
+        }
+
+        return createCompileOptions(
+            environment = getDefaultEnvironment(),
+            cpuOptions = cpuOptions,
+            gpuOptions = gpuOptions,
+            webNNOptions = webNNOptions,
+        )
+    }
+
+    private fun getLiteRtCompileOptions(accelerator: LiteRTAccelerator): JsAny {
+        return when (accelerator) {
+            LiteRTAccelerator.CPU -> {
+                createLiteRtCompileOptions(accelerator = "wasm")
+            }
+            LiteRTAccelerator.GPU -> {
+                if (isWebGPUSupported()) {
+                    createLiteRtCompileOptions(
+                        accelerator = "webgpu",
+                        gpuOptions = createLiteRtGpuOptions(),
+                        webNNOptions = null
+                    )
+                } else {
+                    createLiteRtCompileOptions(accelerator = "wasm")
+                }
+            }
+            LiteRTAccelerator.NPU -> {
+                createLiteRtCompileOptions(
+                    accelerator = "webnn",
+                    gpuOptions = null,
+                    webNNOptions = createLiteRtWebNNOptions()
+                )
+            }
+        }
     }
 }

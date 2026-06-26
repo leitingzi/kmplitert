@@ -30,13 +30,19 @@ class JvmLiteRTTest {
 
     @Test
     fun shouldCreateCompiledModelUsingCpuAccelerator() {
-        val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
+        val compiledModel = LiteRtCompiledModel.create(
+            filePath = modelFilePath,
+            accelerators = setOf(LiteRtHwAcceleratorSet.CPU)
+        )
         compiledModel.destroy()
     }
 
     @Test
     fun testGetCompiledModelBufferRequirements() {
-        val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
+        val compiledModel = LiteRtCompiledModel.create(
+            filePath = modelFilePath,
+            accelerators = setOf(LiteRtHwAcceleratorSet.CPU)
+        )
         compiledModel.getInputBufferRequirements(0, 0)
         compiledModel.getOutputBufferRequirements(0, 0)
         compiledModel.destroy()
@@ -44,7 +50,10 @@ class JvmLiteRTTest {
 
     @Test
     fun testGetCompiledModelTensorLayout() {
-        val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
+        val compiledModel = LiteRtCompiledModel.create(
+            filePath = modelFilePath,
+            accelerators = setOf(LiteRtHwAcceleratorSet.CPU)
+        )
         compiledModel.getInputTensorLayout(0, 0)
         compiledModel.getOutputTensorLayout(0, 1, false)
         compiledModel.destroy()
@@ -53,7 +62,10 @@ class JvmLiteRTTest {
     @Test
     fun testCreateManagedTensorBufferFromRequirements() {
         runTest {
-            val compiledModel = LiteRtCompiledModel.create(filePath = modelFilePath)
+            val compiledModel = LiteRtCompiledModel.create(
+                filePath = modelFilePath,
+                accelerators = setOf(LiteRtHwAcceleratorSet.CPU)
+            )
 
             val inputBuffers = compiledModel.getInputBuffers()
             inputBuffers[0].writeFloat(floatArrayOf(100f))
@@ -76,7 +88,10 @@ class JvmLiteRTTest {
     fun testExModel() {
         runTest {
             val modelPath = "src/jvmTest/resources/CelsiusToFahrenheitEx.tflite"
-            val compiledModel = LiteRtCompiledModel.create(filePath = modelPath)
+            val compiledModel = LiteRtCompiledModel.create(
+                filePath = modelPath,
+                accelerators = setOf(LiteRtHwAcceleratorSet.CPU)
+            )
             val inputBuffers = compiledModel.getInputBuffers()
             println("inputBuffersSize = ${inputBuffers.size}")
 

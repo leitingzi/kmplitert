@@ -3,11 +3,11 @@
 
 package com.leitz.kmplitert
 
-import com.leitz.kmplitert.model.CompileOptions
 import com.leitz.kmplitert.model.CompiledModel
+import com.leitz.kmplitert.model.LiteRtCompileOptions
 import kotlin.js.Promise
 
 
 external fun loadLiteRt(path: String): Promise<JsAny>
 
-external fun loadAndCompile(model: String, compileOptions: CompileOptions): Promise<CompiledModel>
+external fun loadAndCompile(model: String, compileOptions: JsAny): Promise<CompiledModel>

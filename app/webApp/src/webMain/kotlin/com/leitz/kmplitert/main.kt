@@ -11,7 +11,10 @@ fun main() {
     ComposeViewport {
         WithFontResourcesLoaded {
             LaunchedEffect(Unit) {
-                val compiler = LiteRTCompiler("model/CelsiusToFahrenheitEx.tflite")
+                val compiler = LiteRTCompiler(
+                    filePath = "model/CelsiusToFahrenheitEx.tflite",
+                    accelerator = LiteRTAccelerator.NPU
+                )
                 compiler.init()
                 val inputs = compiler.getInputBuffers()
                 val outputs = compiler.getOutputBuffers()

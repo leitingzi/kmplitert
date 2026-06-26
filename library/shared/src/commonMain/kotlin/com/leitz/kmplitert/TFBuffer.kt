@@ -1,79 +1,39 @@
 package com.leitz.kmplitert
 
 /**
- * Abstraction for LiteRT tensor data buffer.
+ * Represents a LiteRT tensor buffer.
  *
- * Provides typed read/write methods to transfer numeric and boolean data
- * between application layer and underlying model tensor memory.
+ * Provides typed read and write operations for tensor data.
  */
 interface TFBuffer {
-    /**
-     * Write integer array data into this tensor buffer.
-     *
-     * @param data Source int array to be copied into buffer
-     */
+
+    /** Writes integer values. */
     fun writeInt(data: IntArray)
 
-    /**
-     * Write float array data into this tensor buffer.
-     *
-     * @param data Source float array to be copied into buffer
-     */
+    /** Writes floating-point values. */
     fun writeFloat(data: FloatArray)
 
-    /**
-     * Write int8 byte array data into this tensor buffer.
-     *
-     * @param data Source signed 8-bit byte array to be copied into buffer
-     */
+    /** Writes signed 8-bit integer values. */
     fun writeInt8(data: ByteArray)
 
-    /**
-     * Write boolean array data into this tensor buffer.
-     *
-     * @param data Source boolean array to be copied into buffer
-     */
+    /** Writes boolean values. */
     fun writeBoolean(data: BooleanArray)
 
-    /**
-     * Write long array data into this tensor buffer.
-     *
-     * @param data Source long array to be copied into buffer
-     */
+    /** Writes long integer values. */
     fun writeLong(data: LongArray)
 
-    /**
-     * Read all stored integer values from the tensor buffer.
-     *
-     * @return A new int array containing buffer integer data
-     */
+    /** Reads integer values. */
     suspend fun readInt(): IntArray
 
-    /**
-     * Read all stored float values from the tensor buffer.
-     *
-     * @return A new float array containing buffer float data
-     */
+    /** Reads floating-point values. */
     suspend fun readFloat(): FloatArray
 
-    /**
-     * Read all stored int8 byte values from the tensor buffer.
-     *
-     * @return A new byte array containing signed 8-bit tensor data
-     */
+    /** Reads signed 8-bit integer values. */
     suspend fun readInt8(): ByteArray
 
-    /**
-     * Read all stored boolean values from the tensor buffer.
-     *
-     * @return A new boolean array containing buffer boolean data
-     */
+    /** Reads boolean values. */
     suspend fun readBoolean(): BooleanArray
 
-    /**
-     * Read all stored long values from the tensor buffer.
-     *
-     * @return A new long array containing buffer long data
-     */
+    /** Reads long integer values. */
     suspend fun readLong(): LongArray
 }

@@ -2,17 +2,23 @@
 
 package com.leitz.kmplitert
 
+import com.google.ai.edge.litert.Accelerator
 import com.google.ai.edge.litert.CompiledModel
 import com.google.ai.edge.litert.Environment
 import com.google.ai.edge.litert.TensorBuffer
+import com.leitz.kmplitert.LiteRTAccelerator.*
 
-actual class LiteRTCompiler actual constructor(val filePath: String) {
+actual class LiteRTCompiler actual constructor(
+    val filePath: String,
+    val accelerator: LiteRTAccelerator
+) {
     private lateinit var env: Environment
     private lateinit var compiledModel: CompiledModel
 
     actual suspend fun init() {
         env = Environment.create()
-        compiledModel = CompiledModel.create(filePath = filePath, optionalEnv = env)
+        val options = CompiledModel.Options(accelerator.toAndroid())
+        compiledModel = CompiledModel.create(filePath = filePath, options = options, optionalEnv = env)
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
@@ -42,5 +48,13 @@ actual class LiteRTCompiler actual constructor(val filePath: String) {
 
     private fun List<TFBuffer>.toAndroid(): List<TensorBuffer> {
         return map { tFBuffer -> tFBuffer.toAndroid() }
+    }
+
+    private fun LiteRTAccelerator.toAndroid(): Accelerator {
+        return when (this) {
+            CPU -> Accelerator.CPU
+            GPU -> Accelerator.GPU
+            NPU -> Accelerator.NPU
+        }
     }
 }
