@@ -2,27 +2,31 @@
 
 > Run LiteRT (TensorFlow Lite) models with a unified Kotlin Multiplatform API.
 
-KMPLiteRT is a Kotlin Multiplatform library for running LiteRT models on Android, iOS, JVM, JavaScript, and WasmJS using a single, consistent API.
+KMPLiteRT is a Kotlin Multiplatform library that enables running LiteRT (TensorFlow Lite) models across multiple platforms using a single, consistent API.
 
-## Features
+Write your inference code once and run it on Android, JVM, JavaScript, and WasmJS without dealing with platform-specific implementations.
+
+## ✨ Features
 
 - 🚀 Kotlin Multiplatform
 - 📱 Android / iOS / JVM / JavaScript / WasmJS
 - 📦 Type-safe tensor APIs
-- ⚡ Coroutine-friendly
+- ⚡ Coroutine-friendly API
 - 🔒 Unified `expect/actual` implementation
+- 🎯 Consistent inference workflow across platforms
 
-## Platform Support
+## 📱 Platform Support
 
-| Platform | Support |
-|----------|:-------:|
-| Android | ✅ |
-| iOS | ✅ |
-| JVM | ✅ |
-| JavaScript | ✅ |
-| WasmJS | ✅ |
+| Platform | Status | Notes |
+|----------|:------:|------|
+| Android | ✅ | CPU / NNAPI / GPU (depends on LiteRT configuration) |
+| iOS | ⚠️ | Not supported yet |
+| JVM | ✅ | CPU only |
+| JavaScript | ✅ | Browser |
+| WasmJS | ✅ | Browser |
 
-## Installation
+
+## 📦 Installation
 
 ```kotlin
 commonMain.dependencies {
@@ -31,7 +35,9 @@ commonMain.dependencies {
 }
 ```
 
-## Usage
+---
+
+## 💡 Usage
 
 ```kotlin
 suspend fun inference() {
@@ -58,7 +64,7 @@ suspend fun inference() {
 }
 ```
 
-Inference follows a simple workflow:
+### Inference Workflow
 
 1. Create a `LiteRTCompiler`
 2. Call `init()`
@@ -68,10 +74,30 @@ Inference follows a simple workflow:
 6. Read output tensor data
 7. Call `close()` to release resources
 
-## License
+---
+
+## ⚠️ Platform Limitations
+
+Current platform limitations:
+
+- **JVM**
+    - Only CPU inference is supported.
+
+- **JavaScript / WasmJS**
+    - Dynamic input shapes (adaptive shape models) are **not supported**.
+    - Models must use fixed input dimensions.
+
+- **iOS**
+    - Support is currently under development and not yet available.
+
+These limitations may change in future releases.
+
+---
+
+## 📄 License
 
 Apache License 2.0
-```
+```text
 Copyright [2026] [leitingzi]
 
 Licensed under the Apache License, Version 2.0 (the "License");
