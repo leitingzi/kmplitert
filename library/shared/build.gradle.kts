@@ -86,15 +86,15 @@ kotlin {
         }
     }
 
-    swiftPMDependencies {
-        iosMinimumDeploymentTarget = "26.3"
-
-        swiftPackage(
-            url = url("https://github.com/google-ai-edge/litert"),
-            version = branch("main"),
-            products = listOf(product("LiteRT")),
-        )
-    }
+//    swiftPMDependencies {
+//        iosMinimumDeploymentTarget = "26.3"
+//
+//        swiftPackage(
+//            url = url("https://github.com/google-ai-edge/litert"),
+//            version = branch("main"),
+//            products = listOf(product("LiteRT")),
+//        )
+//    }
 
     jvm()
 
