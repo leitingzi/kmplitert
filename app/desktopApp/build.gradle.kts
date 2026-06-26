@@ -11,8 +11,8 @@ dependencies {
     implementation(projects.library.kmplitert)
 
     implementation(compose.desktop.currentOs)
-    implementation(libs.kotlinx.coroutinesSwing)
     implementation(libs.compose.uiToolingPreview)
+    implementation(libs.kotlinx.coroutinesSwing)
 }
 
 compose.desktop {
