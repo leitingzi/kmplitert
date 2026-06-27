@@ -16,7 +16,7 @@ kotlin-wrappers = "2026.6.1"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
 java-jna = "5.19.1"
-kmplitert = "0.1"
+kmplitert = "0.1.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

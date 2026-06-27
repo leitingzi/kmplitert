@@ -24,7 +24,7 @@ fun runSuspend(block: suspend () -> Unit) {
 fun main() = application {
     runSuspend {
         val modelFile = ResourceUtils.resourceToTempFile("CelsiusToFahrenheit.tflite")
-        val compiler = LiteRTCompiler(filePath = modelFile.path, accelerator = LiteRTAccelerator.CPU)
+        val compiler = LiteRTCompiler(filePath = modelFile.path, accelerator = LiteRTAccelerator.GPU)
         compiler.init()
         val inputBuffers = compiler.getInputBuffers()
         val outputBuffers = compiler.getOutputBuffers()

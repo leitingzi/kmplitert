@@ -22,7 +22,7 @@ class LiteRtOptions : PointerType() {
     companion object {
         fun create(): LiteRtOptions {
             val ref = PointerByReference()
-            val status = LiteRtLibrary.INSTANCE.LiteRtCreateOptions(ref)
+            val status = LiteRtLibrary.INSTANCE.LiteRtCreateOptions(options = ref)
 
             check(status == 0) {
                 "Failed to create options: $status"

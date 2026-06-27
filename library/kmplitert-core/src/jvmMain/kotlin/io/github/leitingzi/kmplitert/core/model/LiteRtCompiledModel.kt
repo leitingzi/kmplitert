@@ -2,6 +2,7 @@
 
 package io.github.leitingzi.kmplitert.core.model
 
+import com.sun.jna.Memory
 import com.sun.jna.Platform
 import com.sun.jna.PointerType
 import com.sun.jna.Structure

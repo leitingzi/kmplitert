@@ -31,12 +31,11 @@ actual class LiteRTCompiler actual constructor(
         compiledModel.destroy()
     }
 
-    @Suppress("SameReturnValue")
     private fun LiteRTAccelerator.toJvm(): LiteRtHwAcceleratorSet {
         return when (this) {
             LiteRTAccelerator.CPU -> LiteRtHwAcceleratorSet.CPU
-            LiteRTAccelerator.GPU -> LiteRtHwAcceleratorSet.CPU
-            LiteRTAccelerator.NPU -> LiteRtHwAcceleratorSet.CPU
+            LiteRTAccelerator.GPU -> LiteRtHwAcceleratorSet.GPU
+            LiteRTAccelerator.NPU -> LiteRtHwAcceleratorSet.NPU
         }
     }
 }

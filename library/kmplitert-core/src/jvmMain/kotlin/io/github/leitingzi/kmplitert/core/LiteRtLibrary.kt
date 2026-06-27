@@ -4,10 +4,17 @@ package io.github.leitingzi.kmplitert.core
 
 import com.sun.jna.Library
 import com.sun.jna.Native
+import com.sun.jna.NativeLibrary
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
-import io.github.leitingzi.kmplitert.core.model.*
+import io.github.leitingzi.kmplitert.core.model.LiteRtCompiledModel
+import io.github.leitingzi.kmplitert.core.model.LiteRtEnvironment
+import io.github.leitingzi.kmplitert.core.model.LiteRtModel
+import io.github.leitingzi.kmplitert.core.model.LiteRtOptions
+import io.github.leitingzi.kmplitert.core.model.LiteRtRankedTensorType
+import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBuffer
+import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBufferRequirements
 
 typealias LiteRtParamIndex = Long
 typealias LiteRtStatus = Int
@@ -118,6 +125,13 @@ interface LiteRtLibrary : Library {
 
     companion object {
         private val iClass = LiteRtLibrary::class.java
-        val INSTANCE: LiteRtLibrary = Native.load("libLiteRt", iClass)
+        val INSTANCE: LiteRtLibrary
+
+        init {
+            Native.extractFromResourcePath("libLiteRtWebGpuAccelerator")
+
+            // 再加载主库
+            INSTANCE = Native.load("libLiteRt", iClass)
+        }
     }
 }

@@ -1,6 +1,10 @@
 package io.github.leitingzi.kmplitert.core
 
-import io.github.leitingzi.kmplitert.core.model.*
+import io.github.leitingzi.kmplitert.core.model.LiteRtCompiledModel
+import io.github.leitingzi.kmplitert.core.model.LiteRtEnvironment
+import io.github.leitingzi.kmplitert.core.model.LiteRtHwAcceleratorSet
+import io.github.leitingzi.kmplitert.core.model.LiteRtModel
+import io.github.leitingzi.kmplitert.core.model.LiteRtOptions
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -9,10 +13,12 @@ class JvmLiteRTTest {
 
     private val modelFilePath = "src/jvmTest/resources/CelsiusToFahrenheit.tflite"
 
-    private fun createCompiledModel(): LiteRtCompiledModel {
+    private fun createCompiledModel(
+        accelerator: LiteRtHwAcceleratorSet = LiteRtHwAcceleratorSet.CPU
+    ): LiteRtCompiledModel {
         return LiteRtCompiledModel.create(
             filePath = modelFilePath,
-            accelerator = LiteRtHwAcceleratorSet.CPU
+            accelerator = accelerator
         )
     }
 
@@ -80,27 +86,24 @@ class JvmLiteRTTest {
     }
 
     @Test
-    fun testExModel() {
-        runTest {
-            val modelPath = "src/jvmTest/resources/CelsiusToFahrenheitEx.tflite"
-            val compiledModel = createCompiledModel()
-            val inputBuffers = compiledModel.getInputBuffers()
-            println("inputBuffersSize = ${inputBuffers.size}")
+    fun testExModel() = runTest {
+        val compiledModel = createCompiledModel(
+            accelerator = LiteRtHwAcceleratorSet.GPU
+        )
 
-            inputBuffers[0].writeFloat(floatArrayOf(100f, 0f, -40f))
+        val inputBuffers = compiledModel.getInputBuffers()
+        println("inputBuffersSize = ${inputBuffers.size}")
 
-            val outputBuffers = compiledModel.getOutputBuffers()
+        inputBuffers[0].writeFloat(floatArrayOf(100f, 0f, -40f))
 
-            println("outputBuffersSize = ${outputBuffers.size}")
+        val outputBuffers = compiledModel.getOutputBuffers()
 
-            compiledModel.run(0, inputBuffers, outputBuffers)
+        println("outputBuffersSize = ${outputBuffers.size}")
 
-            val result = outputBuffers[0].readFloat()
+        compiledModel.run(0, inputBuffers, outputBuffers)
 
-            println("Result = ${result[0]}")
-            println("Result = ${result[1]}")
-            println("Result = ${result[2]}")
-            println("ResultSize = ${result.size}")
-        }
+        val result = outputBuffers[0].readFloat()
+
+        println("Result = ${result.contentToString()}")
     }
 }

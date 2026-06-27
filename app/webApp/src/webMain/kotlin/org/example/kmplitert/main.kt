@@ -16,7 +16,7 @@ fun main() = setContent {
     LaunchedEffect(Unit) {
         val compiler = LiteRTCompiler(
             filePath = "model/CelsiusToFahrenheitEx.tflite",
-            accelerator = LiteRTAccelerator.NPU
+            accelerator = LiteRTAccelerator.GPU
         )
         compiler.init()
         val inputs = compiler.getInputBuffers()
