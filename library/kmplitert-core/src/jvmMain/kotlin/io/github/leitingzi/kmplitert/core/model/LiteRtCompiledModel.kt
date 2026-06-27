@@ -2,15 +2,12 @@
 
 package io.github.leitingzi.kmplitert.core.model
 
-import com.leitz.kmplitert.JvmTFBuffer
-import com.leitz.kmplitert.LITERT_ELEMENT_TYPE_FLOAT32
-import com.leitz.kmplitert.LiteRtLibrary
-import com.leitz.kmplitert.TFBuffer
 import com.sun.jna.Platform
 import com.sun.jna.PointerType
 import com.sun.jna.Structure
 import com.sun.jna.ptr.PointerByReference
 import io.github.leitingzi.kmplitert.core.JvmTFBuffer
+import io.github.leitingzi.kmplitert.core.LITERT_ELEMENT_TYPE_FLOAT32
 import io.github.leitingzi.kmplitert.core.LiteRtLibrary
 import io.github.leitingzi.kmplitert.core.TFBuffer
 

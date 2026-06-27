@@ -5,6 +5,7 @@ import androidx.compose.ui.window.application
 import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
 import org.example.kmplitert.app.core.App
+import org.example.kmplitert.app.core.ResourceUtils
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine

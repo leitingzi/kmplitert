@@ -16,6 +16,7 @@ kotlin-wrappers = "2026.6.1"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
 java-jna = "5.19.1"
+kmplitert = "0.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -39,11 +40,12 @@ kotlinx-coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-co
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
-
 java-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
 java-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }
 edge-litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.5" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
+
+kmplitert-core = { module = "io.github.leitingzi:kmplitert-core", version.ref = "kmplitert" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

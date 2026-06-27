@@ -11,10 +11,19 @@ plugins {
     alias(libs.plugins.vanniktech)
 }
 
+group = "io.github.leitingzi"
+version = "0.1"
+
 mavenPublishing {
     publishToMavenCentral()
-    signAllPublications()
-    coordinates(groupId = "io.github.leitingzi", artifactId = "kmplitert-core", version = "0.1")
+
+    if (gradle.startParameter.taskNames.any {
+        it.contains("publishToMavenCentral", ignoreCase = true)
+    }) {
+        signAllPublications()
+    }
+
+    coordinates(groupId = group.toString(), artifactId = "kmplitert-core", version = version.toString())
 
     pom {
         name = "KmpLiteRT library"
@@ -40,6 +49,12 @@ mavenPublishing {
             connection = "scm:git:git://github.com/leitingzi/kmplitert.git"
             developerConnection = "scm:git:ssh://git@github.com/leitingzi/kmplitert.git"
         }
+    }
+}
+
+publishing {
+    repositories {
+        mavenLocal()
     }
 }
 
@@ -73,6 +88,11 @@ kotlin {
     jvm()
 
     js {
+        compilations.named("main") {
+            packageJson {
+                name = "kmplitert-core-js"
+            }
+        }
         browser {
             testTask {
                 useKarma {
@@ -84,6 +104,11 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
+        compilations.named("main") {
+            packageJson {
+                name = "kmplitert-core-wasm"
+            }
+        }
         browser {
             testTask {
                 useKarma {

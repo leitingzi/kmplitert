@@ -1,6 +1,5 @@
 package org.example.kmplitert
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,15 +10,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.example.kmplitert.app.core.App
-import java.io.File
+import org.example.kmplitert.app.core.AssetUtils
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val context = applicationContext
-        val modelFile = copyAssetToCache(context, "CelsiusToFahrenheit.tflite")
+        AssetUtils.init(applicationContext)
+
+        val modelFile = AssetUtils.assetToTempFile("CelsiusToFahrenheit.tflite")
 
         CoroutineScope(Dispatchers.Default).launch {
             val compiler = LiteRTCompiler(filePath = modelFile.path, accelerator = LiteRTAccelerator.CPU)
@@ -38,20 +38,5 @@ class MainActivity : ComponentActivity() {
         setContent {
             App()
         }
-    }
-
-    @Suppress("SameParameterValue")
-    private fun copyAssetToCache(context: Context, assetName: String): File {
-        val file = File(context.cacheDir, assetName)
-
-        if (!file.exists()) {
-            context.assets.open(assetName).use { input ->
-                file.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-        }
-
-        return file
     }
 }

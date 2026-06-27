@@ -1,4 +1,4 @@
-package org.example.kmplitert
+package org.example.kmplitert.app.core
 
 import java.io.File
 import java.io.InputStream

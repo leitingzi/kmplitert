@@ -23,7 +23,7 @@ kotlin {
             implementation(libs.compose.ui)
 
             implementation(projects.library.appCore)
-            implementation(projects.library.kmplitertCore)
+            implementation(libs.kmplitert.core)
         }
     }
 }
