@@ -1,10 +1,10 @@
 # KMPLiteRT 🚀
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.1.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20JVM%20%7C%20JS%20%7C%20WasmJS-orange.svg)](#-platform-support)
 
-**KMPLiteRT** is a high-performance Kotlin Multiplatform library that brings **LiteRT** (formerly TensorFlow Lite) to the KMP ecosystem with a unified, type-safe API.
+**KMPLiteRT** is a high-performance Kotlin Multiplatform library that brings [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the KMP ecosystem with a unified, type-safe API.
 
 Write your inference logic once in `commonMain` and run it seamlessly across Android, JVM, and Web (JS/Wasm) platforms.
 
@@ -22,13 +22,13 @@ Write your inference logic once in `commonMain` and run it seamlessly across And
 
 ## 📱 Platform Support
 
-| Platform | Status | Hardware Acceleration | Backend              |
-| :--- | :---: | :--- |:---------------------|
-| **Android** | ✅ | CPU / GPU / NNAPI | LiteRT Android SDK   |
+| Platform | Status | Hardware Acceleration | Backend |
+| :--- | :---: | :--- | :--- |
+| **Android** | ✅ | CPU / GPU / NNAPI | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) |
 | **JVM (Desktop)** | ✅ | CPU | LiteRT C API via JNA |
-| **JavaScript** | ✅ | Browser / WebGL | @litertjs/core       |
-| **WasmJS** | ✅ | Browser / WebGL | @litertjs/core       |
-| **iOS** | 🚧 | *Planned* | LiteRT SPM           |
+| **JavaScript** | ✅ | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
+| **WasmJS** | ✅ | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
+| **iOS** | 🚧 | *Planned* | LiteRT iOS SDK |
 
 ---
 
@@ -84,11 +84,10 @@ suspend fun runInference() {
 }
 ```
 
-### Advanced Workflow
-
-1. **Accelerator Selection**: Choose between `CPU`, `GPU`, or `NPU` via `LiteRTAccelerator`.
-2. **Buffer Operations**: `TFBuffer` provides efficient `read`/`write` methods for various data types.
-3. **Lifecycle Management**: Always use `compiler.close()` to prevent memory leaks, especially on native/JVM backends.
+### 🔗 Related Links
+- [LiteRT Official Website](https://ai.google.dev/edge/litert)
+- [LiteRT GitHub Repository](https://github.com/google-ai-edge/litert)
+- [LiteRT JS (NPM)](https://www.npmjs.com/package/@litertjs/core)
 
 ---
 
