@@ -41,7 +41,7 @@ Add the dependency to your `commonMain` source set:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.leitingzi:kmplitert-core:0.1")
+            implementation("")
         }
     }
 }
