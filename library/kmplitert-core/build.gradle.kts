@@ -12,7 +12,11 @@ plugins {
 }
 
 group = "io.github.leitingzi"
-version = "0.1"
+version = "0.1.1"
+
+base {
+    archivesName.set("kmplitert-core")
+}
 
 mavenPublishing {
     publishToMavenCentral()
