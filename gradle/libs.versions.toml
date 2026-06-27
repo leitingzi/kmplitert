@@ -15,6 +15,7 @@ kotlin = "2.4.0"
 kotlin-wrappers = "2026.6.1"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
+java-jna = "5.19.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -39,9 +40,9 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 
-litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.5" }
-jna = { module = "net.java.dev.jna:jna", version = "5.19.1" }
-jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.19.1" }
+java-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
+java-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }
+edge-litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.5" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
 
 [plugins]
@@ -52,3 +53,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version = "2.2.0" }
+vanniktech = { id = "com.vanniktech.maven.publish", version = "0.37.0" }

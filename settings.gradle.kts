@@ -39,8 +39,6 @@ plugins {
 include(":app:androidApp")
 include(":app:desktopApp")
 include(":app:webApp")
+include(":library:app-core")
 
-include(":library:shared")
-project(":library:shared").name = "kmplitert"
-
-include(":library:compose")
+include(":library:kmplitert-core")

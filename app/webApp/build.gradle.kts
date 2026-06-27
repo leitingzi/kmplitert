@@ -20,10 +20,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.library.compose)
-            implementation(projects.library.kmplitert)
-
             implementation(libs.compose.ui)
+
+            implementation(projects.library.appCore)
+            implementation(projects.library.kmplitertCore)
         }
     }
 }

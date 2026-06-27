@@ -13,8 +13,8 @@ kotlin {
 }
 
 dependencies {
-    implementation(projects.library.compose)
-    implementation(projects.library.kmplitert)
+    implementation(projects.library.appCore)
+    implementation(projects.library.kmplitertCore)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.uiToolingPreview)
@@ -22,11 +22,11 @@ dependencies {
 }
 
 android {
-    namespace = "com.leitz.kmplitert"
+    namespace = "org.example.kmplitert"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.leitz.kmplitert"
+        applicationId = "org.example.kmplitert"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

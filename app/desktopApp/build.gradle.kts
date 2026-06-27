@@ -7,8 +7,8 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.library.compose)
-    implementation(projects.library.kmplitert)
+    implementation(projects.library.appCore)
+    implementation(projects.library.kmplitertCore)
 
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.uiToolingPreview)
@@ -17,11 +17,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.leitz.kmplitert.MainKt"
+        mainClass = "org.example.kmplitert.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.leitz.kmplitert"
+            packageName = "org.example.kmplitert"
             packageVersion = "1.0.0"
         }
     }
