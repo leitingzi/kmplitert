@@ -1,8 +1,8 @@
 package io.github.leitingzi.kmplitert.core.model
 
-import com.leitz.kmplitert.LiteRtLibrary
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.LongByReference
+import io.github.leitingzi.kmplitert.core.LiteRtLibrary
 
 class LiteRtSignature : PointerType() {
     fun getNumInputs(): Long {

@@ -2,9 +2,8 @@
 
 package io.github.leitingzi.kmplitert.core
 
-import com.leitz.kmplitert.LiteRTAccelerator.*
-import com.leitz.kmplitert.model.LiteRtCompiledModel
-import com.leitz.kmplitert.model.LiteRtHwAcceleratorSet
+import io.github.leitingzi.kmplitert.core.model.LiteRtCompiledModel
+import io.github.leitingzi.kmplitert.core.model.LiteRtHwAcceleratorSet
 
 actual class LiteRTCompiler actual constructor(
     val filePath: String,
@@ -35,9 +34,9 @@ actual class LiteRTCompiler actual constructor(
     @Suppress("SameReturnValue")
     private fun LiteRTAccelerator.toJvm(): LiteRtHwAcceleratorSet {
         return when (this) {
-            CPU -> LiteRtHwAcceleratorSet.CPU
-            GPU -> LiteRtHwAcceleratorSet.CPU
-            NPU -> LiteRtHwAcceleratorSet.CPU
+            LiteRTAccelerator.CPU -> LiteRtHwAcceleratorSet.CPU
+            LiteRTAccelerator.GPU -> LiteRtHwAcceleratorSet.CPU
+            LiteRTAccelerator.NPU -> LiteRtHwAcceleratorSet.CPU
         }
     }
 }

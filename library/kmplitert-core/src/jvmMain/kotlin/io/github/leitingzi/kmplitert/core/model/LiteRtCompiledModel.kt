@@ -10,6 +10,9 @@ import com.sun.jna.Platform
 import com.sun.jna.PointerType
 import com.sun.jna.Structure
 import com.sun.jna.ptr.PointerByReference
+import io.github.leitingzi.kmplitert.core.JvmTFBuffer
+import io.github.leitingzi.kmplitert.core.LiteRtLibrary
+import io.github.leitingzi.kmplitert.core.TFBuffer
 
 class LiteRtCompiledModel : PointerType() {
 

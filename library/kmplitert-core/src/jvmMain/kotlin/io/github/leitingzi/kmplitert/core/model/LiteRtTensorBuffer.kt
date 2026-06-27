@@ -1,10 +1,10 @@
 package io.github.leitingzi.kmplitert.core.model
 
-import com.leitz.kmplitert.LiteRtLibrary
-import com.leitz.kmplitert.LiteRtStatus
 import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
+import io.github.leitingzi.kmplitert.core.LiteRtLibrary
+import io.github.leitingzi.kmplitert.core.LiteRtStatus
 
 class LiteRtTensorBuffer: PointerType() {
     fun clear(): LiteRtStatus {

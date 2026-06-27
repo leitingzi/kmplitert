@@ -3,7 +3,7 @@
 
 package io.github.leitingzi.kmplitert.core
 
-import com.leitz.kmplitert.model.*
+import io.github.leitingzi.kmplitert.core.model.*
 import kotlinx.coroutines.await
 
 actual class LiteRTCompiler actual constructor(

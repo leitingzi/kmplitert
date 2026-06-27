@@ -1,6 +1,6 @@
 package io.github.leitingzi.kmplitert.core
 
-import com.leitz.kmplitert.model.*
+import io.github.leitingzi.kmplitert.core.model.*
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

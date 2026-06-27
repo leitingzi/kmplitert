@@ -6,11 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
-import com.leitz.kmplitert.LiteRTAccelerator
-import com.leitz.kmplitert.LiteRTCompiler
-import com.leitz.kmplitert.arrayToString
-import com.leitz.kmplitert.compose.App
-import com.leitz.kmplitert.compose.WithFontResourcesLoaded
+import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
+import io.github.leitingzi.kmplitert.core.LiteRTCompiler
+import io.github.leitingzi.kmplitert.core.arrayToString
+import org.example.kmplitert.app.core.App
+import org.example.kmplitert.app.core.WithFontResourcesLoaded
 
 fun main() = setContent {
     LaunchedEffect(Unit) {

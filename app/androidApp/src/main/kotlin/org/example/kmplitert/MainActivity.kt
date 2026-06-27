@@ -5,8 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.leitz.kmplitert.LiteRTAccelerator
-import com.leitz.kmplitert.LiteRTCompiler
+import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
+import io.github.leitingzi.kmplitert.core.LiteRTCompiler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Suppress("SameParameterValue")
     private fun copyAssetToCache(context: Context, assetName: String): File {
         val file = File(context.cacheDir, assetName)
 

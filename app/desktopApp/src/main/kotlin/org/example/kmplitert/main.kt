@@ -2,9 +2,9 @@ package org.example.kmplitert
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.leitz.kmplitert.LiteRTAccelerator
-import com.leitz.kmplitert.LiteRTCompiler
-import com.leitz.kmplitert.compose.App
+import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
+import io.github.leitingzi.kmplitert.core.LiteRTCompiler
+import org.example.kmplitert.app.core.App
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine

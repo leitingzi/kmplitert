@@ -3,8 +3,7 @@
 
 package io.github.leitingzi.kmplitert.core
 
-import com.leitz.kmplitert.model.CompiledModel
-import com.leitz.kmplitert.model.LiteRtCompileOptions
+import io.github.leitingzi.kmplitert.core.model.CompiledModel
 import kotlin.js.Promise
 
 

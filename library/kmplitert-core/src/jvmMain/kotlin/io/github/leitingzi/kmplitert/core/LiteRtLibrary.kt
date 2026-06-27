@@ -2,12 +2,12 @@
 
 package io.github.leitingzi.kmplitert.core
 
-import com.leitz.kmplitert.model.*
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
+import io.github.leitingzi.kmplitert.core.model.*
 
 typealias LiteRtParamIndex = Long
 typealias LiteRtStatus = Int

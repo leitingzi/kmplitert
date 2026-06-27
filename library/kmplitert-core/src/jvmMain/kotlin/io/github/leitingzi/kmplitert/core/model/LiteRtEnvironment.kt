@@ -1,8 +1,8 @@
 package io.github.leitingzi.kmplitert.core.model
 
-import com.leitz.kmplitert.LiteRtLibrary
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
+import io.github.leitingzi.kmplitert.core.LiteRtLibrary
 
 class LiteRtEnvironment : PointerType() {
     fun destroy() {

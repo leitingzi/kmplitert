@@ -2,7 +2,10 @@
 
 package io.github.leitingzi.kmplitert.core
 
-actual class LiteRTCompiler actual constructor(val filePath: String) {
+actual class LiteRTCompiler actual constructor(
+    val filePath: String,
+    val accelerator: LiteRTAccelerator
+) {
     actual suspend fun init() {
         TODO("Not yet implemented")
     }

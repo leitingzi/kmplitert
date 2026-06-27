@@ -2,7 +2,7 @@
 
 package io.github.leitingzi.kmplitert.core
 
-import com.leitz.kmplitert.model.Tensor
+import io.github.leitingzi.kmplitert.core.model.Tensor
 import kotlinx.coroutines.await
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Int32Array
