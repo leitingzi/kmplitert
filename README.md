@@ -9,6 +9,7 @@
 
 > [!WARNING]
 > This project is currently in early development. APIs are subject to change.
+> Not recommended for use.
 
 ---
 
@@ -25,9 +26,9 @@
 
 | Platform | Status | Tested On | Hardware Acceleration | Backend |
 | :--- | :---: | :--- | :--- | :--- |
-| **Android** | ✅ Stable | Device/Emulator | CPU / GPU / NNAPI | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) |
+| **Android** | ⚠️ Alpha | Device/Emulator | CPU / GPU / NNAPI | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) |
 | **JVM (Desktop)** | ⚠️ Alpha | **Windows Only** | CPU | LiteRT C API via JNA |
-| **Web (JS/Wasm)** | 🧪 Unstable | Chrome | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
+| **Web (JS/Wasm)** | ⚠️ Alpha | Chrome | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
 | **iOS** | ❌ Not Supported | - | *Planned* | - |
 
 ---
@@ -95,6 +96,7 @@ suspend fun runInference(modelPath: String) {
 - **Web (JS/WasmJS)**: 
     - The implementation is currently unstable.
     - Requires a browser environment with WebGL support for the LiteRT JS runtime.
+    - Unable to run models with adaptive shapes.
 - **iOS**: Implementation is currently a placeholder and not functional.
 
 ---
