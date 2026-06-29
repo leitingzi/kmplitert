@@ -2,46 +2,45 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20JVM%20%7C%20JS%20%7C%20WasmJS-orange.svg)](#-platform-support)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core)](https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20JVM%20%7C%20Web-orange.svg)](#-platform-support)
 
-**KMPLiteRT** is a high-performance Kotlin Multiplatform library that brings [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the KMP ecosystem with a unified, type-safe API.
+**KMPLiteRT** brings the power of [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the Kotlin Multiplatform ecosystem. It provides a unified, type-safe API to run machine learning inference across mobile, desktop, and web platforms.
 
-Write your inference logic once in `commonMain` and run it seamlessly across Android, JVM, and Web (JS/Wasm) platforms.
+> [!WARNING]
+> This project is currently in early development. APIs are subject to change.
 
 ---
 
 ## ✨ Features
 
-- 🌍 **True Multiplatform**: One API for Android, Desktop (JVM), and Web (JS & WasmJS).
-- ⚡ **Coroutine Powered**: Native support for Kotlin Coroutines with `suspend` functions for non-blocking inference.
-- 🔒 **Type-Safe Tensors**: Specialized `TFBuffer` API for `Float`, `Int`, `Long`, `Boolean`, and `Byte` arrays.
-- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU/NNAPI (platform dependent).
-- 🛠️ **Developer Friendly**: Simplified workflow from model loading to result extraction.
+- 🏗️ **Unified API**: Write your inference logic once in `commonMain`.
+- ⚡ **Coroutine Support**: Asynchronous initialization and inference for smooth UI performance.
+- 🔒 **Type-Safe Tensors**: Direct access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers.
+- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU (platform dependent).
 
 ---
 
-## 📱 Platform Support
+## 💻 Platform Support
 
-| Platform | Status | Hardware Acceleration | Backend |
-| :--- | :---: | :--- | :--- |
-| **Android** | ✅ | CPU / GPU / NNAPI | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) |
-| **JVM (Desktop)** | ✅ | CPU | LiteRT C API via JNA |
-| **JavaScript** | ✅ | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
-| **WasmJS** | ✅ | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
-| **iOS** | 🚧 | *Planned* | LiteRT iOS SDK |
+| Platform | Status | Tested On | Hardware Acceleration | Backend |
+| :--- | :---: | :--- | :--- | :--- |
+| **Android** | ✅ Stable | Device/Emulator | CPU / GPU / NNAPI | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) |
+| **JVM (Desktop)** | ⚠️ Alpha | **Windows Only** | CPU | LiteRT C API via JNA |
+| **Web (JS/Wasm)** | 🧪 Unstable | Chrome | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
+| **iOS** | ❌ Not Supported | - | *Planned* | - |
 
 ---
 
 ## 📦 Installation
 
-Add the dependency to your `commonMain` source set:
+Add the dependency to your `commonMain` source set in `build.gradle.kts`:
 
 ```kotlin
-// build.gradle.kts
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("")
+            implementation("io.github.leitingzi:kmplitert-core:0.1.1")
         }
     }
 }
@@ -49,55 +48,54 @@ kotlin {
 
 ---
 
-## 💡 Quick Start
+## 💡 Usage Example
 
-Running a LiteRT model is straightforward with KMPLiteRT:
+Here is a quick look at how to run a model in your common code:
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
+import kotlinx.coroutines.test.runTest
 
-suspend fun runInference() {
-    // 1. Initialize the compiler with the model file and preferred accelerator
-    val compiler = LiteRTCompiler("model.tflite", LiteRTAccelerator.CPU)
+suspend fun runInference(modelPath: String) {
+    // 1. Initialize the compiler with the model and accelerator
+    val compiler = LiteRTCompiler(
+        filePath = modelPath, 
+        accelerator = LiteRTAccelerator.CPU
+    )
     
     try {
         compiler.init()
 
-        // 2. Get typed buffers
+        // 2. Prepare typed input and output buffers
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
 
-        // 3. Prepare input data
-        inputs[0].writeFloat(floatArrayOf(1.0f, 2.0f, 3.0f))
+        // 3. Write data to input buffer
+        inputs[0].writeFloat(floatArrayOf(100f))
 
         // 4. Run inference
         compiler.run(inputs, outputs)
 
-        // 5. Read results
+        // 5. Read the results
         val result = outputs[0].readFloat()
-        println("Inference result: ${result.joinToString()}")
+        println("Result: ${result.contentToString()}")
         
     } finally {
-        // 6. Always release resources
+        // 6. Release resources
         compiler.close()
     }
 }
 ```
 
-### 🔗 Related Links
-- [LiteRT Official Website](https://ai.google.dev/edge/litert)
-- [LiteRT GitHub Repository](https://github.com/google-ai-edge/litert)
-- [LiteRT JS (NPM)](https://www.npmjs.com/package/@litertjs/core)
-
 ---
 
 ## ⚠️ Current Limitations
 
-- **JVM**: Currently supports CPU inference only.
-- **JS / WasmJS**: 
-    - Dynamic input shapes are not supported; models must have fixed dimensions.
-    - Requires a browser environment for the LiteRT JS runtime.
-- **iOS**: Implementation is currently under development.
+- **JVM (Desktop)**: Currently only tested and verified on **Windows**. Support for Linux and macOS is present in the source but not yet fully validated.
+- **Web (JS/WasmJS)**: 
+    - The implementation is currently unstable.
+    - Requires a browser environment with WebGL support for the LiteRT JS runtime.
+- **iOS**: Implementation is currently a placeholder and not functional.
 
 ---
 
