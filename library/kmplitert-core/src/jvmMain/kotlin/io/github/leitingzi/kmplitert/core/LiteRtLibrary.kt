@@ -5,6 +5,7 @@ package io.github.leitingzi.kmplitert.core
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.NativeLibrary
+import com.sun.jna.Platform
 import com.sun.jna.Pointer
 import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
@@ -149,7 +150,7 @@ interface LiteRtLibrary : Library {
             nativeLibDir = webGpuLib.parentFile.absolutePath
 
             // Load dependencies and GPU accelerator to prime the process
-            if (com.sun.jna.Platform.isWindows()) {
+            if (Platform.isWindows()) {
                 try {
                     // Ensure dependencies are in the same directory as the plugin
                     val dxcompiler = File(nativeLibDir, "dxcompiler.dll")
