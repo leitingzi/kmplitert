@@ -10,21 +10,26 @@ import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
 import io.github.leitingzi.kmplitert.core.arrayToString
 import org.example.kmplitert.app.core.App
+import org.example.kmplitert.app.core.ResourceUtils
 import org.example.kmplitert.app.core.WithFontResourcesLoaded
 
 fun main() = setContent {
     LaunchedEffect(Unit) {
-        val compiler = LiteRTCompiler(
-            filePath = "model/CelsiusToFahrenheitEx.tflite",
-            accelerator = LiteRTAccelerator.GPU
-        )
-        compiler.init()
-        val inputs = compiler.getInputBuffers()
-        val outputs = compiler.getOutputBuffers()
-        inputs[0].writeFloat(floatArrayOf(10f, 20f, 100f))
+        val modelPath = ResourceUtils.getResourcePath("CelsiusToFahrenheit.tflite")
 
-        compiler.run(inputs, outputs)
-        println("result = ${arrayToString(outputs[0].readFloat())}")
+        val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
+        compiler.init()
+
+        val inputBuffers = compiler.getInputBuffers()
+        val outputBuffers = compiler.getOutputBuffers()
+
+        inputBuffers[0].writeFloat(floatArrayOf(100f))
+
+        compiler.run(inputBuffers, outputBuffers)
+
+        val result = outputBuffers[0].readFloat()
+        println("result: ${arrayToString(result)}")
+
         compiler.close()
     }
 

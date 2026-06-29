@@ -10,29 +10,32 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.example.kmplitert.app.core.App
-import org.example.kmplitert.app.core.AssetUtils
+import org.example.kmplitert.app.core.ResourceUtils
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        AssetUtils.init(applicationContext)
-
-        val modelFile = AssetUtils.assetToTempFile("CelsiusToFahrenheit.tflite")
+        ResourceUtils.init(applicationContext)
 
         CoroutineScope(Dispatchers.Default).launch {
-            val compiler = LiteRTCompiler(filePath = modelFile.path, accelerator = LiteRTAccelerator.CPU)
+            val modelPath = ResourceUtils.getResourcePath("CelsiusToFahrenheit.tflite")
+
+            val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
             compiler.init()
+
             val inputBuffers = compiler.getInputBuffers()
             val outputBuffers = compiler.getOutputBuffers()
+
             inputBuffers[0].writeFloat(floatArrayOf(100f))
+
             compiler.run(inputBuffers, outputBuffers)
+
             val result = outputBuffers[0].readFloat()
             println("result: ${result.contentToString()}")
-            compiler.close()
 
-            modelFile.delete()
+            compiler.close()
         }
 
         setContent {
