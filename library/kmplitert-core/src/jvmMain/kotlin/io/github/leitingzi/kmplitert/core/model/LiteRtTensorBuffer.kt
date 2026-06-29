@@ -19,12 +19,12 @@ class LiteRtTensorBuffer: PointerType() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyTensorBuffer(this)
     }
 
-    fun lock(): Pointer {
+    fun lock(lockMode: Int = 2): Pointer {
         val hostMemAddrRef = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtLockTensorBuffer(
             tensor_buffer = this,
             host_mem_addr = hostMemAddrRef,
-            lock_mode = 1
+            lock_mode = lockMode
         )
         check(status == 0) {
             "Failed to lock tensor buffer: $status"

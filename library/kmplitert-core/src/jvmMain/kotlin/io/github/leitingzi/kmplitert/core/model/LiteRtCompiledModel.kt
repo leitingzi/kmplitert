@@ -222,11 +222,23 @@ class LiteRtCompiledModel : PointerType() {
 
     companion object {
         fun create(filePath: String, accelerator: LiteRtHwAcceleratorSet): LiteRtCompiledModel {
-            val env = LiteRtEnvironment.create()
+            val env = if (accelerator == LiteRtHwAcceleratorSet.GPU) {
+                LiteRtEnvironment.createWithPluginDir(LiteRtLibrary.nativeLibDir)
+            } else {
+                LiteRtEnvironment.create()
+            }
             val model = LiteRtModel.create(filePath = filePath)
 
             val options = LiteRtOptions.create()
             options.setAccelerators(accelerator)
+
+            if (accelerator == LiteRtHwAcceleratorSet.GPU) {
+                val gpuOptions = LiteRtGpuOptions.create()
+                gpuOptions.setBackend(LiteRtGpuBackend.WEBGPU)
+                options.addGpuOptions(gpuOptions)
+                // gpuOptions.destroy() // Should we destroy it here? The opaque data might be needed.
+                // In C++, the payload is usually copied or its ownership is managed.
+            }
 
             val ref = PointerByReference()
             val status = LiteRtLibrary.INSTANCE.LiteRtCreateCompiledModel(

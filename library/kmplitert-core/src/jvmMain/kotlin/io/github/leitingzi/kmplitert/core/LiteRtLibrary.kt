@@ -9,12 +9,14 @@ import com.sun.jna.Pointer
 import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.leitingzi.kmplitert.core.model.LiteRtCompiledModel
+import io.github.leitingzi.kmplitert.core.model.LiteRtEnvOption
 import io.github.leitingzi.kmplitert.core.model.LiteRtEnvironment
 import io.github.leitingzi.kmplitert.core.model.LiteRtModel
 import io.github.leitingzi.kmplitert.core.model.LiteRtOptions
 import io.github.leitingzi.kmplitert.core.model.LiteRtRankedTensorType
 import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBuffer
 import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBufferRequirements
+import java.io.File
 
 typealias LiteRtParamIndex = Long
 typealias LiteRtStatus = Int
@@ -23,7 +25,7 @@ interface LiteRtLibrary : Library {
 
     fun LiteRtCreateEnvironment(
         num_options: Int,
-        options: Pointer?,
+        options: LiteRtEnvOption?,
         environment: PointerByReference
     ): LiteRtStatus
     fun LiteRtDestroyEnvironment(environment: LiteRtEnvironment)
@@ -33,6 +35,20 @@ interface LiteRtLibrary : Library {
 
     fun LiteRtCreateOptions(options: PointerByReference): LiteRtStatus
     fun LiteRtDestroyOptions(options: LiteRtOptions)
+
+    fun LiteRtAddOpaqueOptions(
+        options: LiteRtOptions,
+        opaque_options: Pointer
+    ): LiteRtStatus
+
+    fun LiteRtCreateOpaqueOptions(
+        identifier: String,
+        data: Pointer,
+        size: Long,
+        opaque_options: PointerByReference
+    ): LiteRtStatus
+
+    fun LiteRtDestroyOpaqueOptions(opaque_options: Pointer)
 
     fun LiteRtSetOptionsHardwareAccelerators(
         options: LiteRtOptions,
@@ -126,11 +142,38 @@ interface LiteRtLibrary : Library {
     companion object {
         private val iClass = LiteRtLibrary::class.java
         val INSTANCE: LiteRtLibrary
+        val nativeLibDir: String
 
         init {
-            Native.extractFromResourcePath("libLiteRtWebGpuAccelerator")
+            val webGpuLib = Native.extractFromResourcePath("libLiteRtWebGpuAccelerator")
+            nativeLibDir = webGpuLib.parentFile.absolutePath
 
-            // 再加载主库
+            // Load dependencies and GPU accelerator to prime the process
+            if (com.sun.jna.Platform.isWindows()) {
+                try {
+                    // Ensure dependencies are in the same directory as the plugin
+                    val dxcompiler = File(nativeLibDir, "dxcompiler.dll")
+                    if (!dxcompiler.exists()) {
+                        val extracted = Native.extractFromResourcePath("dxcompiler.dll")
+                        extracted.renameTo(dxcompiler)
+                    }
+                    val dxil = File(nativeLibDir, "dxil.dll")
+                    if (!dxil.exists()) {
+                        val extracted = Native.extractFromResourcePath("dxil.dll")
+                        extracted.renameTo(dxil)
+                    }
+                } catch (e: Exception) {
+                    System.err.println("Warning: Failed to extract some Windows libraries: ${e.message}")
+                }
+            }
+
+            try {
+                NativeLibrary.getInstance("libLiteRtWebGpuAccelerator")
+            } catch (e: UnsatisfiedLinkError) {
+                // Silently ignore, the runtime will try again and report if needed
+            }
+
+            // Load main library
             INSTANCE = Native.load("libLiteRt", iClass)
         }
     }
