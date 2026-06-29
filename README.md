@@ -101,6 +101,20 @@ suspend fun runInference(modelPath: String) {
 
 ---
 
+## 🤝 Community
+
+Contributions of all kinds are welcome! Whether you'd like to:
+
+- 🐛 Report bugs
+- 💡 Suggest new features
+- 📖 Improve documentation
+- 🚀 Submit pull requests
+- ⭐ Star the project
+
+Please feel free to get involved!
+
+---
+
 ## 📄 License
 
 ```text
