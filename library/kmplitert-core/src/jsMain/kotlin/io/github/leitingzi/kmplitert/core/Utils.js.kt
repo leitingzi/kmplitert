@@ -1,5 +1,7 @@
 package io.github.leitingzi.kmplitert.core
 
+import kotlin.js.JsAny
+
 actual fun <T> arrayToString(array: T): String {
     return when (array) {
         is IntArray -> array.contentToString()
@@ -12,4 +14,8 @@ actual fun <T> arrayToString(array: T): String {
         is LongArray -> array.contentToString()
         else -> ""
     }
+}
+
+internal fun getUint8ArrayElement(array: JsAny, index: Int): Int {
+    return array.asDynamic()[index].unsafeCast<Int>()
 }
