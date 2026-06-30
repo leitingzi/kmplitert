@@ -8,7 +8,6 @@ plugins {
 
 dependencies {
     implementation(projects.library.appCore)
-    implementation(libs.kmplitert.core)
 
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.uiToolingPreview)

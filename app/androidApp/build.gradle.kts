@@ -14,7 +14,6 @@ kotlin {
 
 dependencies {
     implementation(projects.library.appCore)
-    implementation(libs.kmplitert.core)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.uiToolingPreview)

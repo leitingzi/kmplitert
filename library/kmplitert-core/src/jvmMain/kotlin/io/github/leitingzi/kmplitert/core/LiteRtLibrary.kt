@@ -15,6 +15,8 @@ import io.github.leitingzi.kmplitert.core.model.LiteRtEnvironment
 import io.github.leitingzi.kmplitert.core.model.LiteRtModel
 import io.github.leitingzi.kmplitert.core.model.LiteRtOptions
 import io.github.leitingzi.kmplitert.core.model.LiteRtRankedTensorType
+import io.github.leitingzi.kmplitert.core.model.LiteRtSignature
+import io.github.leitingzi.kmplitert.core.model.LiteRtTensor
 import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBuffer
 import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBufferRequirements
 import java.io.File
@@ -94,7 +96,7 @@ interface LiteRtLibrary : Library {
 
     fun LiteRtCreateManagedTensorBufferFromRequirements(
         env: LiteRtEnvironment,
-        tensor_type: LiteRtRankedTensorType,
+        tensor_type: LiteRtRankedTensorType?,
         requirements: LiteRtTensorBufferRequirements,
         buffer: PointerByReference
     ): LiteRtStatus
@@ -108,12 +110,26 @@ interface LiteRtLibrary : Library {
         signature: PointerByReference
     ): LiteRtStatus
     fun LiteRtGetNumSignatureInputs(
-        signature: Pointer,
+        signature: LiteRtSignature,
         num_inputs: LongByReference
     ): LiteRtStatus
     fun LiteRtGetNumSignatureOutputs(
-        signature: Pointer,
+        signature: LiteRtSignature,
         num_outputs: LongByReference
+    ): LiteRtStatus
+    fun LiteRtGetSignatureInputTensorByIndex(
+        signature: LiteRtSignature,
+        input_idx: LiteRtParamIndex,
+        tensor: PointerByReference
+    ): LiteRtStatus
+    fun LiteRtGetSignatureOutputTensorByIndex(
+        signature: LiteRtSignature,
+        output_idx: LiteRtParamIndex,
+        tensor: PointerByReference
+    ): LiteRtStatus
+    fun LiteRtGetRankedTensorType(
+        tensor: LiteRtTensor,
+        ranked_tensor_type: LiteRtRankedTensorType
     ): LiteRtStatus
     fun LiteRtGetTensorBufferPackedSize(
         tensor_buffer: LiteRtTensorBuffer,
