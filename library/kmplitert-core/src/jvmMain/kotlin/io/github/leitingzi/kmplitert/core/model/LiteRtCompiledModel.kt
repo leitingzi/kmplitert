@@ -89,13 +89,13 @@ class LiteRtCompiledModel : PointerType() {
     }
 
     fun createManagedTensorBufferFromRequirements(
-        tensor_type: LiteRtRankedTensorType,
         requirements: LiteRtTensorBufferRequirements,
+        tensorType: LiteRtRankedTensorType,
     ): LiteRtTensorBuffer {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtCreateManagedTensorBufferFromRequirements(
             env = env,
-            tensor_type = tensor_type,
+            tensor_type = tensorType,
             requirements = requirements,
             buffer = ref
         )
@@ -144,23 +144,12 @@ class LiteRtCompiledModel : PointerType() {
                 input_index = i
             )
 
-            val inputLayout = getInputTensorLayout(signature_index = signatureIndex, input_index = i)
-
-            val inputRankedType = LiteRtRankedTensorType()
-            inputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
-            inputRankedType.layout.flags = inputLayout.flags
-            if (Platform.isWindows()) {
-                inputRankedType.layout.padding = inputLayout.padding
-            }
-            for (j in 0 until 8) {
-                inputRankedType.layout.dimensions[j] = inputLayout.dimensions[j]
-                inputRankedType.layout.strides[j] = inputLayout.strides[j]
-            }
-            inputRankedType.write()
+            val tensor = signature.getInputTensor(i)
+            val tensorType = tensor.getRankedTensorType()
 
             val intputTensorBuffer = createManagedTensorBufferFromRequirements(
-                tensor_type = inputRankedType,
-                requirements = inputBufferRequirements
+                requirements = inputBufferRequirements,
+                tensorType = tensorType
             )
             buffers.add(JvmTFBuffer(intputTensorBuffer))
         }
@@ -172,16 +161,7 @@ class LiteRtCompiledModel : PointerType() {
         val signature = model.getSignature(signatureIndex)
         val numOutputs = signature.getNumOutputs()
 
-        // Get all layouts at once
-        val layouts = LiteRtLayout().newArray(numOutputs.toInt())
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelOutputTensorLayouts(
-            compiled_model = this,
-            signature_index = signatureIndex,
-            num_layouts = numOutputs,
-            layouts = layouts[0].pointer,
-            update_allocation = false
-        )
-        check(status == 0) { "Failed to get output tensor layouts: $status" }
+        println("numOutputs = $numOutputs")
 
         val buffers = mutableListOf<TFBuffer>()
         for (i in 0 until numOutputs.toInt()) {
@@ -190,34 +170,17 @@ class LiteRtCompiledModel : PointerType() {
                 output_index = i.toLong()
             )
 
-            val outputLayout = layouts[i]
-            outputLayout.read() // MUST call read() to sync from native memory
-
-            val outputRankedType = LiteRtRankedTensorType()
-            outputRankedType.elementType = LITERT_ELEMENT_TYPE_FLOAT32
-            outputRankedType.layout.flags = outputLayout.flags
-            if (Platform.isWindows()) {
-                outputRankedType.layout.padding = outputLayout.padding
-            }
-            for (j in 0 until 8) {
-                outputRankedType.layout.dimensions[j] = outputLayout.dimensions[j]
-                outputRankedType.layout.strides[j] = outputLayout.strides[j]
-            }
-            outputRankedType.write()
+            val tensor = signature.getOutputTensor(i.toLong())
+            val tensorType = tensor.getRankedTensorType()
 
             val outputTensorBuffer = createManagedTensorBufferFromRequirements(
-                tensor_type = outputRankedType,
-                requirements = outputBufferRequirements
+                requirements = outputBufferRequirements,
+                tensorType = tensorType
             )
             buffers.add(JvmTFBuffer(outputTensorBuffer))
         }
 
         return buffers
-    }
-
-    private inline fun <reified T : Structure> T.newArray(size: Int): Array<T> {
-        @Suppress("UNCHECKED_CAST")
-        return toArray(size) as Array<T>
     }
 
     companion object {
@@ -234,7 +197,7 @@ class LiteRtCompiledModel : PointerType() {
 
             if (accelerator == LiteRtHwAcceleratorSet.GPU) {
                 val gpuOptions = LiteRtGpuOptions.create()
-                gpuOptions.setBackend(LiteRtGpuBackend.WEBGPU)
+                gpuOptions.setBackend(LiteRtGpuBackend.AUTOMATIC)
                 options.addGpuOptions(gpuOptions)
                 // gpuOptions.destroy() // Should we destroy it here? The opaque data might be needed.
                 // In C++, the payload is usually copied or its ownership is managed.

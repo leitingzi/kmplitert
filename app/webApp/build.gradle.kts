@@ -21,9 +21,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.compose.ui)
-
             implementation(projects.library.appCore)
-            implementation(libs.kmplitert.core)
         }
     }
 }

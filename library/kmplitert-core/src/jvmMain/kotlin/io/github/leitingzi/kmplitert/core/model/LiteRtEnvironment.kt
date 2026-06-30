@@ -14,11 +14,17 @@ class LiteRtEnvironment : PointerType() {
             val ref = PointerByReference()
 
             val optionsArray = if (options.isNotEmpty()) {
-                val array = LiteRtEnvOption().toArray(options.size) as Array<LiteRtEnvOption>
+                val first = LiteRtEnvOption()
+                val array = first.toArray(options.size) as Array<LiteRtEnvOption>
                 options.forEachIndexed { index, opt ->
-                    array[index].tag = opt.tag
-                    array[index].value.type = opt.value.type
-                    array[index].value.value = opt.value.value
+                    opt.write()
+                    array[index].pointer.write(
+                        0,
+                        opt.pointer.getByteArray(0, opt.size()),
+                        0,
+                        opt.size()
+                    )
+                    array[index].read()
                 }
                 array[0]
             } else {
@@ -44,11 +50,22 @@ class LiteRtEnvironment : PointerType() {
             val opt = LiteRtEnvOption()
             opt.tag = 0 // kLiteRtEnvOptionTagCompilerPluginLibraryDir
             opt.value.type = 8 // kLiteRtAnyTypeString
-            opt.value.value.str_value = pluginDir
-            opt.value.value.setType(String::class.java)
-            opt.value.value.write()
 
-            return create(listOf(opt))
+            // Manually allocate UTF-8 memory for the string to avoid JNA encoding issues
+            val bytes = pluginDir.toByteArray(Charsets.UTF_8)
+            val memory = com.sun.jna.Memory((bytes.size + 1).toLong())
+            memory.write(0, bytes, 0, bytes.size)
+            memory.setByte(bytes.size.toLong(), 0.toByte())
+
+            opt.value.value.str_value = null
+            opt.value.value.ptr_value = memory
+            opt.value.value.setType(com.sun.jna.Pointer::class.java)
+            opt.value.write()
+
+            val env = create(listOf(opt))
+            // Keep memory alive during the native call
+            memory.hashCode() 
+            return env
         }
     }
 }
