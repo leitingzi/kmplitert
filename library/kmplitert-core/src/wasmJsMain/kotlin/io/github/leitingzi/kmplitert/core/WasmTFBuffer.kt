@@ -85,6 +85,7 @@ class WasmTFBuffer(val shape: Int32Array) : TFBuffer {
         return result
     }
 
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     override suspend fun readLong(): LongArray {
         val data = tensor.data().await()
         val bigInt64Array = data as JsAny

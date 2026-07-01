@@ -16,6 +16,7 @@ actual fun <T> arrayToString(array: T): String {
     }
 }
 
+@OptIn(ExperimentalWasmJsInterop::class)
 internal fun getUint8ArrayElement(array: JsAny, index: Int): Int {
     return array.asDynamic()[index].unsafeCast<Int>()
 }

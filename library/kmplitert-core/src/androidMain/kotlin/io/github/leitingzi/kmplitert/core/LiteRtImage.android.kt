@@ -4,10 +4,11 @@ package io.github.leitingzi.kmplitert.core
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.core.graphics.scale
 
 actual class LiteRtImage(private val bitmap: Bitmap) {
     actual fun resize(width: Int, height: Int): LiteRtImage {
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true)
+        val scaledBitmap = bitmap.scale(width = width, height = height)
         return LiteRtImage(scaledBitmap)
     }
 

@@ -1,7 +1,7 @@
 @file:JsModule("@litertjs/core")
 @file:OptIn(ExperimentalWasmJsInterop::class)
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.core.platform
 
 import io.github.leitingzi.kmplitert.core.model.CompiledModel
 import kotlin.js.Promise

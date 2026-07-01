@@ -2,7 +2,7 @@
 @file:JsNonModule
 @file:OptIn(ExperimentalWasmJsInterop::class)
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.core.platfrom
 
 import io.github.leitingzi.kmplitert.core.model.CompiledModel
 import kotlin.js.Promise

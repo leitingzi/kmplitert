@@ -85,7 +85,7 @@ class JsTFBuffer(val shape: Int32Array) : TFBuffer {
         val data = tensor.data().await()
         val bigInt64Array = data.asDynamic()
         val result = LongArray(bigInt64Array.length.unsafeCast<Int>())
-        for (i in 0 until result.size) {
+        for (i in result.indices) {
             result[i] = bigInt64Array[i].unsafeCast<Long>()
         }
         return result

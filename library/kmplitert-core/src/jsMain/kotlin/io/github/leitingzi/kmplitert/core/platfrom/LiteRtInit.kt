@@ -1,4 +1,4 @@
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.core.platfrom
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope

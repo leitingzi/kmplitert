@@ -4,6 +4,8 @@
 package io.github.leitingzi.kmplitert.core
 
 import io.github.leitingzi.kmplitert.core.model.*
+import io.github.leitingzi.kmplitert.core.platfrom.LiteRtInit
+import io.github.leitingzi.kmplitert.core.platfrom.loadAndCompile
 import kotlinx.coroutines.await
 
 actual class LiteRTCompiler actual constructor(
