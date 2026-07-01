@@ -231,17 +231,14 @@ kotlin {
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
-    val isMingw = targetName?.contains("mingw", ignoreCase = true) == true
-    val isLinux = targetName?.contains("linux", ignoreCase = true) == true
-    
-    val osName = when {
-        isMingw -> "win32-x86-64"
-        isLinux -> "linux-x86-64"
-        else -> null
-    }
 
-    if (osName == null) {
-        return@configureEach
+    val target = targetName?.toKonanTarget()
+
+    val osName = when (target) {
+        KonanTarget.MINGW_X64 -> "win32-x86-64"
+        KonanTarget.LINUX_X64 -> "linux-x86-64"
+        KonanTarget.LINUX_ARM64 -> "linux-aarch64"
+        else -> return@configureEach
     }
 
     val libDir = project.file("src/jvmMain/resources/$osName")
@@ -250,16 +247,38 @@ tasks.withType<KotlinNativeTest>().configureEach {
     }
 
     val libPath = libDir.absolutePath
-    when {
-        isMingw -> {
+
+    when(target) {
+        KonanTarget.MINGW_X64 -> {
             val currentPath = System.getenv("PATH")
             val newPath = if (currentPath.isNullOrEmpty()) libPath else "$libPath;$currentPath"
             environment("PATH", newPath)
         }
-        isLinux -> {
+        KonanTarget.LINUX_X64,
+        KonanTarget.LINUX_ARM64 -> {
             val currentLdPath = System.getenv("LD_LIBRARY_PATH")
             val newLdPath = if (currentLdPath.isNullOrEmpty()) libPath else "$libPath:$currentLdPath"
             environment("LD_LIBRARY_PATH", newLdPath)
         }
+
+        else -> {}
     }
+}
+
+fun String.toKonanTarget(): KonanTarget? = when (this) {
+    "mingwX64" -> KonanTarget.MINGW_X64
+
+    "linuxX64" -> KonanTarget.LINUX_X64
+    "linuxArm64" -> KonanTarget.LINUX_ARM64
+
+    "macosX64" -> KonanTarget.MACOS_X64
+    "macosArm64" -> KonanTarget.MACOS_ARM64
+
+    "iosArm64" -> KonanTarget.IOS_ARM64
+    "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
+
+    "androidNativeX64" -> KonanTarget.ANDROID_X64
+    "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
+
+    else -> null
 }
