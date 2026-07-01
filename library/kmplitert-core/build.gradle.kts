@@ -26,28 +26,29 @@ mavenPublishing {
     coordinates(groupId = group.toString(), artifactId = "kmplitert-core", version = version.toString())
 
     pom {
-        name = "KmpLiteRT library"
-        description = "A library for running TensorFlow Lite on KMP."
+        name = "KMP LiteRT"
+        description = "KMPLiteRT is a Kotlin Multiplatform library for running TensorFlow Lite (LiteRT) models on Android, iOS, JVM, Native, and Web. It provides a unified, type-safe API for loading models, preparing tensors, and executing inference with consistent behavior across all supported platforms."
         inceptionYear = "2026"
         url = "https://github.com/leitingzi/kmplitert"
         licenses {
             license {
-                name = "The Apache License, Version 2.0"
+                name = "Apache License, Version 2.0"
                 url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-                distribution = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "repo"
             }
         }
         developers {
             developer {
                 id = "leitingzi"
                 name = "yebintang"
-                url = "https://github.com/leitingzi/kmplitert"
+                url = "https://github.com/leitingzi"
+                email = "553387747@qq.com"
             }
         }
         scm {
             url = "https://github.com/leitingzi/kmplitert"
-            connection = "scm:git:git://github.com/leitingzi/kmplitert.git"
-            developerConnection = "scm:git:ssh://git@github.com/leitingzi/kmplitert.git"
+            connection = "scm:git:https://github.com/leitingzi/kmplitert.git"
+            developerConnection = "scm:git:ssh://git@github.com:leitingzi/kmplitert.git"
         }
     }
 }
