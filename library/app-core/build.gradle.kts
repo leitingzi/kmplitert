@@ -31,7 +31,7 @@ kotlin {
     }
 
     androidLibrary {
-        namespace = "org.example.kmplitert.app.core"
+        namespace = "org.example.kmplitert"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
