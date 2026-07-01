@@ -1,23 +1,24 @@
 package io.github.leitingzi
 
+import io.github.leitingzi.model.Tensor
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
 import org.khronos.webgl.get
 
 class JsTFBuffer(val shape: Int32Array) : TFBuffer {
 
-    lateinit var tensor: io.github.leitingzi.model.Tensor
+    lateinit var tensor: Tensor
 
     override fun writeInt(data: IntArray) {
         val int32Array = Int32Array(data.size)
         for (i in data.indices) {
             int32Array[i] = data[i]
         }
-        tensor = _root_ide_package_.io.github.leitingzi.model.Tensor(int32Array, shape)
+        tensor = Tensor(int32Array, shape)
     }
 
     override fun writeFloat(data: FloatArray) {
-        tensor = _root_ide_package_.io.github.leitingzi.model.Tensor(data.toFloat32Array(), shape)
+        tensor = Tensor(data.toFloat32Array(), shape)
     }
 
     override fun writeInt8(data: ByteArray) {
@@ -25,7 +26,7 @@ class JsTFBuffer(val shape: Int32Array) : TFBuffer {
         for (i in data.indices) {
             int8Array[i] = data[i]
         }
-        tensor = _root_ide_package_.io.github.leitingzi.model.Tensor(int8Array, shape)
+        tensor = Tensor(int8Array, shape)
     }
 
     override fun writeBoolean(data: BooleanArray) {
@@ -33,7 +34,7 @@ class JsTFBuffer(val shape: Int32Array) : TFBuffer {
         for (i in data.indices) {
             uint8Array[i] = if (data[i]) 1.toByte() else 0.toByte()
         }
-        tensor = _root_ide_package_.io.github.leitingzi.model.Tensor(uint8Array, shape)
+        tensor = Tensor(uint8Array, shape)
     }
 
     override fun writeLong(data: LongArray) {
@@ -41,10 +42,7 @@ class JsTFBuffer(val shape: Int32Array) : TFBuffer {
         for (i in data.indices) {
             bigInt64Array[i] = data[i]
         }
-        tensor = _root_ide_package_.io.github.leitingzi.model.Tensor(
-            bigInt64Array.unsafeCast<ArrayBufferView>(),
-            shape
-        )
+        tensor = Tensor(bigInt64Array.unsafeCast<ArrayBufferView>(), shape)
     }
 
 
