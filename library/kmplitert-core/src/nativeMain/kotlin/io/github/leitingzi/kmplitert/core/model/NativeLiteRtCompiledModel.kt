@@ -1,9 +1,50 @@
 @file:OptIn(ExperimentalForeignApi::class)
 package io.github.leitingzi.kmplitert.core.model
 
-import kotlinx.cinterop.*
-import litert.*
-import io.github.leitingzi.kmplitert.core.*
+import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
+import io.github.leitingzi.kmplitert.core.NativeTFBuffer
+import io.github.leitingzi.kmplitert.core.TFBuffer
+import io.github.leitingzi.kmplitert.core.toNative
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.set
+import kotlinx.cinterop.value
+import litert.LiteRtCompiledModel
+import litert.LiteRtCompiledModelVar
+import litert.LiteRtCreateCompiledModel
+import litert.LiteRtCreateEnvironment
+import litert.LiteRtCreateManagedTensorBufferFromRequirements
+import litert.LiteRtCreateModelFromFile
+import litert.LiteRtCreateOptions
+import litert.LiteRtDestroyCompiledModel
+import litert.LiteRtDestroyEnvironment
+import litert.LiteRtDestroyModel
+import litert.LiteRtDestroyOptions
+import litert.LiteRtEnvironment
+import litert.LiteRtEnvironmentVar
+import litert.LiteRtGetCompiledModelInputBufferRequirements
+import litert.LiteRtGetCompiledModelOutputBufferRequirements
+import litert.LiteRtGetModelSignature
+import litert.LiteRtGetNumSignatureInputs
+import litert.LiteRtGetNumSignatureOutputs
+import litert.LiteRtGetRankedTensorType
+import litert.LiteRtGetSignatureInputTensorByIndex
+import litert.LiteRtGetSignatureOutputTensorByIndex
+import litert.LiteRtModel
+import litert.LiteRtModelVar
+import litert.LiteRtOptionsVar
+import litert.LiteRtParamIndexVar
+import litert.LiteRtRankedTensorType
+import litert.LiteRtRunCompiledModel
+import litert.LiteRtSetOptionsHardwareAccelerators
+import litert.LiteRtSignatureVar
+import litert.LiteRtTensorBufferRequirementsVar
+import litert.LiteRtTensorBufferVar
+import litert.LiteRtTensorVar
+import litert.kLiteRtStatusOk
 
 class NativeLiteRtCompiledModel(
     val compiledModel: LiteRtCompiledModel,

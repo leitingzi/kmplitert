@@ -26,10 +26,8 @@ mavenPublishing {
 }
 
 kotlin {
-    // Only add native targets for cinterop
     iosArm64()
     iosSimulatorArm64()
-    macosX64()
     macosArm64()
     linuxX64()
     mingwX64()

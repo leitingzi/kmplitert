@@ -78,7 +78,6 @@ kotlin {
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
-        macosX64(),
         macosArm64()
     ).forEach { nativeTarget ->
         nativeTarget.binaries.framework {
@@ -124,34 +123,29 @@ kotlin {
     }
 
     sourceSets {
-        val nativeMain by creating {
-            dependsOn(commonMain.get())
-            dependencies {
-                api(projects.library.kmplitertNative)
-            }
-        }
-
-        listOf(
-            "iosArm64", "iosSimulatorArm64", "macosX64", "macosArm64", "linuxX64", "mingwX64"
-        ).forEach { targetName ->
-            sourceSets.getByName("${targetName}Main").dependsOn(nativeMain)
-        }
-
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
             implementation(libs.edge.litert)
         }
+
         jvmMain.dependencies {
             implementation(libs.java.jna)
             implementation(libs.java.jna.platform)
         }
+
+        nativeMain.dependencies {
+            api(projects.library.kmplitertNative)
+        }
+
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
             implementation(npm("@litertjs/core", "2.5.2"))
         }
+
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
