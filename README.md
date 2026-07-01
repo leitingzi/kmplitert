@@ -3,33 +3,50 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core)](https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core)
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20JVM%20%7C%20Web-orange.svg)](#-platform-support)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20JVM%20%7C%20Web%20%7C%20Native-orange.svg)](#-platform-support)
 
 **KMPLiteRT** brings the power of [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the Kotlin Multiplatform ecosystem. It provides a unified, type-safe API to run machine learning inference across mobile, desktop, and web platforms.
 
-> [!WARNING]
-> This project is currently in early development. APIs are subject to change.
-> Not recommended for use.
+> [!CAUTION]
+> **UNDER ACTIVE DEVELOPMENT**
+> This project is currently in early development (Alpha). APIs are unstable and subject to change.
+> Many platforms are not yet tested or validated. **NOT RECOMMENDED FOR PRODUCTION USE.**
 
 ---
 
 ## ✨ Features
 
-- 🏗️ **Unified API**: Write your inference logic once in `commonMain`.
-- ⚡ **Coroutine Support**: Asynchronous initialization and inference for smooth UI performance.
-- 🔒 **Type-Safe Tensors**: Direct access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers.
-- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU (platform dependent).
+- 🏗️ **Unified API**: Write your inference logic once in `commonMain` and run it everywhere.
+- ⚡ **Coroutine Support**: First-class support for asynchronous initialization and inference.
+- 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers.
+- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU where available on the platform.
 
 ---
 
 ## 💻 Platform Support
 
-| Platform | Status | Tested On | Hardware Acceleration | Backend |
-| :--- | :---: | :--- | :--- | :--- |
-| **Android** | ⚠️ Alpha | Device/Emulator | CPU / GPU / NNAPI | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) |
-| **JVM (Desktop)** | ⚠️ Alpha | **Windows Only** | CPU | LiteRT C API via JNA |
-| **Web (JS/Wasm)** | ⚠️ Alpha | Chrome | Browser / WebGL | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) |
-| **iOS** | ❌ Not Supported | - | *Planned* | - |
+| Platform | Status | Implementation | Hardware Acceleration |
+| :--- | :---: | :--- | :--- |
+| **Android** | ⚠️ Alpha | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NNAPI |
+| **JVM (Desktop)** | ⚠️ Alpha | LiteRT C API via JNA | CPU |
+| **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL |
+| **Native (Windows/Linux)** | 🚧 Untested | LiteRT C API | CPU |
+| **Native (macOS)** | 🚧 Untested | LiteRT C API | CPU |
+| **iOS** | ❌ Unsupported | Placeholder only | - |
+
+---
+
+## ⚠️ Current Limitations & Known Issues
+
+- **General Status**: This library is in its early stages. Most platforms have not undergone full validation.
+- **Web (JS/WasmJS)**:
+    - **Adaptive Models**: No support for models with adaptive shapes yet.
+    - **Environment**: Requires a browser environment with WebGL support for the LiteRT JS runtime.
+- **Native Platforms**:
+    - Includes support for **Windows (mingwX64)**, **Linux (linuxX64)**, and **macOS (macosArm64)**.
+    - **Status**: These platforms are currently **NOT TESTED** and may not work as expected.
+- **iOS**: Implementation is currently a placeholder and does not function. Full support is planned for future releases.
+- **JVM**: Primarily tested on Windows; Linux and macOS versions are less stable.
 
 ---
 
@@ -51,11 +68,10 @@ kotlin {
 
 ## 💡 Usage Example
 
-Here is a quick look at how to run a model in your common code:
+Running a model in your common code is straightforward:
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
-import kotlinx.coroutines.test.runTest
 
 suspend fun runInference(modelPath: String) {
     // 1. Initialize the compiler with the model and accelerator
@@ -90,28 +106,12 @@ suspend fun runInference(modelPath: String) {
 
 ---
 
-## ⚠️ Current Limitations
+## 🤝 Contributing
 
-- **JVM (Desktop)**: Currently only tested and verified on **Windows**. Support for Linux and macOS is present in the source but not yet fully validated.
-- **Web (JS/WasmJS)**: 
-    - The implementation is currently unstable.
-    - Requires a browser environment with WebGL support for the LiteRT JS runtime.
-    - Unable to run models with adaptive shapes.
-- **iOS**: Implementation is currently a placeholder and not functional.
-
----
-
-## 🤝 Community
-
-Contributions of all kinds are welcome! Whether you'd like to:
-
-- 🐛 Report bugs
-- 💡 Suggest new features
-- 📖 Improve documentation
-- 🚀 Submit pull requests
-- ⭐ Star the project
-
-Please feel free to get involved!
+Contributions are welcome! If you encounter issues or have ideas for improvements, please:
+- Open an **Issue** to report bugs or suggest features.
+- Submit a **Pull Request** with your enhancements.
+- Share your feedback to help us stabilize the library.
 
 ---
 
