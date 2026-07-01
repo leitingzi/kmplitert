@@ -36,6 +36,29 @@ kotlin {
         nativeTarget.compilations.getByName("main").cinterops {
             create("litert") {
                 definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
+
+                val osName = when {
+                    nativeTarget.name.contains("mingw") -> "win32-x86-64"
+                    nativeTarget.name.contains("linux") -> "linux-x86-64"
+                    nativeTarget.name.contains("macos") || nativeTarget.name.contains("ios") -> {
+                        if (nativeTarget.name.contains("Arm64")) "darwin-aarch64" else "darwin-x86-64"
+                    }
+                    else -> null
+                }
+
+                if (osName != null) {
+                    // Points to the resources folder in kmplitert-core
+                    val libDir = rootProject.project(":library:kmplitert-core").file("src/jvmMain/resources/$osName")
+                    if (libDir.exists()) {
+                        val libPath = libDir.absolutePath.replace("\\", "/")
+                        linkerOpts("-L$libPath", "-lLiteRt")
+
+                        // For macOS/iOS, you may need to set rpath to ensure the dynamic library can be found at runtime.
+                        if (nativeTarget.name.contains("macos") || nativeTarget.name.contains("ios")) {
+                            linkerOpts("-rpath", libPath)
+                        }
+                    }
+                }
             }
         }
     }

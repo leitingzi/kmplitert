@@ -5,6 +5,7 @@ package io.github.leitingzi.model
 import io.github.leitingzi.LiteRTAccelerator
 import io.github.leitingzi.NativeTFBuffer
 import io.github.leitingzi.TFBuffer
+import io.github.leitingzi.toNative
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray

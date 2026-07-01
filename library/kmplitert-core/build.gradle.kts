@@ -1,5 +1,9 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
+import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
@@ -76,19 +80,44 @@ kotlin {
         }
     }
 
-    listOf(
+    val nativeTargets = listOf(
         iosArm64(),
         iosSimulatorArm64(),
-        macosArm64()
-    ).forEach { nativeTarget ->
-        nativeTarget.binaries.framework {
-            baseName = "KmpLiteRT"
-            isStatic = true
+        macosArm64(),
+        linuxX64(),
+        mingwX64()
+    )
+
+    nativeTargets.forEach { nativeTarget ->
+        nativeTarget.binaries.all {
+            val osName = when {
+                nativeTarget.name.contains("mingw") -> "win32-x86-64"
+                nativeTarget.name.contains("linux") -> "linux-x86-64"
+                nativeTarget.name.contains("macos") || nativeTarget.name.contains("ios") -> {
+                    if (nativeTarget.name.contains("Arm64")) "darwin-aarch64" else "darwin-x86-64"
+                }
+                else -> null
+            }
+
+            if (osName != null) {
+                val libDir = project.file("src/jvmMain/resources/$osName")
+                if (libDir.exists()) {
+                    val libPath = libDir.absolutePath.replace("\\", "/")
+                    linkerOpts("-L$libPath", "-lLiteRt")
+                    if (nativeTarget.name.contains("macos") || nativeTarget.name.contains("ios")) {
+                        linkerOpts("-rpath", libPath)
+                    }
+                }
+            }
+        }
+
+        if (nativeTarget.name.contains("ios") || nativeTarget.name.contains("macos")) {
+            nativeTarget.binaries.withType<Framework>().all {
+                baseName = "KmpLiteRT"
+                isStatic = true
+            }
         }
     }
-
-    linuxX64()
-    mingwX64()
 
     jvm()
 
@@ -150,6 +179,40 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
+        }
+    }
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    val isMingw = targetName?.contains("mingw", ignoreCase = true) == true
+    val isLinux = targetName?.contains("linux", ignoreCase = true) == true
+    
+    val osName = when {
+        isMingw -> "win32-x86-64"
+        isLinux -> "linux-x86-64"
+        else -> null
+    }
+
+    if (osName == null) {
+        return@configureEach
+    }
+
+    val libDir = project.file("src/jvmMain/resources/$osName")
+    if (!libDir.exists()) {
+        return@configureEach
+    }
+
+    val libPath = libDir.absolutePath
+    when {
+        isMingw -> {
+            val currentPath = System.getenv("PATH")
+            val newPath = if (currentPath.isNullOrEmpty()) libPath else "$libPath;$currentPath"
+            environment("PATH", newPath)
+        }
+        isLinux -> {
+            val currentLdPath = System.getenv("LD_LIBRARY_PATH")
+            val newLdPath = if (currentLdPath.isNullOrEmpty()) libPath else "$libPath:$currentLdPath"
+            environment("LD_LIBRARY_PATH", newLdPath)
         }
     }
 }
