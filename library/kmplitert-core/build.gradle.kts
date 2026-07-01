@@ -2,6 +2,7 @@
 
 import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
 
 plugins {
@@ -85,37 +86,84 @@ kotlin {
         iosSimulatorArm64(),
         macosArm64(),
         linuxX64(),
-        mingwX64()
+        linuxArm64(),
+        mingwX64(),
+        androidNativeArm64(),
+        androidNativeX64()
     )
 
     nativeTargets.forEach { nativeTarget ->
+
+        val konanTarget = nativeTarget.konanTarget
         nativeTarget.binaries.all {
-            val osName = when {
-                nativeTarget.name.contains("mingw") -> "win32-x86-64"
-                nativeTarget.name.contains("linux") -> "linux-x86-64"
-                nativeTarget.name.contains("macos") || nativeTarget.name.contains("ios") -> {
-                    if (nativeTarget.name.contains("Arm64")) "darwin-aarch64" else "darwin-x86-64"
-                }
-                else -> null
+
+            val osName = when (konanTarget) {
+                KonanTarget.ANDROID_ARM64 -> "android_arm64"
+                KonanTarget.ANDROID_X86 -> "android_x86_64"
+                KonanTarget.IOS_SIMULATOR_ARM64 -> "ios_sim_arm64"
+                KonanTarget.IOS_ARM64 -> "ios_arm64"
+                KonanTarget.MINGW_X64 -> "win32-x86-64"
+                KonanTarget.LINUX_ARM64 -> "linux-aarch64"
+                KonanTarget.LINUX_X64 -> "linux-x86-64"
+                KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
+                KonanTarget.MACOS_X64 -> "darwin-x86-64"
+                else -> return@all
             }
 
-            if (osName != null) {
-                val libDir = project.file("src/jvmMain/resources/$osName")
-                if (libDir.exists()) {
-                    val libPath = libDir.absolutePath.replace("\\", "/")
-                    linkerOpts("-L$libPath", "-lLiteRt")
-                    if (nativeTarget.name.contains("macos") || nativeTarget.name.contains("ios")) {
-                        linkerOpts("-rpath", libPath)
-                    }
+            val libDir = project.file("src/jvmMain/resources/$osName")
+            if (!libDir.exists()) {
+                return@all
+            }
+
+            val libPath = libDir.absolutePath.replace("\\", "/")
+            linkerOpts("-L$libPath", "-lLiteRt")
+
+            when (konanTarget) {
+                KonanTarget.ANDROID_ARM64,
+                KonanTarget.ANDROID_X86 -> {
+                    linkerOpts("-lLiteRtClGlAccelerator")
                 }
+
+                KonanTarget.IOS_ARM64,
+                KonanTarget.IOS_SIMULATOR_ARM64,
+                KonanTarget.MACOS_ARM64,
+                KonanTarget.MACOS_X64 -> {
+                    linkerOpts("-lLiteRtMetalAccelerator")
+                }
+
+                KonanTarget.MINGW_X64,
+                KonanTarget.LINUX_ARM64,
+                KonanTarget.LINUX_X64 -> {
+                    linkerOpts("-lLiteRtWebGpuAccelerator")
+                }
+
+                else -> {}
+            }
+
+            when (konanTarget) {
+                KonanTarget.IOS_ARM64,
+                KonanTarget.IOS_SIMULATOR_ARM64,
+                KonanTarget.MACOS_ARM64,
+                KonanTarget.MACOS_X64 -> {
+                    linkerOpts("-rpath", libPath)
+                }
+
+                else -> {}
             }
         }
 
-        if (nativeTarget.name.contains("ios") || nativeTarget.name.contains("macos")) {
-            nativeTarget.binaries.withType<Framework>().all {
-                baseName = "KmpLiteRT"
-                isStatic = true
+        when (konanTarget) {
+            KonanTarget.IOS_ARM64,
+            KonanTarget.IOS_SIMULATOR_ARM64,
+            KonanTarget.MACOS_ARM64,
+            KonanTarget.MACOS_X64 -> {
+                nativeTarget.binaries.withType<Framework>().all {
+                    baseName = "KmpLiteRT"
+                    isStatic = true
+                }
             }
+
+            else -> {}
         }
     }
 
