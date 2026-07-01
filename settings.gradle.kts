@@ -42,3 +42,4 @@ include(":app:webApp")
 include(":library:app-core")
 
 include(":library:kmplitert-core")
+include(":library:kmplitert-native")

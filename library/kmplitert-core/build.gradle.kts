@@ -1,8 +1,4 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
-
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -69,7 +65,7 @@ kotlin {
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
         }
         androidResources {
             enable = true
@@ -81,13 +77,18 @@ kotlin {
 
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+        iosSimulatorArm64(),
+        macosX64(),
+        macosArm64()
+    ).forEach { nativeTarget ->
+        nativeTarget.binaries.framework {
             baseName = "KmpLiteRT"
             isStatic = true
         }
     }
+
+    linuxX64()
+    mingwX64()
 
     jvm()
 
@@ -106,7 +107,7 @@ kotlin {
         }
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
         compilations.named("main") {
             packageJson {
@@ -123,6 +124,19 @@ kotlin {
     }
 
     sourceSets {
+        val nativeMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                api(projects.library.kmplitertNative)
+            }
+        }
+
+        listOf(
+            "iosArm64", "iosSimulatorArm64", "macosX64", "macosArm64", "linuxX64", "mingwX64"
+        ).forEach { targetName ->
+            sourceSets.getByName("${targetName}Main").dependsOn(nativeMain)
+        }
+
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
             implementation(libs.edge.litert)

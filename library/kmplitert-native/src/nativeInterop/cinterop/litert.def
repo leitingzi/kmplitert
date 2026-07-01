@@ -1,0 +1,3 @@
+headers = litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_compiled_model.h litert/c/litert_tensor_buffer.h litert/c/litert_options.h
+headerFilter = litert/c/*
+compilerOpts = -Isrc/nativeInterop/c

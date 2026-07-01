@@ -2,27 +2,31 @@
 
 package io.github.leitingzi.kmplitert.core
 
+import io.github.leitingzi.kmplitert.core.model.NativeLiteRtCompiledModel
+
 actual class LiteRTCompiler actual constructor(
     val filePath: String,
     val accelerator: LiteRTAccelerator
 ) {
+    private lateinit var compiledModel: NativeLiteRtCompiledModel
+
     actual suspend fun init() {
-        TODO("Not yet implemented")
+        compiledModel = NativeLiteRtCompiledModel.create(filePath, accelerator)
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
-        TODO("Not yet implemented")
+        return compiledModel.getInputBuffers()
     }
 
     actual suspend fun getOutputBuffers(): List<TFBuffer> {
-        TODO("Not yet implemented")
+        return compiledModel.getOutputBuffers()
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
-        TODO("Not yet implemented")
+        compiledModel.run(0, inputs, outputs)
     }
 
     actual suspend fun close() {
-        TODO("Not yet implemented")
+        compiledModel.destroy()
     }
 }

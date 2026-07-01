@@ -1,0 +1,6 @@
+#ifndef ODML_LITERT_BUILD_COMMON_BUILD_CONFIG_H_
+#define ODML_LITERT_BUILD_COMMON_BUILD_CONFIG_H_
+
+// Empty build_config.h to satisfy dependencies
+
+#endif // ODML_LITERT_BUILD_COMMON_BUILD_CONFIG_H_
