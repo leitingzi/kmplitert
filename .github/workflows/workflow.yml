@@ -31,7 +31,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run JVM Tests
-        run: ./gradlew jvmTest --no-configuration-cache
+        run: ./gradlew jvmTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-jvm-macos:
     name: Test JVM • macOS
@@ -49,7 +49,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run JVM Tests
-        run: ./gradlew jvmTest --no-configuration-cache
+        run: ./gradlew jvmTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-jvm-windows:
     name: Test JVM • Windows
@@ -66,7 +66,7 @@ jobs:
 
       - name: Run JVM Tests
         shell: bash
-        run: ./gradlew jvmTest --no-configuration-cache
+        run: ./gradlew jvmTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-android:
     name: Test Android
@@ -84,7 +84,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run Android Unit Tests
-        run: ./gradlew testDebugUnitTest --no-configuration-cache
+        run: ./gradlew testDebugUnitTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-ios-simulator:
     name: Test iOS Simulator
@@ -102,7 +102,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run iOS Simulator Tests
-        run: ./gradlew iosSimulatorArm64Test --no-configuration-cache
+        run: ./gradlew iosSimulatorArm64Test --no-configuration-cache --stacktrace --info --no-daemon
 
   test-native-linux:
     name: Test Native • Linux
@@ -120,7 +120,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run Linux Tests
-        run: ./gradlew linuxX64Test --no-configuration-cache
+        run: ./gradlew linuxX64Test --no-configuration-cache --stacktrace --info --no-daemon
 
   test-native-macos:
     name: Test Native • macOS
@@ -138,7 +138,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run macOS & iOS Simulator Tests
-        run: ./gradlew macosArm64Test --no-configuration-cache
+        run: ./gradlew macosArm64Test --no-configuration-cache --stacktrace --info --no-daemon
 
   test-native-windows:
     name: Test Native • Windows
@@ -155,7 +155,7 @@ jobs:
 
       - name: Run Windows Tests
         shell: bash
-        run: ./gradlew mingwX64Test --no-configuration-cache
+        run: ./gradlew mingwX64Test --no-configuration-cache --stacktrace --info --no-daemon
 
   test-js:
     name: Test JavaScript
@@ -173,7 +173,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run JavaScript Tests
-        run: ./gradlew jsBrowserTest --no-configuration-cache
+        run: ./gradlew jsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-wasm:
     name: Test Wasm
@@ -191,7 +191,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run Wasm Tests
-        run: ./gradlew wasmJsBrowserTest --no-configuration-cache
+        run: ./gradlew wasmJsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
 
   publish:
     name: Publish to Maven Central
@@ -224,7 +224,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Publish
-        run: ./gradlew publishToMavenCentral --no-configuration-cache
+        run: ./gradlew publishToMavenCentral --no-configuration-cache --stacktrace --info --no-daemon
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
