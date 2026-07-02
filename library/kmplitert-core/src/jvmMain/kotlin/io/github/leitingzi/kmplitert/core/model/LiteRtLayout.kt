@@ -17,11 +17,7 @@ open class LiteRtLayout : Structure() {
     var strides = IntArray(8)
 
     override fun getFieldOrder(): List<String> {
-        return if (Platform.isWindows()) {
-            listOf("flags", "padding", "dimensions", "strides")
-        } else {
-            listOf("flags", "dimensions", "strides")
-        }
+        return listOf("flags", "padding", "dimensions", "strides")
     }
 
     fun getRank(): Int {
