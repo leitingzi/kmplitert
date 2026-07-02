@@ -85,6 +85,7 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64(),
         macosArm64(),
+        macosX64(),
         linuxX64(),
         linuxArm64(),
         mingwX64(),
@@ -93,6 +94,36 @@ kotlin {
     )
 
     nativeTargets.forEach { nativeTarget ->
+
+        nativeTarget.compilations.getByName("main").cinterops {
+            create("litert") {
+                definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
+
+                val konanTarget = nativeTarget.konanTarget
+
+                val osName = when(konanTarget) {
+                    KonanTarget.ANDROID_ARM64 -> "android_arm64"
+                    KonanTarget.ANDROID_X64 -> "android_x86_64"
+                    KonanTarget.IOS_ARM64 -> "ios_arm64"
+                    KonanTarget.IOS_SIMULATOR_ARM64 -> "ios_sim_arm64"
+                    KonanTarget.MINGW_X64 -> "win32-x86-64"
+                    KonanTarget.LINUX_ARM64 -> "linux-aarch64"
+                    KonanTarget.LINUX_X64 -> "linux-x86-64"
+                    KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
+                    KonanTarget.MACOS_X64 -> "darwin-x86-64"
+                    else -> return@create
+                }
+
+                // Points to the resources folder in kmplitert-core
+                val libDir = project.file("src/jvmMain/resources/$osName")
+                if (!libDir.exists()) {
+                    return@create
+                }
+
+                val libPath = libDir.absolutePath.replace("\\", "/")
+                linkerOpts("-L$libPath", "-lLiteRt")
+            }
+        }
 
         val konanTarget = nativeTarget.konanTarget
         nativeTarget.binaries.all {
@@ -211,7 +242,7 @@ kotlin {
         }
 
         nativeMain.dependencies {
-            api(projects.library.kmplitertNative)
+            // Deleted projects.library.kmplitertNative dependency
         }
 
         webMain.dependencies {

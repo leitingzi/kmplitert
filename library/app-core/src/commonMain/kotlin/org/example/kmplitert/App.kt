@@ -2,8 +2,8 @@ package org.example.kmplitert
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import io.github.leitingzi.LiteRTAccelerator
-import io.github.leitingzi.LiteRTCompiler
+import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
+import io.github.leitingzi.kmplitert.core.LiteRTCompiler
 
 @Composable
 fun App() {
