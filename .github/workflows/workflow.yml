@@ -1,10 +1,73 @@
 name: Publish
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   release:
     types: [released, prereleased]
+
 jobs:
+  test-jvm:
+    name: Test JVM and Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Run JVM and Android tests
+        run: ./gradlew jvmTest testDebugUnitTest --no-configuration-cache
+
+  test-native:
+    name: Test Native (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Run Native tests
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            ./gradlew macosArm64Test iosSimulatorArm64Test --no-configuration-cache
+          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            ./gradlew linuxX64Test --no-configuration-cache
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+            ./gradlew mingwX64Test --no-configuration-cache
+          fi
+        shell: bash
+
+  test-web:
+    name: Test Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Run Web tests
+        run: ./gradlew jsBrowserTest wasmJsBrowserTest --no-configuration-cache
+
   publish:
     name: Release build and publish
+    needs: [test-jvm, test-native, test-web]
+    if: github.event_name == 'release'
     runs-on: macOS-latest
     steps:
       - name: Check out code
