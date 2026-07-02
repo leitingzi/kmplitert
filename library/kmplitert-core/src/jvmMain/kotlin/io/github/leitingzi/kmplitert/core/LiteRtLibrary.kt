@@ -194,6 +194,10 @@ interface LiteRtLibrary : Library {
 
 
         init {
+            println("RESOURCE_PREFIX = ${Platform.RESOURCE_PREFIX}")
+            println("OS = ${System.getProperty("os.name")}")
+            println("ARCH = ${System.getProperty("os.arch")}")
+
             val os = Platform.RESOURCE_PREFIX
             val ext = when {
                 Platform.isWindows() -> "dll"
@@ -201,11 +205,15 @@ interface LiteRtLibrary : Library {
                 else -> "so"
             }
 
+            println("Trying to load main: libLiteRt.$ext")
+
             val pluginLibName = when {
                 Platform.isMac() -> "libLiteRtMetalAccelerator.$ext"
                 Platform.isWindows() -> "libLiteRtWebGpuAccelerator.$ext"
                 else -> "libLiteRtWebGpuAccelerator.$ext"
             }
+
+            println("Trying to load plugin: $pluginLibName")
 
             val pluginLib = loadOptionalPlugin(os, pluginLibName)
 
