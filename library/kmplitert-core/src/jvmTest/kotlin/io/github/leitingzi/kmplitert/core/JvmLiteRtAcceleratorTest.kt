@@ -40,6 +40,10 @@ class JvmLiteRtAcceleratorTest {
             val message = e.message ?: ""
             if (message.contains("504")) {
                 println("GPU Test Skipped or Failed: Hardware/Driver not supported (Status 504)")
+                e.printStackTrace()
+            } else if (message.contains("3")) {
+                println("Configuring the GPU in the CI Linux environment may cause model compilation errors. (Status 3)")
+                e.printStackTrace()
             } else {
                 throw e
             }
