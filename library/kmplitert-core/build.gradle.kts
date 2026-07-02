@@ -261,6 +261,14 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
         }
+
+        val jsTest by getting {
+            resources.srcDir("src/commonTest/resources")
+        }
+
+        val wasmJsTest by getting {
+            resources.srcDir("src/commonTest/resources")
+        }
     }
 }
 
