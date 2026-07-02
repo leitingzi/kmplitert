@@ -22,13 +22,13 @@ class NativeLiteRTTest {
             assertTrue(inputs.isNotEmpty(), "Input buffers should not be empty")
             assertTrue(outputs.isNotEmpty(), "Output buffers should not be empty")
 
-            // 写入测试数据 (100摄氏�?
+            // 写入测试数据 (100摄氏�?
             inputs[0].writeFloat(floatArrayOf(100f))
 
             // 执行推理
             compiler.run(inputs, outputs)
 
-            // 读取结果 (应接�?212 华氏�?
+            // 读取结果 (应接�?212 华氏�?
             val result = outputs[0].readFloat()
             println("Native Inference Result: ${result.contentToString()}")
             

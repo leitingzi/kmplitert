@@ -242,7 +242,7 @@ kotlin {
         }
 
         nativeMain.dependencies {
-            // Deleted projects.library.kmplitertNative dependency
+
         }
 
         webMain.dependencies {

@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidMultiplatformLibrary) apply false
@@ -8,10 +12,10 @@ plugins {
     alias(libs.plugins.dokka) apply false
 }
 
-rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
-    rootProject.extensions.getByType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().apply {
+rootProject.plugins.withType<YarnPlugin> {
+    rootProject.extensions.getByType<YarnRootExtension>().apply {
         // Prevent build failure on lockfile mismatch, which often happens with Yarn workspaces in KMP
-        yarnLockMismatchReport = org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport.WARNING
+        yarnLockMismatchReport = YarnLockMismatchReport.WARNING
         reportNewYarnLock = false
         yarnLockAutoReplace = true
     }
