@@ -3,6 +3,7 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.jetbrains.kotlin.konan.target.HostManager
 
 
 plugins {
@@ -92,7 +93,26 @@ kotlin {
         androidNativeX64()
     )
 
+//    val nativeTargets = buildList {
+//        add(linuxX64())
+//        add(linuxArm64())
+//        add(mingwX64())
+//        add(androidNativeArm64())
+//        add(androidNativeX64())
+//
+//        if (HostManager.hostIsMac) {
+//            add(iosArm64())
+//            add(iosSimulatorArm64())
+//            add(macosArm64())
+//        }
+//    }
+
     nativeTargets.forEach { nativeTarget ->
+
+        val konanTarget = nativeTarget.konanTarget
+        if (!HostManager.hostIsMac && (konanTarget.isAppleTarget)) {
+            return@forEach
+        }
 
         nativeTarget.compilations.getByName("main").cinterops {
             create("litert") {
@@ -123,7 +143,6 @@ kotlin {
             }
         }
 
-        val konanTarget = nativeTarget.konanTarget
         nativeTarget.binaries.all {
 
             val osName = when (konanTarget) {
@@ -177,9 +196,11 @@ kotlin {
 
         when (konanTarget) {
             KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
-                nativeTarget.binaries.withType<Framework>().all {
-                    baseName = "KmpLiteRT"
-                    isStatic = true
+                if (HostManager.hostIsMac) {
+                    nativeTarget.binaries.withType<Framework>().all {
+                        baseName = "KmpLiteRT"
+                        isStatic = true
+                    }
                 }
             }
 
@@ -301,3 +322,11 @@ tasks.withType<Test>().configureEach {
         showStandardStreams = true
     }
 }
+
+val KonanTarget.isAppleTarget: Boolean
+    get() = when (this) {
+        KonanTarget.IOS_ARM64,
+        KonanTarget.IOS_SIMULATOR_ARM64,
+        KonanTarget.MACOS_ARM64 -> true
+        else -> false
+    }
