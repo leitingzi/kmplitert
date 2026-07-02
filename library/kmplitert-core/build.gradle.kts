@@ -162,10 +162,13 @@ kotlin {
                     linkerOpts("-lLiteRtMetalAccelerator")
                 }
 
-                KonanTarget.MINGW_X64,
+                KonanTarget.MINGW_X64 -> {
+                    linkerOpts("-lLiteRtWebGpuAccelerator")
+                }
+
                 KonanTarget.LINUX_ARM64,
                 KonanTarget.LINUX_X64 -> {
-                    linkerOpts("-lLiteRtWebGpuAccelerator")
+                    linkerOpts("-lLiteRtWebGpuAccelerator", "-Wl,--allow-shlib-undefined")
                 }
 
                 else -> {}
@@ -209,7 +212,7 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChrome()
+                    useChromeHeadless()
                 }
             }
         }
@@ -225,7 +228,7 @@ kotlin {
         browser {
             testTask {
                 useKarma {
-                    useChrome()
+                    useChromeHeadless()
                 }
             }
         }

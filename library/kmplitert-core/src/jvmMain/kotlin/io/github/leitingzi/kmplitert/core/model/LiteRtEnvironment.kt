@@ -17,6 +17,7 @@ class LiteRtEnvironment : PointerType() {
 
             val optionsArray = if (options.isNotEmpty()) {
                 val first = LiteRtEnvOption()
+                @Suppress("UNCHECKED_CAST")
                 val array = first.toArray(options.size) as Array<LiteRtEnvOption>
                 options.forEachIndexed { index, opt ->
                     opt.write()

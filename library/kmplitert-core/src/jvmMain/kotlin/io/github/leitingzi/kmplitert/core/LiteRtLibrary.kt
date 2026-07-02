@@ -162,7 +162,20 @@ interface LiteRtLibrary : Library {
         val nativeLibDir: String
 
         init {
-            val webGpuLib = Native.extractFromResourcePath("libLiteRtWebGpuAccelerator")
+            val os = Platform.RESOURCE_PREFIX
+            val ext = if (Platform.isWindows()) "dll" else if (Platform.isMac()) "dylib" else "so"
+            val webGpuLibName = "libLiteRtWebGpuAccelerator.$ext"
+            
+            val webGpuLib = try {
+                Native.extractFromResourcePath("$os/$webGpuLibName")
+            } catch (e: Exception) {
+                try {
+                    Native.extractFromResourcePath(webGpuLibName)
+                } catch (e2: Exception) {
+                    throw RuntimeException("Failed to extract $webGpuLibName from resources (tried $os/$webGpuLibName and $webGpuLibName)", e2)
+                }
+            }
+            
             nativeLibDir = webGpuLib.parentFile.absolutePath
 
             // Load dependencies and GPU accelerator to prime the process
@@ -171,13 +184,21 @@ interface LiteRtLibrary : Library {
                     // Ensure dependencies are in the same directory as the plugin
                     val dxcompiler = File(nativeLibDir, "dxcompiler.dll")
                     if (!dxcompiler.exists()) {
-                        val extracted = Native.extractFromResourcePath("dxcompiler.dll")
-                        extracted.renameTo(dxcompiler)
+                        val extracted = try {
+                            Native.extractFromResourcePath("$os/dxcompiler.dll")
+                        } catch (e: Exception) {
+                            Native.extractFromResourcePath("dxcompiler.dll")
+                        }
+                        extracted.copyTo(dxcompiler, overwrite = true)
                     }
                     val dxil = File(nativeLibDir, "dxil.dll")
                     if (!dxil.exists()) {
-                        val extracted = Native.extractFromResourcePath("dxil.dll")
-                        extracted.renameTo(dxil)
+                        val extracted = try {
+                            Native.extractFromResourcePath("$os/dxil.dll")
+                        } catch (e: Exception) {
+                            Native.extractFromResourcePath("dxil.dll")
+                        }
+                        extracted.copyTo(dxil, overwrite = true)
                     }
                 } catch (e: Exception) {
                     System.err.println("Warning: Failed to extract some Windows libraries: ${e.message}")
@@ -185,13 +206,28 @@ interface LiteRtLibrary : Library {
             }
 
             try {
-                NativeLibrary.getInstance("libLiteRtWebGpuAccelerator")
+                NativeLibrary.getInstance(webGpuLib.absolutePath)
             } catch (e: UnsatisfiedLinkError) {
                 // Silently ignore, the runtime will try again and report if needed
             }
 
-            // Load main library
-            INSTANCE = Native.load("libLiteRt", iClass)
+            // Load main library. We try both "LiteRt" and "libLiteRt" because of non-standard naming in resources
+            INSTANCE = try {
+                Native.load("LiteRt", iClass)
+            } catch (e: UnsatisfiedLinkError) {
+                try {
+                    Native.load("libLiteRt", iClass)
+                } catch (e2: UnsatisfiedLinkError) {
+                    // Final attempt: extract it and load by path
+                    val mainLibName = "libLiteRt.$ext"
+                    val extractedMain = try {
+                        Native.extractFromResourcePath("$os/$mainLibName")
+                    } catch (e3: Exception) {
+                        Native.extractFromResourcePath(mainLibName)
+                    }
+                    Native.load(extractedMain.absolutePath, iClass)
+                }
+            }
         }
     }
 }
