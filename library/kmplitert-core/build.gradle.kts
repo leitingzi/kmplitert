@@ -85,7 +85,6 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64(),
         macosArm64(),
-        macosX64(),
         linuxX64(),
         linuxArm64(),
         mingwX64(),
@@ -110,7 +109,6 @@ kotlin {
                     KonanTarget.LINUX_ARM64 -> "linux-aarch64"
                     KonanTarget.LINUX_X64 -> "linux-x86-64"
                     KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
-                    KonanTarget.MACOS_X64 -> "darwin-x86-64"
                     else -> return@create
                 }
 
@@ -137,7 +135,6 @@ kotlin {
                 KonanTarget.LINUX_ARM64 -> "linux-aarch64"
                 KonanTarget.LINUX_X64 -> "linux-x86-64"
                 KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
-                KonanTarget.MACOS_X64 -> "darwin-x86-64"
                 else -> return@all
             }
 
@@ -150,15 +147,11 @@ kotlin {
             linkerOpts("-L$libPath", "-lLiteRt")
 
             when (konanTarget) {
-                KonanTarget.ANDROID_ARM64,
-                KonanTarget.ANDROID_X86 -> {
+                KonanTarget.ANDROID_ARM64, KonanTarget.ANDROID_X86 -> {
                     linkerOpts("-lLiteRtClGlAccelerator")
                 }
 
-                KonanTarget.IOS_ARM64,
-                KonanTarget.IOS_SIMULATOR_ARM64,
-                KonanTarget.MACOS_ARM64,
-                KonanTarget.MACOS_X64 -> {
+                KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
                     linkerOpts("-lLiteRtMetalAccelerator")
                 }
 
@@ -166,8 +159,7 @@ kotlin {
                     linkerOpts("-lLiteRtWebGpuAccelerator")
                 }
 
-                KonanTarget.LINUX_ARM64,
-                KonanTarget.LINUX_X64 -> {
+                KonanTarget.LINUX_ARM64, KonanTarget.LINUX_X64 -> {
                     linkerOpts("-lLiteRtWebGpuAccelerator", "-Wl,--allow-shlib-undefined")
                 }
 
@@ -175,10 +167,7 @@ kotlin {
             }
 
             when (konanTarget) {
-                KonanTarget.IOS_ARM64,
-                KonanTarget.IOS_SIMULATOR_ARM64,
-                KonanTarget.MACOS_ARM64,
-                KonanTarget.MACOS_X64 -> {
+                KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
                     linkerOpts("-rpath", libPath)
                 }
 
@@ -187,10 +176,7 @@ kotlin {
         }
 
         when (konanTarget) {
-            KonanTarget.IOS_ARM64,
-            KonanTarget.IOS_SIMULATOR_ARM64,
-            KonanTarget.MACOS_ARM64,
-            KonanTarget.MACOS_X64 -> {
+            KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
                 nativeTarget.binaries.withType<Framework>().all {
                     baseName = "KmpLiteRT"
                     isStatic = true
@@ -261,14 +247,6 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
         }
-
-        val jsTest by getting {
-            resources.srcDir("src/commonTest/resources")
-        }
-
-        val wasmJsTest by getting {
-            resources.srcDir("src/commonTest/resources")
-        }
     }
 }
 
@@ -296,8 +274,7 @@ tasks.withType<KotlinNativeTest>().configureEach {
             val newPath = if (currentPath.isNullOrEmpty()) libPath else "$libPath;$currentPath"
             environment("PATH", newPath)
         }
-        KonanTarget.LINUX_X64,
-        KonanTarget.LINUX_ARM64 -> {
+        KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> {
             val currentLdPath = System.getenv("LD_LIBRARY_PATH")
             val newLdPath = if (currentLdPath.isNullOrEmpty()) libPath else "$libPath:$currentLdPath"
             environment("LD_LIBRARY_PATH", newLdPath)
@@ -309,18 +286,18 @@ tasks.withType<KotlinNativeTest>().configureEach {
 
 fun String.toKonanTarget(): KonanTarget? = when (this) {
     "mingwX64" -> KonanTarget.MINGW_X64
-
     "linuxX64" -> KonanTarget.LINUX_X64
     "linuxArm64" -> KonanTarget.LINUX_ARM64
-
-    "macosX64" -> KonanTarget.MACOS_X64
     "macosArm64" -> KonanTarget.MACOS_ARM64
-
     "iosArm64" -> KonanTarget.IOS_ARM64
     "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
-
     "androidNativeX64" -> KonanTarget.ANDROID_X64
     "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
-
     else -> null
+}
+
+tasks.withType<Test>().configureEach {
+    testLogging {
+        showStandardStreams = true
+    }
 }
