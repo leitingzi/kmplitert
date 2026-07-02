@@ -1,88 +1,125 @@
 name: Publish
+
 on:
   push:
-    branches: [master]
+    branches:
+      - master
+
   pull_request:
-    branches: [master]
+    branches:
+      - master
+
   release:
-    types: [released, prereleased]
+    types:
+      - released
+      - prereleased
 
 jobs:
   test-jvm:
-    name: Test JVM and Android
+    name: Test JVM & Android
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: 21
+          cache: gradle
+
       - name: Make gradlew executable
         run: chmod +x gradlew
-      - name: Run JVM and Android tests
+
+      - name: Run JVM & Android Tests
         run: ./gradlew jvmTest testDebugUnitTest --no-configuration-cache
 
   test-native:
-    name: Test Native (${{ matrix.os }})
+    name: Native • ${{ matrix.name }}
+
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - name: macOS
+            os: macos-latest
+            task: "macosArm64Test iosSimulatorArm64Test"
+
+          - name: Linux
+            os: ubuntu-latest
+            task: linuxX64Test
+
+          - name: Windows
+            os: windows-latest
+            task: mingwX64Test
+
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: 21
+          cache: gradle
+
       - name: Make gradlew executable
+        if: runner.os != 'Windows'
         run: chmod +x gradlew
-      - name: Run Native tests
-        run: |
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            ./gradlew macosArm64Test iosSimulatorArm64Test --no-configuration-cache
-          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            ./gradlew linuxX64Test --no-configuration-cache
-          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
-            ./gradlew mingwX64Test --no-configuration-cache
-          fi
+
+      - name: Run Native Tests
         shell: bash
+        run: ./gradlew ${{ matrix.task }} --no-configuration-cache
 
   test-web:
-    name: Test Web
+    name: Test JS & Wasm
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: 21
+          cache: gradle
+
       - name: Make gradlew executable
         run: chmod +x gradlew
-      - name: Run Web tests
+
+      - name: Run Web Tests
         run: ./gradlew jsBrowserTest wasmJsBrowserTest --no-configuration-cache
 
   publish:
-    name: Release build and publish
-    needs: [test-jvm, test-native, test-web]
+    name: Publish to Maven Central
+
     if: github.event_name == 'release'
-    runs-on: macOS-latest
+
+    needs:
+      - test-jvm
+      - test-native
+      - test-web
+
+    runs-on: macos-latest
+
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: zulu
           java-version: 21
+          cache: gradle
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Publish to MavenCentral
+      - name: Publish
         run: ./gradlew publishToMavenCentral --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
