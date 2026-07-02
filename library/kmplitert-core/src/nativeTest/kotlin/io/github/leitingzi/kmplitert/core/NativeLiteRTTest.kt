@@ -8,6 +8,7 @@ class NativeLiteRTTest {
 
     // Assumes this file exists in the current directory of the test runtime environment
     // Note: Native tests typically require manually placing resource files in the same directory as the executable
+    // TODO IOS Simulator testing encounters issues where model file paths cannot be found.
     private val testFilePath = "src/commonTest/resources/CelsiusToFahrenheit.tflite"
 
     @Test

@@ -268,6 +268,9 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
         }
+        webTest {
+            resources.srcDir("src/commonTest/resources")
+        }
     }
 }
 
