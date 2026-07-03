@@ -137,7 +137,7 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - name: Run macOS & iOS Simulator Tests
+      - name: Run macOS Tests
         run: ./gradlew macosArm64Test --no-configuration-cache --stacktrace --info --no-daemon
 
   test-native-windows:

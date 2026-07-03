@@ -5,7 +5,7 @@ import kotlin.test.Test
 
 class LiteRTTest {
 
-    private val testFilePath = getTestFilePath("CelsiusToFahrenheit.tflite")
+    private val testFilePath = "src/commonTest/resources/CelsiusToFahrenheit.tflite"
 
     @Test
     fun testModelForCPU() = runTest {

@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
@@ -83,29 +82,29 @@ kotlin {
         }
     }
 
-    val nativeTargets = buildList {
-        add(linuxX64())
-        add(linuxArm64())
-        add(mingwX64())
-        add(androidNativeArm64())
-        add(androidNativeX64())
-
-        if (HostManager.hostIsMac) {
-            add(iosArm64())
-            add(iosSimulatorArm64())
-            add(macosArm64())
-        }
-    }
+    val nativeTargets = listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+        macosArm64(),
+        linuxX64(),
+        linuxArm64(),
+        mingwX64(),
+        androidNativeArm64(),
+        androidNativeX64()
+    )
 
     nativeTargets.forEach { target ->
         val konan = target.konanTarget
-        target.compilations.getByName("main").cinterops {
-            create("litert") {
-                definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
 
-                val libDir = project.nativeLibDir(konan) ?: return@create
-                val libPath = libDir.absolutePath.replace("\\", "/")
-                linkerOpts("-L$libPath", "-lLiteRt")
+        if (HostManager.hostIsMac || !konan.isAppleTarget) {
+            target.compilations.getByName("main").cinterops {
+                create("litert") {
+                    definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
+
+                    val libDir = project.nativeLibDir(konan) ?: return@create
+                    val libPath = libDir.absolutePath.replace("\\", "/")
+                    linkerOpts("-L$libPath", "-lLiteRt")
+                }
             }
         }
 
@@ -114,7 +113,7 @@ kotlin {
             configureLiteRt(target = konan, libDir = libDir)
         }
 
-        if (konan.isAppleTarget) {
+        if (HostManager.hostIsMac && konan.isAppleTarget) {
             target.binaries.withType<Framework>().all {
                 baseName = "KmpLiteRT"
                 isStatic = true
