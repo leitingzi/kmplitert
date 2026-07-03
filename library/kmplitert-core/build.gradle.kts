@@ -1,9 +1,10 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
-import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
 
 plugins {
@@ -82,129 +83,42 @@ kotlin {
         }
     }
 
-    val nativeTargets = listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-        macosArm64(),
-        linuxX64(),
-        linuxArm64(),
-        mingwX64(),
-        androidNativeArm64(),
-        androidNativeX64()
-    )
+    val nativeTargets = buildList {
+        add(linuxX64())
+        add(linuxArm64())
+        add(mingwX64())
+        add(androidNativeArm64())
+        add(androidNativeX64())
 
-//    val nativeTargets = buildList {
-//        add(linuxX64())
-//        add(linuxArm64())
-//        add(mingwX64())
-//        add(androidNativeArm64())
-//        add(androidNativeX64())
-//
-//        if (HostManager.hostIsMac) {
-//            add(iosArm64())
-//            add(iosSimulatorArm64())
-//            add(macosArm64())
-//        }
-//    }
-
-    nativeTargets.forEach { nativeTarget ->
-
-        val konanTarget = nativeTarget.konanTarget
-        if (!HostManager.hostIsMac && (konanTarget.isAppleTarget)) {
-            return@forEach
+        if (HostManager.hostIsMac) {
+            add(iosArm64())
+            add(iosSimulatorArm64())
+            add(macosArm64())
         }
+    }
 
-        nativeTarget.compilations.getByName("main").cinterops {
+    nativeTargets.forEach { target ->
+        val konan = target.konanTarget
+        target.compilations.getByName("main").cinterops {
             create("litert") {
                 definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
 
-                val konanTarget = nativeTarget.konanTarget
-
-                val osName = when(konanTarget) {
-                    KonanTarget.ANDROID_ARM64 -> "android_arm64"
-                    KonanTarget.ANDROID_X64 -> "android_x86_64"
-                    KonanTarget.IOS_ARM64 -> "ios_arm64"
-                    KonanTarget.IOS_SIMULATOR_ARM64 -> "ios_sim_arm64"
-                    KonanTarget.MINGW_X64 -> "win32-x86-64"
-                    KonanTarget.LINUX_ARM64 -> "linux-aarch64"
-                    KonanTarget.LINUX_X64 -> "linux-x86-64"
-                    KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
-                    else -> return@create
-                }
-
-                // Points to the resources folder in kmplitert-core
-                val libDir = project.file("src/jvmMain/resources/$osName")
-                if (!libDir.exists()) {
-                    return@create
-                }
-
+                val libDir = project.nativeLibDir(konan) ?: return@create
                 val libPath = libDir.absolutePath.replace("\\", "/")
                 linkerOpts("-L$libPath", "-lLiteRt")
             }
         }
 
-        nativeTarget.binaries.all {
-
-            val osName = when (konanTarget) {
-                KonanTarget.ANDROID_ARM64 -> "android_arm64"
-                KonanTarget.ANDROID_X86 -> "android_x86_64"
-                KonanTarget.IOS_SIMULATOR_ARM64 -> "ios_sim_arm64"
-                KonanTarget.IOS_ARM64 -> "ios_arm64"
-                KonanTarget.MINGW_X64 -> "win32-x86-64"
-                KonanTarget.LINUX_ARM64 -> "linux-aarch64"
-                KonanTarget.LINUX_X64 -> "linux-x86-64"
-                KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
-                else -> return@all
-            }
-
-            val libDir = project.file("src/jvmMain/resources/$osName")
-            if (!libDir.exists()) {
-                return@all
-            }
-
-            val libPath = libDir.absolutePath.replace("\\", "/")
-            linkerOpts("-L$libPath", "-lLiteRt")
-
-            when (konanTarget) {
-                KonanTarget.ANDROID_ARM64, KonanTarget.ANDROID_X86 -> {
-                    linkerOpts("-lLiteRtClGlAccelerator")
-                }
-
-                KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
-                    linkerOpts("-lLiteRtMetalAccelerator")
-                }
-
-                KonanTarget.MINGW_X64 -> {
-                    linkerOpts("-lLiteRtWebGpuAccelerator")
-                }
-
-                KonanTarget.LINUX_ARM64, KonanTarget.LINUX_X64 -> {
-                    linkerOpts("-lLiteRtWebGpuAccelerator", "-Wl,--allow-shlib-undefined")
-                }
-
-                else -> {}
-            }
-
-            when (konanTarget) {
-                KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
-                    linkerOpts("-rpath", libPath)
-                }
-
-                else -> {}
-            }
+        target.binaries.all {
+            val libDir = project.nativeLibDir(konan) ?: return@all
+            configureLiteRt(target = konan, libDir = libDir)
         }
 
-        when (konanTarget) {
-            KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
-                if (HostManager.hostIsMac) {
-                    nativeTarget.binaries.withType<Framework>().all {
-                        baseName = "KmpLiteRT"
-                        isStatic = true
-                    }
-                }
+        if (konan.isAppleTarget) {
+            target.binaries.withType<Framework>().all {
+                baseName = "KmpLiteRT"
+                isStatic = true
             }
-
-            else -> {}
         }
     }
 
@@ -268,56 +182,34 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
         }
-        webTest {
-            resources.srcDir("src/commonTest/resources")
-        }
     }
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
 
-    val target = targetName?.toKonanTarget()
+    val target = targetName?.toKonanTarget() ?: return@configureEach
 
-    val osName = when (target) {
-        KonanTarget.MINGW_X64 -> "win32-x86-64"
-        KonanTarget.LINUX_X64 -> "linux-x86-64"
-        KonanTarget.LINUX_ARM64 -> "linux-aarch64"
-        else -> return@configureEach
-    }
-
-    val libDir = project.file("src/jvmMain/resources/$osName")
-    if (!libDir.exists()) {
-        return@configureEach
-    }
-
+    val libDir = project.nativeLibDir(target) ?: return@configureEach
     val libPath = libDir.absolutePath
 
     when(target) {
         KonanTarget.MINGW_X64 -> {
-            val currentPath = System.getenv("PATH")
-            val newPath = if (currentPath.isNullOrEmpty()) libPath else "$libPath;$currentPath"
-            environment("PATH", newPath)
+            val env = System.getenv("PATH")
+            environment(
+                name = "PATH",
+                value = listOfNotNull(libPath, env).joinToString(";")
+            )
         }
         KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> {
-            val currentLdPath = System.getenv("LD_LIBRARY_PATH")
-            val newLdPath = if (currentLdPath.isNullOrEmpty()) libPath else "$libPath:$currentLdPath"
-            environment("LD_LIBRARY_PATH", newLdPath)
+            val env = System.getenv("LD_LIBRARY_PATH")
+            environment(
+                name = "LD_LIBRARY_PATH",
+                value = listOfNotNull(libPath, env).joinToString(":")
+            )
         }
 
         else -> {}
     }
-}
-
-fun String.toKonanTarget(): KonanTarget? = when (this) {
-    "mingwX64" -> KonanTarget.MINGW_X64
-    "linuxX64" -> KonanTarget.LINUX_X64
-    "linuxArm64" -> KonanTarget.LINUX_ARM64
-    "macosArm64" -> KonanTarget.MACOS_ARM64
-    "iosArm64" -> KonanTarget.IOS_ARM64
-    "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
-    "androidNativeX64" -> KonanTarget.ANDROID_X64
-    "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
-    else -> null
 }
 
 tasks.withType<Test>().configureEach {
@@ -333,3 +225,65 @@ val KonanTarget.isAppleTarget: Boolean
         KonanTarget.MACOS_ARM64 -> true
         else -> false
     }
+
+val KonanTarget.resourceDirName: String?
+    get() = when (this) {
+        KonanTarget.ANDROID_ARM64 -> "android_arm64"
+        KonanTarget.ANDROID_X64 -> "android_x86_64"
+
+        KonanTarget.IOS_ARM64 -> "ios_arm64"
+        KonanTarget.IOS_SIMULATOR_ARM64 -> "ios_sim_arm64"
+
+        KonanTarget.MINGW_X64 -> "win32-x86-64"
+
+        KonanTarget.LINUX_ARM64 -> "linux-aarch64"
+        KonanTarget.LINUX_X64 -> "linux-x86-64"
+
+        KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
+
+        else -> null
+    }
+
+fun Project.nativeLibDir(target: KonanTarget): File? {
+    return target.resourceDirName
+        ?.let { file("src/jvmMain/resources/$it") }
+        ?.takeIf(File::exists)
+}
+
+fun String.toKonanTarget(): KonanTarget? = when (this) {
+    "mingwX64" -> KonanTarget.MINGW_X64
+    "linuxX64" -> KonanTarget.LINUX_X64
+    "linuxArm64" -> KonanTarget.LINUX_ARM64
+    "macosArm64" -> KonanTarget.MACOS_ARM64
+    "iosArm64" -> KonanTarget.IOS_ARM64
+    "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
+    "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
+    "androidNativeX64" -> KonanTarget.ANDROID_X64
+    else -> null
+}
+
+fun NativeBinary.configureLiteRt(target: KonanTarget, libDir: File) {
+    val libPath = libDir.absolutePath.replace("\\", "/")
+
+    linkerOpts("-L$libPath", "-lLiteRt")
+
+    when (target) {
+        KonanTarget.ANDROID_ARM64, KonanTarget.ANDROID_X64 -> {
+            linkerOpts("-lLiteRtClGlAccelerator")
+        }
+        KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
+            linkerOpts("-lLiteRtMetalAccelerator")
+        }
+        KonanTarget.MINGW_X64 -> {
+            linkerOpts("-lLiteRtWebGpuAccelerator")
+        }
+        KonanTarget.LINUX_ARM64, KonanTarget.LINUX_X64 -> {
+            linkerOpts("-lLiteRtWebGpuAccelerator", "-Wl,--allow-shlib-undefined")
+        }
+        else -> {}
+    }
+
+    if (target.isAppleTarget) {
+        linkerOpts("-rpath", libPath)
+    }
+}
