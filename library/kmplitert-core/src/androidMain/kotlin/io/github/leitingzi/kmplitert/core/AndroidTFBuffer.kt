@@ -2,33 +2,11 @@ package io.github.leitingzi.kmplitert.core
 
 import com.google.ai.edge.litert.TensorBuffer
 
-internal class AndroidTFBuffer(val buffer: TensorBuffer): TFBuffer {
-    override val shape: IntArray
-        get() = try {
-            // Using reflection to find the correct method name since it's not clear from the stub
-            val methods = buffer::class.java.methods
-            val shapeMethod = methods.find { it.name == "getShape" || it.name == "shape" }
-            if (shapeMethod != null) {
-                shapeMethod.invoke(buffer) as IntArray
-            } else {
-                intArrayOf()
-            }
-        } catch (e: Exception) {
-            intArrayOf()
-        }
-
+internal class AndroidTFBuffer(
+    val buffer: TensorBuffer,
+    override val shape: IntArray,
     override val size: Int
-        get() = try {
-            val methods = buffer::class.java.methods
-            val sizeMethod = methods.find { it.name == "getFlatSize" || it.name == "flatSize" }
-            if (sizeMethod != null) {
-                sizeMethod.invoke(buffer) as Int
-            } else {
-                0
-            }
-        } catch (e: Exception) {
-            0
-        }
+): TFBuffer {
 
     override fun writeInt(data: IntArray) {
         buffer.writeInt(data)
