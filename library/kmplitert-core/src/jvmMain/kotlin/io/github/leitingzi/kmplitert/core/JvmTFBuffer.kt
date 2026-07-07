@@ -2,7 +2,11 @@ package io.github.leitingzi.kmplitert.core
 
 import io.github.leitingzi.kmplitert.core.model.LiteRtTensorBuffer
 
-class JvmTFBuffer (val buffer: LiteRtTensorBuffer): TFBuffer {
+class JvmTFBuffer (
+    val buffer: LiteRtTensorBuffer,
+    override val shape: IntArray,
+    override val size: Int
+): TFBuffer {
     override fun writeInt(data: IntArray) {
         val inputAddr = buffer.lock(1) // kLiteRtTensorBufferLockModeWrite
         inputAddr.write(0, data, 0, data.size)

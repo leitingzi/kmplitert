@@ -6,7 +6,11 @@ import kotlinx.cinterop.*
 import kotlinx.cinterop.get
 import litert.*
 
-class NativeTFBuffer(val buffer: LiteRtTensorBuffer) : TFBuffer {
+class NativeTFBuffer(
+    val buffer: LiteRtTensorBuffer,
+    override val shape: IntArray,
+    override val size: Int
+) : TFBuffer {
     
     private fun <T> withLockedBuffer(mode: LiteRtTensorBufferLockMode, block: (COpaquePointer) -> T): T {
         return memScoped {

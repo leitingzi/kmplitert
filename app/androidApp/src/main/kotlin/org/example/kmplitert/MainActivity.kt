@@ -10,7 +10,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        ResourceUtils.init(applicationContext)
+        ComposeResourceUtils.init(applicationContext)
 
         setContent {
             App()

@@ -7,6 +7,12 @@ package io.github.leitingzi.kmplitert.core
  */
 interface TFBuffer {
 
+    /** The shape of the tensor. */
+    val shape: IntArray
+
+    /** The total number of elements in the tensor. */
+    val size: Int
+
     /** Writes integer values. */
     fun writeInt(data: IntArray)
 

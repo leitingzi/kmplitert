@@ -8,7 +8,7 @@ import kmplitert.library.app_core.generated.resources.Res
 import java.io.File
 
 @SuppressLint("StaticFieldLeak")
-actual object ResourceUtils {
+actual object ComposeResourceUtils {
 
     internal lateinit var context: Context
 
@@ -27,13 +27,13 @@ actual object ResourceUtils {
         return this.context.applicationContext
     }
 
-    actual suspend fun getResourcePath(path: String): String {
+    actual suspend fun getFilePath(resourcePath: String): String {
         val cacheDir = getContext().cacheDir
-        val file = File(cacheDir, path)
+        val file = File(cacheDir, resourcePath)
         if (file.exists()) {
             return file.absolutePath
         }
-        val bytes = Res.readBytes("files/$path")
+        val bytes = Res.readBytes("files/$resourcePath")
         file.parentFile?.mkdirs()
         file.writeBytes(bytes)
         return file.absolutePath

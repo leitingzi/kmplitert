@@ -4,8 +4,8 @@ package org.example.kmplitert
 
 import kmplitert.library.app_core.generated.resources.Res
 
-actual object ResourceUtils {
-    actual suspend fun getResourcePath(path: String): String {
-        return Res.getUri("files/$path")
+actual object ComposeResourceUtils {
+    actual suspend fun getFilePath(resourcePath: String): String {
+        return Res.getUri("files/$resourcePath")
     }
 }

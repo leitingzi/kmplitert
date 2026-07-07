@@ -13,18 +13,18 @@ import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.create
 import platform.Foundation.writeToFile
 
-actual object ResourceUtils {
+actual object ComposeResourceUtils {
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-    actual suspend fun getResourcePath(path: String): String {
+    actual suspend fun getFilePath(resourcePath: String): String {
         val tempDir = NSTemporaryDirectory()
-        val fileName = path.substringAfterLast("/")
+        val fileName = resourcePath.substringAfterLast("/")
         val filePath = tempDir + fileName
 
         if (NSFileManager.defaultManager.fileExistsAtPath(filePath)) {
             return filePath
         }
 
-        val bytes = Res.readBytes("files/$path")
+        val bytes = Res.readBytes("files/$resourcePath")
         val data = bytes.usePinned { pinned ->
             NSData.create(bytes = pinned.addressOf(0), length = bytes.size.toULong())
         }

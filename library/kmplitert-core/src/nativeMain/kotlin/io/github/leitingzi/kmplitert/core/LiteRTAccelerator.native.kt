@@ -1,19 +1,13 @@
-@file:OptIn(ExperimentalForeignApi::class)
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
 package io.github.leitingzi.kmplitert.core
 
-import kotlinx.cinterop.ExperimentalForeignApi
-import litert.LiteRtHwAcceleratorSet
-import litert.kLiteRtHwAcceleratorCpu
-import litert.kLiteRtHwAcceleratorGpu
-import litert.kLiteRtHwAcceleratorNpu
+import litert.*
 
-fun LiteRTAccelerator.toNative(): LiteRtHwAcceleratorSet {
+fun LiteRTAccelerator.toNative(): Int {
     return when (this) {
         LiteRTAccelerator.CPU -> kLiteRtHwAcceleratorCpu
         LiteRTAccelerator.GPU -> kLiteRtHwAcceleratorGpu
         LiteRTAccelerator.NPU -> kLiteRtHwAcceleratorNpu
     }
 }
-
-

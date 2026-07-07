@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -12,7 +14,6 @@ kotlin {
         binaries.executable()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
@@ -21,6 +22,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
+
             implementation(projects.library.appCore)
         }
     }

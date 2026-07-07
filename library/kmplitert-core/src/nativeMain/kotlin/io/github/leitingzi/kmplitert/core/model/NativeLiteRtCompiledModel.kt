@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class)
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
 package io.github.leitingzi.kmplitert.core.model
 
@@ -6,46 +6,8 @@ import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.NativeTFBuffer
 import io.github.leitingzi.kmplitert.core.TFBuffer
 import io.github.leitingzi.kmplitert.core.toNative
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.set
-import kotlinx.cinterop.value
-import litert.LiteRtCompiledModel
-import litert.LiteRtCompiledModelVar
-import litert.LiteRtCreateCompiledModel
-import litert.LiteRtCreateEnvironment
-import litert.LiteRtCreateManagedTensorBufferFromRequirements
-import litert.LiteRtCreateModelFromFile
-import litert.LiteRtCreateOptions
-import litert.LiteRtDestroyCompiledModel
-import litert.LiteRtDestroyEnvironment
-import litert.LiteRtDestroyModel
-import litert.LiteRtDestroyOptions
-import litert.LiteRtEnvironment
-import litert.LiteRtEnvironmentVar
-import litert.LiteRtGetCompiledModelInputBufferRequirements
-import litert.LiteRtGetCompiledModelOutputBufferRequirements
-import litert.LiteRtGetModelSignature
-import litert.LiteRtGetNumSignatureInputs
-import litert.LiteRtGetNumSignatureOutputs
-import litert.LiteRtGetRankedTensorType
-import litert.LiteRtGetSignatureInputTensorByIndex
-import litert.LiteRtGetSignatureOutputTensorByIndex
-import litert.LiteRtModel
-import litert.LiteRtModelVar
-import litert.LiteRtOptionsVar
-import litert.LiteRtParamIndexVar
-import litert.LiteRtRankedTensorType
-import litert.LiteRtRunCompiledModel
-import litert.LiteRtSetOptionsHardwareAccelerators
-import litert.LiteRtSignatureVar
-import litert.LiteRtTensorBufferRequirementsVar
-import litert.LiteRtTensorBufferVar
-import litert.LiteRtTensorVar
-import litert.kLiteRtStatusOk
+import kotlinx.cinterop.*
+import litert.*
 
 class NativeLiteRtCompiledModel(
     val compiledModel: LiteRtCompiledModel,
@@ -127,11 +89,30 @@ class NativeLiteRtCompiledModel(
                 status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
                 check(status == kLiteRtStatusOk) { "Failed to get ranked tensor type: $status" }
 
+                // Decode rank and dimensions from layout using offset-based access for bitfields
+                // layout starts after element_type (4 bytes).
+                // rank is the first byte of layout (7 bits rank, 1 bit has_strides)
+                val layoutPtr = rankedType.ptr.reinterpret<ByteVar>().plus(4)!!
+                val firstByte = layoutPtr.pointed.value.toInt()
+                val rank = firstByte and 0x7F
+                
+                // dimensions starts at offset 4 within layout (total offset 8 from rankedType)
+                val dimsPtr = rankedType.ptr.reinterpret<IntVar>().plus(2)!! // 8 bytes / 4
+                val shape = IntArray(rank) { idx ->
+                    dimsPtr[idx]
+                }
+                
+                // Calculate size (flat size)
+                var size = 1
+                for (dim in shape) {
+                    if (dim > 0) size *= dim
+                }
+
                 val bufferRef = alloc<LiteRtTensorBufferVar>()
                 status = LiteRtCreateManagedTensorBufferFromRequirements(environment, rankedType.ptr, bufferRequirementsRef.value!!, bufferRef.ptr)
                 check(status == kLiteRtStatusOk) { "Failed to create managed tensor buffer: $status" }
 
-                buffers.add(NativeTFBuffer(bufferRef.value!!))
+                buffers.add(NativeTFBuffer(bufferRef.value!!, shape, size))
             }
             buffers
         }
@@ -169,5 +150,3 @@ class NativeLiteRtCompiledModel(
         }
     }
 }
-
-

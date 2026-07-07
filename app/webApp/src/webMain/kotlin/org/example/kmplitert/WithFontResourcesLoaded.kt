@@ -10,8 +10,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.ComposeViewport
-import kmplitert.library.app_core.generated.resources.NotoSansSC
-import kmplitert.library.app_core.generated.resources.Res
+import kmplitert.app.webapp.generated.resources.NotoSansSC
+import kmplitert.app.webapp.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
 

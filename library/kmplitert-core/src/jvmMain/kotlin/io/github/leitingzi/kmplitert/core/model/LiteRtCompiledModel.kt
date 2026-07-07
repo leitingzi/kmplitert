@@ -142,12 +142,14 @@ class LiteRtCompiledModel : PointerType() {
 
             val tensor = signature.getInputTensor(i)
             val tensorType = tensor.getRankedTensorType()
+            val shape = tensorType.layout.dimensions.take(tensorType.layout.getRank()).toIntArray()
+            val size = shape.fold(1) { acc, i -> acc * i }
 
             val intputTensorBuffer = createManagedTensorBufferFromRequirements(
                 requirements = inputBufferRequirements,
                 tensorType = tensorType
             )
-            buffers.add(JvmTFBuffer(intputTensorBuffer))
+            buffers.add(JvmTFBuffer(intputTensorBuffer, shape, size))
         }
         return buffers
     }
@@ -168,12 +170,14 @@ class LiteRtCompiledModel : PointerType() {
 
             val tensor = signature.getOutputTensor(i.toLong())
             val tensorType = tensor.getRankedTensorType()
+            val shape = tensorType.layout.dimensions.take(tensorType.layout.getRank()).toIntArray()
+            val size = shape.fold(1) { acc, i -> acc * i }
 
             val outputTensorBuffer = createManagedTensorBufferFromRequirements(
                 requirements = outputBufferRequirements,
                 tensorType = tensorType
             )
-            buffers.add(JvmTFBuffer(outputTensorBuffer))
+            buffers.add(JvmTFBuffer(outputTensorBuffer, shape, size))
         }
 
         return buffers
