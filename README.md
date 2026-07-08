@@ -20,33 +20,32 @@
 - ⚡ **Coroutine Support**: First-class support for asynchronous initialization and inference.
 - 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers.
 - 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU where available on the platform.
+- 🖼️ **Image Preprocessing**: Built-in utilities for image resizing and format conversion.
 
 ---
 
-## 💻 Platform Support
+## 💻 Platform Support & Acceleration Matrix
 
 | Platform | Status | Implementation | Hardware Acceleration |
 | :--- | :---: | :--- | :--- |
 | **Android** | ⚠️ Alpha | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NNAPI |
 | **JVM (Desktop)** | ⚠️ Alpha | LiteRT C API via JNA | CPU |
-| **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL |
-| **Native (Windows/Linux)** | 🚧 Untested | LiteRT C API | CPU |
-| **Native (macOS)** | 🚧 Untested | LiteRT C API | CPU |
-| **iOS** | ❌ Unsupported | Placeholder only | - |
+| **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU |
+| **Native (Windows)** | 🚧 Untested | LiteRT C API | CPU / WebGPU Accelerator |
+| **Native (Linux)** | 🚧 Untested | LiteRT C API | CPU / WebGPU Accelerator |
+| **Native (macOS)** | 🚧 Untested | LiteRT C API | CPU / Metal Accelerator |
+| **iOS** | ❌ Unsupported | Placeholder only | Metal Accelerator (Planned) |
 
 ---
 
-## ⚠️ Current Limitations & Known Issues
+## 🛠️ Supported Data Types
 
-- **General Status**: This library is in its early stages. Most platforms have not undergone full validation.
-- **Web (JS/WasmJS)**:
-    - **Adaptive Models**: No support for models with adaptive shapes yet.
-    - **Environment**: Requires a browser environment with WebGL support for the LiteRT JS runtime.
-- **Native Platforms**:
-    - Includes support for **Windows (mingwX64)**, **Linux (linuxX64)**, and **macOS (macosArm64)**.
-    - **Status**: These platforms are currently **NOT TESTED** and may not work as expected.
-- **iOS**: Implementation is currently a placeholder and does not function. Full support is planned for future releases.
-- **JVM**: Primarily tested on Windows; Linux and macOS versions are less stable.
+KMPLiteRT provides type-safe buffers for the following Kotlin types:
+- `FloatArray` (Float32)
+- `IntArray` (Int32)
+- `LongArray` (Int64)
+- `ByteArray` (Int8 / UInt8)
+- `BooleanArray` (Bool)
 
 ---
 
@@ -66,15 +65,16 @@ kotlin {
 
 ---
 
-## 💡 Usage Example
+## 💡 Usage Examples
 
-Running a model in your common code is straightforward:
+### 1. Basic Vector Inference
+Suitable for regression, classification, or any model processing simple numerical vectors.
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
 
-suspend fun runInference(modelPath: String) {
-    // 1. Initialize the compiler with the model and accelerator
+suspend fun runBasicInference(modelPath: String) {
+    // 1. Initialize the compiler
     val compiler = LiteRTCompiler(
         filePath = modelPath, 
         accelerator = LiteRTAccelerator.CPU
@@ -83,19 +83,19 @@ suspend fun runInference(modelPath: String) {
     try {
         compiler.init()
 
-        // 2. Prepare typed input and output buffers
+        // 2. Get typed input and output buffers
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
 
-        // 3. Write data to input buffer
-        inputs[0].writeFloat(floatArrayOf(100f))
+        // 3. Write input data (e.g., Float array)
+        inputs[0].writeFloat(floatArrayOf(1.0f, 2.0f, 3.0f))
 
-        // 4. Run inference
+        // 4. Execute inference
         compiler.run(inputs, outputs)
 
-        // 5. Read the results
+        // 5. Read the result
         val result = outputs[0].readFloat()
-        println("Result: ${result.contentToString()}")
+        println("Inference result: ${result.contentToString()}")
         
     } finally {
         // 6. Release resources
@@ -103,6 +103,56 @@ suspend fun runInference(modelPath: String) {
     }
 }
 ```
+
+### 2. Image Classification
+For computer vision models, use `LiteRtImage` for seamless preprocessing (resizing and format conversion).
+
+```kotlin
+import io.github.leitingzi.kmplitert.core.*
+
+suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
+    val compiler = LiteRTCompiler(filePath = modelPath)
+    
+    try {
+        compiler.init()
+        val inputs = compiler.getInputBuffers()
+        val outputs = compiler.getOutputBuffers()
+
+        // 1. Image preprocessing: Load -> Resize -> Convert to model format (Int8/Float)
+        val inputData = LiteRtImage.fromBytes(rawImageBytes)
+            .resize(224, 224)
+            .toInt8Array() // Use toFloatArray() if required by the model
+
+        // 2. Load data into input buffer
+        inputs[0].writeInt8(inputData)
+
+        // 3. Execute inference
+        compiler.run(inputs, outputs)
+
+        // 4. Read and process output (e.g., finding the max probability)
+        val result = outputs[0].readInt8()
+        val maxIndex = result.indices.maxByOrNull { result[it] }
+        println("Identified class index: $maxIndex")
+        
+    } finally {
+        compiler.close()
+    }
+}
+```
+
+---
+
+## ⚠️ Current Limitations & Known Issues
+
+- **General Status**: This library is in its early stages. Most platforms have not undergone full validation.
+- **Web (JS/WasmJS)**:
+    - **Adaptive Models**: No support for models with dynamic/adaptive shapes yet.
+    - **Environment**: Requires a browser environment with WebGL/WebGPU support for the LiteRT JS runtime.
+- **Native Platforms**:
+    - Includes support for **Windows (mingwX64)**, **Linux (linuxX64)**, and **macOS (macosArm64)**.
+    - **Status**: These platforms are currently **NOT TESTED**.
+- **iOS**: Implementation is currently a placeholder.
+- **JVM**: Primarily tested on Windows; Linux and macOS versions are less stable.
 
 ---
 
