@@ -41,7 +41,7 @@ kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-te
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 java-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
 java-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }
-edge-litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.5" }
+edge-litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.6" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
 
 [plugins]
