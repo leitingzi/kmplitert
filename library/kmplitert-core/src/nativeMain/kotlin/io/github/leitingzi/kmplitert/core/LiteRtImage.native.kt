@@ -50,12 +50,48 @@ actual class LiteRtImage(
         return floatArray
     }
 
+    actual fun toInt8Array(): ByteArray {
+        val result = ByteArray(width * height * 3)
+        for (i in 0 until width * height * 3) {
+            result[i] = data[i]
+        }
+        return result
+    }
+
+    actual fun toIntArray(): IntArray {
+        val result = IntArray(width * height * 3)
+        for (i in 0 until width * height * 3) {
+            result[i] = data[i].toInt() and 0xFF
+        }
+        return result
+    }
+
+    actual fun toBooleanArray(): BooleanArray {
+        val result = BooleanArray(width * height * 3)
+        for (i in 0 until width * height * 3) {
+            result[i] = (data[i].toInt() and 0xFF) > 127
+        }
+        return result
+    }
+
+    actual fun toLongArray(): LongArray {
+        val result = LongArray(width * height * 3)
+        for (i in 0 until width * height * 3) {
+            result[i] = (data[i].toInt() and 0xFF).toLong()
+        }
+        return result
+    }
+
     actual companion object {
         actual fun fromBytes(bytes: ByteArray): LiteRtImage {
             if (bytes.size > 54 && bytes[0] == 'B'.code.toByte() && bytes[1] == 'M'.code.toByte()) {
                 return decodeBmp(bytes)
             }
             throw UnsupportedOperationException("Only BMP format is supported in pure Kotlin native implementation for now.")
+        }
+
+        actual fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage {
+            return LiteRtImage(data, width, height)
         }
 
         private fun decodeBmp(bytes: ByteArray): LiteRtImage {

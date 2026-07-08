@@ -7,9 +7,7 @@ import kotlinx.cinterop.get
 import litert.*
 
 class NativeTFBuffer(
-    val buffer: LiteRtTensorBuffer,
-    override val shape: IntArray,
-    override val size: Int
+    val buffer: LiteRtTensorBuffer
 ) : TFBuffer {
     
     private fun <T> withLockedBuffer(mode: LiteRtTensorBufferLockMode, block: (COpaquePointer) -> T): T {

@@ -23,14 +23,14 @@ actual class LiteRTCompiler actual constructor(
     actual suspend fun getInputBuffers(): List<TFBuffer> {
         val inputBuffers = compiledModel.createInputBuffers()
         return inputBuffers.map { buffer ->
-            AndroidTFBuffer(buffer, intArrayOf(), 0)
+            AndroidTFBuffer(buffer)
         }
     }
 
     actual suspend fun getOutputBuffers(): List<TFBuffer> {
         val outputBuffers = compiledModel.createOutputBuffers()
         return outputBuffers.map { buffer ->
-            AndroidTFBuffer(buffer, intArrayOf(), 0)
+            AndroidTFBuffer(buffer)
         }
     }
 

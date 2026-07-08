@@ -31,7 +31,7 @@ actual class LiteRTCompiler actual constructor(
         for (i in 0 until inputs.length) {
             val details = inputs[i]
             details?.let {
-                list.add(WasmTFBuffer(it.shape))
+                list.add(WasmTFBuffer(it.shape, it.dtype))
             }
         }
         return list
@@ -43,7 +43,7 @@ actual class LiteRTCompiler actual constructor(
         for (i in 0 until outputs.length) {
             val details = outputs[i]
             details?.let {
-                list.add(WasmTFBuffer(it.shape))
+                list.add(WasmTFBuffer(it.shape, it.dtype))
             }
         }
         return list

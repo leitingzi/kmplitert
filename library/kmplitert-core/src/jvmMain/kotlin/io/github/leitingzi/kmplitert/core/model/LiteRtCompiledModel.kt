@@ -131,8 +131,6 @@ class LiteRtCompiledModel : PointerType() {
         val signature = model.getSignature(signatureIndex)
         val numInputs = signature.getNumInputs()
 
-        println("numInputs = $numInputs")
-
         val buffers = mutableListOf<TFBuffer>()
         for (i in 0 until numInputs) {
             val inputBufferRequirements = getInputBufferRequirements(
@@ -142,14 +140,11 @@ class LiteRtCompiledModel : PointerType() {
 
             val tensor = signature.getInputTensor(i)
             val tensorType = tensor.getRankedTensorType()
-            val shape = tensorType.layout.dimensions.take(tensorType.layout.getRank()).toIntArray()
-            val size = shape.fold(1) { acc, i -> acc * i }
-
             val intputTensorBuffer = createManagedTensorBufferFromRequirements(
                 requirements = inputBufferRequirements,
                 tensorType = tensorType
             )
-            buffers.add(JvmTFBuffer(intputTensorBuffer, shape, size))
+            buffers.add(JvmTFBuffer(intputTensorBuffer))
         }
         return buffers
     }
@@ -158,8 +153,6 @@ class LiteRtCompiledModel : PointerType() {
         val model = this.model ?: throw IllegalStateException("Model is not set")
         val signature = model.getSignature(signatureIndex)
         val numOutputs = signature.getNumOutputs()
-
-        println("numOutputs = $numOutputs")
 
         val buffers = mutableListOf<TFBuffer>()
         for (i in 0 until numOutputs.toInt()) {
@@ -170,14 +163,11 @@ class LiteRtCompiledModel : PointerType() {
 
             val tensor = signature.getOutputTensor(i.toLong())
             val tensorType = tensor.getRankedTensorType()
-            val shape = tensorType.layout.dimensions.take(tensorType.layout.getRank()).toIntArray()
-            val size = shape.fold(1) { acc, i -> acc * i }
-
             val outputTensorBuffer = createManagedTensorBufferFromRequirements(
                 requirements = outputBufferRequirements,
                 tensorType = tensorType
             )
-            buffers.add(JvmTFBuffer(outputTensorBuffer, shape, size))
+            buffers.add(JvmTFBuffer(outputTensorBuffer))
         }
 
         return buffers

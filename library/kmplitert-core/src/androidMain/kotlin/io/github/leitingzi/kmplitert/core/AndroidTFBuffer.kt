@@ -3,9 +3,7 @@ package io.github.leitingzi.kmplitert.core
 import com.google.ai.edge.litert.TensorBuffer
 
 internal class AndroidTFBuffer(
-    val buffer: TensorBuffer,
-    override val shape: IntArray,
-    override val size: Int
+    val buffer: TensorBuffer
 ): TFBuffer {
 
     override fun writeInt(data: IntArray) {

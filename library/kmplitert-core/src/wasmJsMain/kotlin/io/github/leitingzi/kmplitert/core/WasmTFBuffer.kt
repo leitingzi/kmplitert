@@ -6,11 +6,7 @@ import io.github.leitingzi.kmplitert.core.model.Tensor
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
 
-class WasmTFBuffer(private val jsShape: Int32Array) : TFBuffer {
-
-    override val shape: IntArray = IntArray(jsShape.length) { jsShape[it] }
-
-    override val size: Int = shape.fold(1) { acc, i -> acc * i }
+class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) : TFBuffer {
 
     lateinit var tensor: Tensor
 
@@ -27,11 +23,12 @@ class WasmTFBuffer(private val jsShape: Int32Array) : TFBuffer {
     }
 
     override fun writeInt8(data: ByteArray) {
-        val int8Array = Int8Array(data.size)
+        // If the model expects uint8 or int8, try using Uint8Array.
+        val uint8Array = Uint8Array(data.size)
         for (i in data.indices) {
-            int8Array[i] = data[i]
+            uint8Array[i] = data[i].toByte()
         }
-        tensor = Tensor(int8Array, jsShape)
+        tensor = Tensor(uint8Array, jsShape)
     }
 
     override fun writeBoolean(data: BooleanArray) {
@@ -69,20 +66,35 @@ class WasmTFBuffer(private val jsShape: Int32Array) : TFBuffer {
 
     override suspend fun readInt8(): ByteArray {
         val data = tensor.data().await()
-        val int8Array = data as Int8Array
-        val result = ByteArray(int8Array.length)
-        for (i in 0 until int8Array.length) {
-            result[i] = int8Array[i]
+        if (data is Uint8Array) {
+            val result = ByteArray(data.length)
+            for (i in 0 until data.length) {
+                result[i] = data[i]
+            }
+            return result
+        }
+        // Fallback
+        val array = data as Uint8Array // Assume uint8 if not int32
+        val result = ByteArray(array.length)
+        for (i in 0 until array.length) {
+            result[i] = array[i]
         }
         return result
     }
 
     override suspend fun readBoolean(): BooleanArray {
         val data = tensor.data().await()
-        val uint8Array = data as Uint8Array
-        val result = BooleanArray(uint8Array.length)
-        for (i in 0 until uint8Array.length) {
-            result[i] = getUint8ArrayElement(uint8Array, i) != 0
+        if (data is Uint8Array) {
+            val result = BooleanArray(data.length)
+            for (i in 0 until data.length) {
+                result[i] = data[i] != 0.toByte()
+            }
+            return result
+        }
+        val array = data as Uint8Array
+        val result = BooleanArray(array.length)
+        for (i in 0 until array.length) {
+            result[i] = getUint8ArrayElement(array, i) != 0
         }
         return result
     }

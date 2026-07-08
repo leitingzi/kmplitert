@@ -89,30 +89,11 @@ class NativeLiteRtCompiledModel(
                 status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
                 check(status == kLiteRtStatusOk) { "Failed to get ranked tensor type: $status" }
 
-                // Decode rank and dimensions from layout using offset-based access for bitfields
-                // layout starts after element_type (4 bytes).
-                // rank is the first byte of layout (7 bits rank, 1 bit has_strides)
-                val layoutPtr = rankedType.ptr.reinterpret<ByteVar>().plus(4)!!
-                val firstByte = layoutPtr.pointed.value.toInt()
-                val rank = firstByte and 0x7F
-                
-                // dimensions starts at offset 4 within layout (total offset 8 from rankedType)
-                val dimsPtr = rankedType.ptr.reinterpret<IntVar>().plus(2)!! // 8 bytes / 4
-                val shape = IntArray(rank) { idx ->
-                    dimsPtr[idx]
-                }
-                
-                // Calculate size (flat size)
-                var size = 1
-                for (dim in shape) {
-                    if (dim > 0) size *= dim
-                }
-
                 val bufferRef = alloc<LiteRtTensorBufferVar>()
                 status = LiteRtCreateManagedTensorBufferFromRequirements(environment, rankedType.ptr, bufferRequirementsRef.value!!, bufferRef.ptr)
                 check(status == kLiteRtStatusOk) { "Failed to create managed tensor buffer: $status" }
 
-                buffers.add(NativeTFBuffer(bufferRef.value!!, shape, size))
+                buffers.add(NativeTFBuffer(bufferRef.value!!))
             }
             buffers
         }

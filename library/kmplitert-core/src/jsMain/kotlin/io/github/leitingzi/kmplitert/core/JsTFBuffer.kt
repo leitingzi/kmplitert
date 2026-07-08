@@ -5,11 +5,7 @@ import kotlinx.coroutines.await
 import org.khronos.webgl.*
 import org.khronos.webgl.get
 
-class JsTFBuffer(private val jsShape: Int32Array) : TFBuffer {
-
-    override val shape: IntArray = IntArray(jsShape.length) { jsShape[it] }
-
-    override val size: Int = shape.fold(1) { acc, i -> acc * i }
+class JsTFBuffer(private val jsShape: Int32Array, private val dtype: String) : TFBuffer {
 
     lateinit var tensor: Tensor
 
@@ -26,11 +22,13 @@ class JsTFBuffer(private val jsShape: Int32Array) : TFBuffer {
     }
 
     override fun writeInt8(data: ByteArray) {
-        val int8Array = Int8Array(data.size)
+        // If the model expects uint8 or int8, try using Uint8Array.
+        // Some runtimes (like @litertjs/core) might not support Int8Array specifically.
+        val uint8Array = Uint8Array(data.size)
         for (i in data.indices) {
-            int8Array[i] = data[i]
+            uint8Array[i] = data[i]
         }
-        tensor = Tensor(int8Array, jsShape)
+        tensor = Tensor(uint8Array, jsShape)
     }
 
     override fun writeBoolean(data: BooleanArray) {
@@ -68,20 +66,35 @@ class JsTFBuffer(private val jsShape: Int32Array) : TFBuffer {
 
     override suspend fun readInt8(): ByteArray {
         val data = tensor.data().await()
-        val int8Array = data as Int8Array
-        val result = ByteArray(int8Array.length)
-        for (i in 0 until int8Array.length) {
-            result[i] = int8Array[i]
+        if (data is Uint8Array) {
+            val result = ByteArray(data.length)
+            for (i in 0 until data.length) {
+                result[i] = data[i]
+            }
+            return result
+        }
+        // Fallback or dynamic handling
+        val array = data.asDynamic()
+        val result = ByteArray(array.length.unsafeCast<Int>())
+        for (i in 0 until result.size) {
+            result[i] = array[i].unsafeCast<Byte>()
         }
         return result
     }
 
     override suspend fun readBoolean(): BooleanArray {
         val data = tensor.data().await()
-        val uint8Array = data as Uint8Array
-        val result = BooleanArray(uint8Array.length)
-        for (i in 0 until uint8Array.length) {
-            result[i] = uint8Array[i] != 0.toByte()
+        if (data is Uint8Array) {
+            val result = BooleanArray(data.length)
+            for (i in 0 until data.length) {
+                result[i] = data[i] != 0.toByte()
+            }
+            return result
+        }
+        val array = data.asDynamic()
+        val result = BooleanArray(array.length.unsafeCast<Int>())
+        for (i in 0 until result.size) {
+            result[i] = array[i].unsafeCast<Int>() != 0
         }
         return result
     }

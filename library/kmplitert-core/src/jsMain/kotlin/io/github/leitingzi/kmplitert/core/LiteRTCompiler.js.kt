@@ -30,7 +30,7 @@ actual class LiteRTCompiler actual constructor(
         val list = mutableListOf<TFBuffer>()
         for (i in 0 until inputs.length) {
             val details = inputs[i]
-            list.add(JsTFBuffer(details.shape))
+            list.add(JsTFBuffer(details.shape, details.dtype))
         }
         return list
     }
@@ -40,7 +40,7 @@ actual class LiteRTCompiler actual constructor(
         val list = mutableListOf<TFBuffer>()
         for (i in 0 until outputs.length) {
             val details = outputs[i]
-            list.add(JsTFBuffer(details.shape))
+            list.add(JsTFBuffer(details.shape, details.dtype))
         }
         return list
     }

@@ -42,6 +42,43 @@ expect class LiteRtImage {
      */
     fun toFloatArray(mean: Float = 0f, std: Float = 1f): FloatArray
 
+    /**
+     * Converts the image into a signed 8-bit integer array (ByteArray).
+     *
+     * Each pixel channel (0-255) is cast directly to a signed [Byte].
+     * This is commonly used for quantized models.
+     *
+     * @return A byte array containing the image pixel data in RGB order.
+     */
+    fun toInt8Array(): ByteArray
+
+    /**
+     * Converts the image into an integer array.
+     *
+     * Each pixel channel (0-255) is stored as an [Int].
+     *
+     * @return An integer array containing the image pixel data in RGB order.
+     */
+    fun toIntArray(): IntArray
+
+    /**
+     * Converts the image into a boolean array.
+     *
+     * Each pixel channel is converted to boolean: `true` if > 127, `false` otherwise.
+     *
+     * @return A boolean array containing the image pixel data in RGB order.
+     */
+    fun toBooleanArray(): BooleanArray
+
+    /**
+     * Converts the image into a long array.
+     *
+     * Each pixel channel (0-255) is stored as a [Long].
+     *
+     * @return A long array containing the image pixel data in RGB order.
+     */
+    fun toLongArray(): LongArray
+
     companion object {
 
         /**
@@ -55,6 +92,16 @@ expect class LiteRtImage {
          * @throws IllegalArgumentException If the image cannot be decoded.
          */
         fun fromBytes(bytes: ByteArray): LiteRtImage
+
+        /**
+         * Creates a [LiteRtImage] from raw RGB pixel data.
+         *
+         * @param data The raw RGB pixel data (3 bytes per pixel).
+         * @param width The image width.
+         * @param height The image height.
+         * @return A [LiteRtImage].
+         */
+        fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage
     }
 }
 
