@@ -21,7 +21,7 @@ fun App() {
 
         val inputBuffer = inputs[0]
 
-        val dogData = Res.readBytes("files/dog.bmp")
+        val dogData = Res.readBytes("files/pic/elephant.bmp")
 //        println("dogData = ${dogData.contentToString()}")
         val data = LiteRtImage.fromBytes(dogData)
             .resize(224, 224)
@@ -41,7 +41,7 @@ fun App() {
 
         compiler.close()
 
-        val labelsByte = Res.readBytes("files/mobilenet_v1.txt")
+        val labelsByte = Res.readBytes("files/mobilenet_v1_cn.txt")
         val labels = labelsByte.decodeToString().lines()
 
         rIndex.forEach { index ->

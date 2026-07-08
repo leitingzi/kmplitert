@@ -40,12 +40,15 @@
 
 ## 🛠️ Supported Data Types
 
-KMPLiteRT provides type-safe buffers for the following Kotlin types:
-- `FloatArray` (Float32)
-- `IntArray` (Int32)
-- `LongArray` (Int64)
-- `ByteArray` (Int8 / UInt8)
-- `BooleanArray` (Bool)
+KMPLiteRT currently supports the following tensor types:
+
+| Kotlin Type | LiteRT Type |
+|-------------|-------------|
+| `FloatArray` | Float32 |
+| `IntArray` | Int32 |
+| `LongArray` | Int64 |
+| `ByteArray` | Int8 / UInt8 |
+| `BooleanArray` | Bool |
 
 ---
 
@@ -153,6 +156,48 @@ suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
     - **Status**: These platforms are currently **NOT TESTED**.
 - **iOS**: Implementation is currently a placeholder.
 - **JVM**: Primarily tested on Windows; Linux and macOS versions are less stable.
+
+---
+
+## 📐 Model Input / Output Metadata
+
+Unlike some inference libraries, **KMPLiteRT does not provide APIs to query model input/output shapes or data types at runtime**.
+
+This is an intentional design decision.
+
+### Why?
+
+LiteRT models contain **fixed input/output tensor metadata** (shape and data type) that is determined when the model is created. These values are part of the model itself and are expected to be known by the application developer.
+
+For example:
+
+- Image classification models commonly use `1 × 224 × 224 × 3` (`Float32` or `Int8`)
+- Object detection models define their own fixed tensor layouts
+- Custom models exported by users also have predefined input/output specifications
+
+Since the application must already know how to prepare data for its own model, exposing runtime APIs such as:
+
+- `getInputShape()`
+- `getOutputShape()`
+- `getInputDataType()`
+- `getOutputDataType()`
+
+would provide little practical value while increasing API complexity and implementation differences across platforms.
+
+### Recommended Practice
+
+Treat the model definition as part of your application contract.
+
+Document your model's:
+
+- Input shape
+- Output shape
+- Data type
+- Normalization/preprocessing method
+
+alongside the model itself, and write data directly into the corresponding typed buffers.
+
+This keeps the API simple, portable, and consistent across Android, JVM, Native, and Web platforms.
 
 ---
 
