@@ -292,11 +292,11 @@ class NativeLiteRtCompiledModel(
 
     private fun LiteRtRankedTensorType.toPlatform(): LiteRTTensorType {
         val platformType = when (this.element_type) {
-            kLiteRtElementTypeFloat32.toUInt() -> LiteRTElementType.FLOAT
-            kLiteRtElementTypeInt32.toUInt() -> LiteRTElementType.INT
-            kLiteRtElementTypeInt64.toUInt() -> LiteRTElementType.INT64
-            kLiteRtElementTypeBool.toUInt() -> LiteRTElementType.BOOLEAN
-            kLiteRtElementTypeInt8.toUInt() -> LiteRTElementType.INT8
+            kLiteRtElementTypeFloat32 -> LiteRTElementType.FLOAT
+            kLiteRtElementTypeInt32 -> LiteRTElementType.INT
+            kLiteRtElementTypeInt64 -> LiteRTElementType.INT64
+            kLiteRtElementTypeBool -> LiteRTElementType.BOOLEAN
+            kLiteRtElementTypeInt8 -> LiteRTElementType.INT8
             else -> LiteRTElementType.FLOAT // Default
         }
         return LiteRTTensorType(
@@ -306,7 +306,7 @@ class NativeLiteRtCompiledModel(
     }
 
     private fun litert.LiteRtLayout.toPlatform(): LiteRTLayout {
-        val rank = LiteRtGetLayoutRank(this.ptr).toInt()
+        val rank = LiteRtGetLayoutRank(this.ptr)
         val hasStrides = LiteRtGetLayoutHasStrides(this.ptr)
         
         val dims = mutableListOf<Int>()
@@ -384,7 +384,11 @@ class NativeLiteRtCompiledModel(
                 val env = envRef.value!!
 
                 val modelRef = alloc<LiteRtModelVar>()
-                val statusModel = LiteRtCreateModelFromFile(filePath, modelRef.ptr)
+
+                // TODO
+                //  ERROR: Could not open ' '.
+                //  Native test failed: Failed to create model: 500
+                val statusModel = LiteRtCreateModelFromFile(env, filePath, modelRef.ptr)
                 check(statusModel == kLiteRtStatusOk) { "Failed to create model: $statusModel" }
                 val model = modelRef.value!!
 
