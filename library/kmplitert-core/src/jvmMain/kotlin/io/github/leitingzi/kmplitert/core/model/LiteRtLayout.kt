@@ -47,7 +47,7 @@ open class LiteRtLayout : Structure() {
         val strds = if (hasStrides()) {
             strides.sliceArray(0 until rank).toList()
         } else {
-            emptyList()
+            LiteRTLayout.calculateDefaultStrides(dims)
         }
         return LiteRTLayout(dimensions = dims, strides = strds)
     }

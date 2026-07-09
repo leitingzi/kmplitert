@@ -24,4 +24,20 @@ data class LiteRTLayout(val dimensions: List<Int> , val strides: List<Int>) {
      * Whether explicit strides are available.
      */
     val hasStrides: Boolean get() = strides.isNotEmpty()
+
+    companion object {
+        /**
+         * Calculates default row-major strides for the given dimensions.
+         */
+        fun calculateDefaultStrides(dimensions: List<Int>): List<Int> {
+            if (dimensions.isEmpty()) return emptyList()
+            val strides = mutableListOf<Int>()
+            var currentStride = 1
+            for (i in dimensions.size - 1 downTo 0) {
+                strides.add(0, currentStride)
+                currentStride *= dimensions[i]
+            }
+            return strides
+        }
+    }
 }

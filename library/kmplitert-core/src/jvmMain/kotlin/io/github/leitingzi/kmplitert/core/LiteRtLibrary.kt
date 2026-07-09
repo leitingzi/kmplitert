@@ -79,6 +79,28 @@ interface LiteRtLibrary : Library {
         buffer_requirements: PointerByReference
     ): LiteRtStatus
 
+    fun LiteRtGetNumTensorBufferRequirementsSupportedBufferTypes(
+        requirements: LiteRtTensorBufferRequirements,
+        num_types: Pointer
+    ): LiteRtStatus
+
+    fun LiteRtGetTensorBufferRequirementsSupportedTensorBufferType(
+        requirements: LiteRtTensorBufferRequirements,
+        type_index: Int,
+        type: Pointer
+    ): LiteRtStatus
+
+    fun LiteRtGetTensorBufferRequirementsBufferSize(
+        requirements: LiteRtTensorBufferRequirements,
+        buffer_size: Pointer
+    ): LiteRtStatus
+
+    fun LiteRtGetTensorBufferRequirementsStrides(
+        requirements: LiteRtTensorBufferRequirements,
+        num_strides: Pointer,
+        strides: PointerByReference
+    ): LiteRtStatus
+
     fun LiteRtGetCompiledModelInputTensorLayout(
         compiled_model: LiteRtCompiledModel,
         signature_index: LiteRtParamIndex,

@@ -13,5 +13,11 @@ external interface TensorDetails : JsAny {
     val index: Int
     val dtype: String
     val shape: Int32Array
+    val supportedBufferTypes: JsSet<Int>
 }
 
+external interface JsSet<T : JsAny> : JsAny {
+    fun has(value: T): Boolean
+    val size: Int
+    fun forEach(callback: (T) -> Unit)
+}

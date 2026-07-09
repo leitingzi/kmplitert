@@ -37,7 +37,7 @@ expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
      * @param inputName Name of the input tensor.
      * @return Buffer requirements for the input tensor.
      */
-    suspend fun getInputBufferRequirements(inputName: String)
+    suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements
 
     /**
      * Returns all input buffers allocated for the model.
@@ -63,7 +63,7 @@ expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
      * @param outputName Name of the output tensor.
      * @return Buffer requirements for the output tensor.
      */
-    suspend fun getOutputBufferRequirements(outputName: String)
+    suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements
 
     /**
      * Returns all output buffers allocated for the model.

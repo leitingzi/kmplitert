@@ -3,6 +3,7 @@
 package io.github.leitingzi.kmplitert.core.model
 
 import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
+import io.github.leitingzi.kmplitert.core.LiteRTBufferRequirements
 import io.github.leitingzi.kmplitert.core.LiteRTElementType
 import io.github.leitingzi.kmplitert.core.LiteRTLayout
 import io.github.leitingzi.kmplitert.core.LiteRTTensorType
@@ -60,6 +61,156 @@ class NativeLiteRtCompiledModel(
 
     fun getOutputTensorType(signatureIndex: Long, name: String): LiteRTTensorType {
         return getTensorType(signatureIndex, name, false)
+    }
+
+    fun getInputBufferRequirements(signatureIndex: Long, name: String): LiteRTBufferRequirements {
+        return getBufferRequirements(signatureIndex, name, true)
+    }
+
+    fun getOutputBufferRequirements(signatureIndex: Long, name: String): LiteRTBufferRequirements {
+        return getBufferRequirements(signatureIndex, name, false)
+    }
+
+    private fun getBufferRequirements(signatureIndex: Long, name: String, isInput: Boolean): LiteRTBufferRequirements {
+        return memScoped {
+            val signatureRef = alloc<LiteRtSignatureVar>()
+            var status = LiteRtGetModelSignature(model, signatureIndex.toULong(), signatureRef.ptr)
+            check(status == kLiteRtStatusOk) { "Failed to get signature: $status" }
+            val signature = signatureRef.value!!
+
+            val numTensorsRef = alloc<LiteRtParamIndexVar>()
+            status = if (isInput) {
+                LiteRtGetNumSignatureInputs(signature, numTensorsRef.ptr)
+            } else {
+                LiteRtGetNumSignatureOutputs(signature, numTensorsRef.ptr)
+            }
+            check(status == kLiteRtStatusOk) { "Failed to get num tensors: $status" }
+            val numTensors = numTensorsRef.value.toInt()
+
+            var tensorIndex: Int? = null
+
+            // 1. Try to find by signature name
+            for (i in 0 until numTensors) {
+                val cName = if (isInput) LiteRtGetSignatureInputNameSafe(signature, i) else LiteRtGetSignatureOutputNameSafe(signature, i)
+                if (cName?.toKString() == name) {
+                    tensorIndex = i
+                    break
+                }
+            }
+
+            // 2. Try to find by tensor name
+            if (tensorIndex == null) {
+                for (i in 0 until numTensors) {
+                    val tensorRef = alloc<LiteRtTensorVar>()
+                    status = if (isInput) {
+                        LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                    } else {
+                        LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                    }
+                    if (status == kLiteRtStatusOk) {
+                        val cName = LiteRtGetTensorNameSafe(tensorRef.value!!)
+                        if (cName?.toKString() == name) {
+                            tensorIndex = i
+                            break
+                        }
+                    }
+                }
+            }
+
+            if (tensorIndex != null) {
+                val bufferRequirementsRef = alloc<LiteRtTensorBufferRequirementsVar>()
+                status = if (isInput) {
+                    LiteRtGetCompiledModelInputBufferRequirements(compiledModel, signatureIndex.toULong(), tensorIndex.toULong(), bufferRequirementsRef.ptr)
+                } else {
+                    LiteRtGetCompiledModelOutputBufferRequirements(compiledModel, signatureIndex.toULong(), tensorIndex.toULong(), bufferRequirementsRef.ptr)
+                }
+                check(status == kLiteRtStatusOk) { "Failed to get buffer requirements: $status" }
+                val requirements: LiteRTBufferRequirements = bufferRequirementsRef.value!!.toPlatform()
+                if (requirements.strides.isEmpty()) {
+                    val tensorRef = alloc<LiteRtTensorVar>()
+                    status = if (isInput) {
+                        LiteRtGetSignatureInputTensorByIndex(signature, tensorIndex.toULong(), tensorRef.ptr)
+                    } else {
+                        LiteRtGetSignatureOutputTensorByIndex(signature, tensorIndex.toULong(), tensorRef.ptr)
+                    }
+                    if (status == kLiteRtStatusOk) {
+                        val rankedType = alloc<LiteRtRankedTensorType>()
+                        status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
+                        if (status == kLiteRtStatusOk) {
+                            val platformType = rankedType.toPlatform()
+                            return LiteRTBufferRequirements(
+                                supportedTypes = requirements.supportedTypes,
+                                bufferSize = requirements.bufferSize,
+                                strides = platformType.layout?.strides ?: emptyList()
+                            )
+                        }
+                    }
+                }
+                return requirements
+            }
+            
+            throw IllegalArgumentException("${if (isInput) "Input" else "Output"} tensor $name not found")
+        }
+    }
+
+    private fun LiteRtTensorBufferRequirements.toPlatform(): LiteRTBufferRequirements {
+        val numTypes = LiteRtGetTensorBufferRequirementsNumSupportedTypesSafe(this)
+        val supportedTypes = mutableListOf<io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType>()
+        for (i in 0 until numTypes) {
+            val type = LiteRtGetTensorBufferRequirementsSupportedTypeSafe(this, i)
+            supportedTypes.add(type.toPlatform())
+        }
+
+        val bufferSize = LiteRtGetTensorBufferRequirementsBufferSizeSafe(this).toInt()
+
+        val numStrides = LiteRtGetTensorBufferRequirementsNumStridesSafe(this)
+        val stridesPtr = LiteRtGetTensorBufferRequirementsStridesSafe(this)
+        val strides = mutableListOf<Int>()
+        if (numStrides > 0 && stridesPtr != null) {
+            for (i in 0 until numStrides) {
+                strides.add(stridesPtr[i].toInt())
+            }
+        }
+
+        return LiteRTBufferRequirements(
+            supportedTypes = supportedTypes,
+            bufferSize = bufferSize,
+            strides = strides
+        )
+    }
+
+    private fun LiteRtTensorBufferType.toPlatform(): io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType {
+        return when (this) {
+            kLiteRtTensorBufferTypeHostMemory -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.HostMemory
+            kLiteRtTensorBufferTypeAhwb -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.Ahwb
+            kLiteRtTensorBufferTypeIon -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.Ion
+            kLiteRtTensorBufferTypeDmaBuf -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.DmaBuf
+            kLiteRtTensorBufferTypeFastRpc -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.FastRpc
+            kLiteRtTensorBufferTypeGlBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.GlBuffer
+            kLiteRtTensorBufferTypeGlTexture -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.GlTexture
+            kLiteRtTensorBufferTypeOpenClBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClBuffer
+            kLiteRtTensorBufferTypeOpenClBufferFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClBufferFp16
+            kLiteRtTensorBufferTypeOpenClTexture -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClTexture
+            kLiteRtTensorBufferTypeOpenClTextureFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClTextureFp16
+            kLiteRtTensorBufferTypeOpenClBufferPacked -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClBufferPacked
+            kLiteRtTensorBufferTypeOpenClImageBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClImageBuffer
+            kLiteRtTensorBufferTypeOpenClImageBufferFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.OpenClImageBufferFp16
+            kLiteRtTensorBufferTypeWebGpuBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuBuffer
+            kLiteRtTensorBufferTypeWebGpuBufferFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuBufferFp16
+            kLiteRtTensorBufferTypeWebGpuTexture -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuTexture
+            kLiteRtTensorBufferTypeWebGpuTextureFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuTextureFp16
+            kLiteRtTensorBufferTypeWebGpuImageBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuImageBuffer
+            kLiteRtTensorBufferTypeWebGpuImageBufferFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuImageBufferFp16
+            kLiteRtTensorBufferTypeWebGpuBufferPacked -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.WebGpuBufferPacked
+            kLiteRtTensorBufferTypeVulkanBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanBuffer
+            kLiteRtTensorBufferTypeVulkanBufferFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanBufferFp16
+            kLiteRtTensorBufferTypeVulkanTexture -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanTexture
+            kLiteRtTensorBufferTypeVulkanTextureFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanTextureFp16
+            kLiteRtTensorBufferTypeVulkanImageBuffer -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanImageBuffer
+            kLiteRtTensorBufferTypeVulkanImageBufferFp16 -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanImageBufferFp16
+            kLiteRtTensorBufferTypeVulkanBufferPacked -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.VulkanBufferPacked
+            else -> io.github.leitingzi.kmplitert.core.LiteRTTensorBufferType.Unknown
+        }
     }
 
     private fun getTensorType(signatureIndex: Long, name: String, isInput: Boolean): LiteRTTensorType {
@@ -163,11 +314,14 @@ class NativeLiteRtCompiledModel(
             dims.add(this.dimensions[i])
         }
         
-        val strides = mutableListOf<Int>()
-        if (hasStrides) {
+        val strides = if (hasStrides) {
+            val list = mutableListOf<Int>()
             for (i in 0 until rank) {
-                strides.add(this.strides[i].toInt())
+                list.add(this.strides[i].toInt())
             }
+            list
+        } else {
+            LiteRTLayout.calculateDefaultStrides(dims)
         }
         
         return LiteRTLayout(dimensions = dims, strides = strides)

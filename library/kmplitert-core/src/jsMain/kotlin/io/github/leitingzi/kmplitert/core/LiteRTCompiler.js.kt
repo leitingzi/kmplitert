@@ -37,12 +37,58 @@ actual class LiteRTCompiler actual constructor(
         return details.toPlatform()
     }
 
-    actual suspend fun getInputBufferRequirements(inputName: String) {
-        // TODO
+    actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements {
+        val details = compiledModel.getInputDetails().toKotlinList().find { it.name == inputName }
+            ?: throw IllegalArgumentException("Input tensor $inputName not found")
+        return details.toRequirements()
     }
 
-    actual suspend fun getOutputBufferRequirements(outputName: String) {
-        // TODO
+    actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements {
+        val details = compiledModel.getOutputDetails().toKotlinList().find { it.name == outputName }
+            ?: throw IllegalArgumentException("Output tensor $outputName not found")
+        return details.toRequirements()
+    }
+
+    private fun TensorDetails.toRequirements(): LiteRTBufferRequirements {
+        val supportedTypes = mutableListOf<LiteRTTensorBufferType>()
+        supportedBufferTypes.forEach { typeValue ->
+            val type = when (typeValue.asDynamic().unsafeCast<Int>()) {
+                1 -> LiteRTTensorBufferType.HostMemory
+                20 -> LiteRTTensorBufferType.WebGpuBuffer
+                21 -> LiteRTTensorBufferType.WebGpuBufferFp16
+                26 -> LiteRTTensorBufferType.WebGpuBufferPacked
+                else -> LiteRTTensorBufferType.Unknown
+            }
+            supportedTypes.add(type)
+        }
+
+        val dims = mutableListOf<Int>()
+        for (i in 0 until shape.length) {
+            dims.add(shape.asDynamic()[i].unsafeCast<Int>())
+        }
+
+        val elementSize = when (dtype) {
+            "float32" -> 4
+            "int32" -> 4
+            "int64" -> 8
+            "bool" -> 1
+            "int8" -> 1
+            "uint8" -> 1
+            else -> 4
+        }
+
+        var totalElements = 1
+        for (dim in dims) {
+            totalElements *= dim
+        }
+
+        val bufferSize = totalElements * elementSize
+
+        return LiteRTBufferRequirements(
+            supportedTypes = supportedTypes,
+            bufferSize = bufferSize,
+            strides = LiteRTLayout.calculateDefaultStrides(dims)
+        )
     }
 
     private fun <T : JsAny> JsArray<T>.toKotlinList(): List<T> {
@@ -68,7 +114,7 @@ actual class LiteRTCompiler actual constructor(
         }
         return LiteRTTensorType(
             elementType = platformElementType,
-            layout = LiteRTLayout(dimensions = dims, strides = emptyList())
+            layout = LiteRTLayout(dimensions = dims, strides = LiteRTLayout.calculateDefaultStrides(dims))
         )
     }
 

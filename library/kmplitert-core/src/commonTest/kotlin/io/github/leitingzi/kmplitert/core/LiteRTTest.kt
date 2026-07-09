@@ -30,6 +30,16 @@ class LiteRTTest {
         inputs[0].writeFloat(floatArrayOf(100f))
         compiler.run(inputs, outputs)
         println(outputs[0].readFloat().contentToString())
+
+        // Test Buffer Requirements
+        val inputRequirements = compiler.getInputBufferRequirements("input_c")
+        assertTrue(inputRequirements.bufferSize > 0)
+        assertTrue(inputRequirements.supportedTypes.isNotEmpty())
+
+        val outputRequirements = compiler.getOutputBufferRequirements("Identity")
+        assertTrue(outputRequirements.bufferSize > 0)
+        assertTrue(outputRequirements.supportedTypes.isNotEmpty())
+
         compiler.close()
     }
 
@@ -47,6 +57,16 @@ class LiteRTTest {
         inputs[0].writeFloat(floatArrayOf(100f))
         compiler.run(inputs, outputs)
         println(outputs[0].readFloat().contentToString())
+
+        // Test Buffer Requirements
+        val inputRequirements = compiler.getInputBufferRequirements("input_c")
+        assertTrue(inputRequirements.bufferSize > 0)
+        assertTrue(inputRequirements.supportedTypes.isNotEmpty())
+
+        val outputRequirements = compiler.getOutputBufferRequirements("Identity")
+        assertTrue(outputRequirements.bufferSize > 0)
+        assertTrue(outputRequirements.supportedTypes.isNotEmpty())
+
         compiler.close()
     }
 
@@ -64,6 +84,16 @@ class LiteRTTest {
         inputs[0].writeFloat(floatArrayOf(100f))
         compiler.run(inputs, outputs)
         println(outputs[0].readFloat().contentToString())
+
+        // Test Buffer Requirements
+        val inputRequirements = compiler.getInputBufferRequirements("input_c")
+        assertTrue(inputRequirements.bufferSize > 0)
+        assertTrue(inputRequirements.supportedTypes.isNotEmpty())
+
+        val outputRequirements = compiler.getOutputBufferRequirements("Identity")
+        assertTrue(outputRequirements.bufferSize > 0)
+        assertTrue(outputRequirements.supportedTypes.isNotEmpty())
+
         compiler.close()
     }
 }

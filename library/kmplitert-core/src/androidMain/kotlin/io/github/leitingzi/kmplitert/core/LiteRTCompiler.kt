@@ -6,6 +6,8 @@ import com.google.ai.edge.litert.Accelerator
 import com.google.ai.edge.litert.CompiledModel
 import com.google.ai.edge.litert.Environment
 import com.google.ai.edge.litert.TensorBuffer
+import com.google.ai.edge.litert.TensorBufferRequirements
+import com.google.ai.edge.litert.TensorBufferType
 import com.google.ai.edge.litert.TensorType
 
 actual class LiteRTCompiler actual constructor(
@@ -26,7 +28,13 @@ actual class LiteRTCompiler actual constructor(
         return tensorType.toPlatform()
     }
 
-    actual suspend fun getInputBufferRequirements(inputName: String) {
+    actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements {
+        val requirements = compiledModel.getInputBufferRequirements(inputName = inputName).toPlatform()
+        if (requirements.strides.isEmpty()) {
+            val tensorType = compiledModel.getInputTensorType(inputName = inputName)
+            return requirements.copy(strides = LiteRTLayout.calculateDefaultStrides(tensorType.layout?.dimensions ?: emptyList()))
+        }
+        return requirements
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
@@ -41,7 +49,13 @@ actual class LiteRTCompiler actual constructor(
         return tensorType.toPlatform()
     }
 
-    actual suspend fun getOutputBufferRequirements(outputName: String) {
+    actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements {
+        val requirements = compiledModel.getOutputBufferRequirements(outputName = outputName).toPlatform()
+        if (requirements.strides.isEmpty()) {
+            val tensorType = compiledModel.getOutputTensorType(outputName = outputName)
+            return requirements.copy(strides = LiteRTLayout.calculateDefaultStrides(tensorType.layout?.dimensions ?: emptyList()))
+        }
+        return requirements
     }
 
     actual suspend fun getOutputBuffers(): List<TFBuffer> {
@@ -96,7 +110,58 @@ actual class LiteRTCompiler actual constructor(
     }
 
     private fun TensorType.Layout.toPlatform(): LiteRTLayout {
-        return LiteRTLayout(this.dimensions, this.strides)
+        val platformStrides = if (this.strides.isEmpty()) {
+            LiteRTLayout.calculateDefaultStrides(this.dimensions)
+        } else {
+            this.strides
+        }
+        return LiteRTLayout(this.dimensions, platformStrides)
+    }
+
+    private fun TensorBufferType.toPlatform(): LiteRTTensorBufferType {
+        return when(this) {
+            TensorBufferType.Unknown -> LiteRTTensorBufferType.Unknown
+            TensorBufferType.HostMemory -> LiteRTTensorBufferType.HostMemory
+            TensorBufferType.Ahwb -> LiteRTTensorBufferType.Ahwb
+            TensorBufferType.Ion -> LiteRTTensorBufferType.Ion
+            TensorBufferType.DmaBuf -> LiteRTTensorBufferType.DmaBuf
+            TensorBufferType.FastRpc -> LiteRTTensorBufferType.FastRpc
+            TensorBufferType.GlBuffer -> LiteRTTensorBufferType.GlBuffer
+            TensorBufferType.GlTexture -> LiteRTTensorBufferType.GlTexture
+            TensorBufferType.OpenClBuffer -> LiteRTTensorBufferType.OpenClBuffer
+            TensorBufferType.OpenClBufferFp16 -> LiteRTTensorBufferType.OpenClBufferFp16
+            TensorBufferType.OpenClTexture -> LiteRTTensorBufferType.OpenClTexture
+            TensorBufferType.OpenClTextureFp16 -> LiteRTTensorBufferType.OpenClTextureFp16
+            TensorBufferType.OpenClBufferPacked -> LiteRTTensorBufferType.OpenClBufferPacked
+            TensorBufferType.OpenClImageBuffer -> LiteRTTensorBufferType.OpenClImageBuffer
+            TensorBufferType.OpenClImageBufferFp16 -> LiteRTTensorBufferType.OpenClImageBufferFp16
+            TensorBufferType.WebGpuBuffer -> LiteRTTensorBufferType.WebGpuBuffer
+            TensorBufferType.WebGpuBufferFp16 -> LiteRTTensorBufferType.WebGpuBufferFp16
+            TensorBufferType.WebGpuTexture -> LiteRTTensorBufferType.WebGpuTexture
+            TensorBufferType.WebGpuTextureFp16 -> LiteRTTensorBufferType.WebGpuTextureFp16
+            TensorBufferType.WebGpuImageBuffer -> LiteRTTensorBufferType.WebGpuImageBuffer
+            TensorBufferType.WebGpuImageBufferFp16 -> LiteRTTensorBufferType.WebGpuImageBufferFp16
+            TensorBufferType.WebGpuBufferPacked -> LiteRTTensorBufferType.WebGpuBufferPacked
+            TensorBufferType.VulkanBuffer -> LiteRTTensorBufferType.VulkanBuffer
+            TensorBufferType.VulkanBufferFp16 -> LiteRTTensorBufferType.VulkanBufferFp16
+            TensorBufferType.VulkanTexture -> LiteRTTensorBufferType.VulkanTexture
+            TensorBufferType.VulkanTextureFp16 -> LiteRTTensorBufferType.VulkanTextureFp16
+            TensorBufferType.VulkanImageBuffer -> LiteRTTensorBufferType.VulkanImageBuffer
+            TensorBufferType.VulkanImageBufferFp16 -> LiteRTTensorBufferType.VulkanImageBufferFp16
+            TensorBufferType.VulkanBufferPacked -> LiteRTTensorBufferType.VulkanBufferPacked
+        }
+    }
+
+    private fun List<TensorBufferType>.toPlatform(): List<LiteRTTensorBufferType> {
+        return map { it.toPlatform() }
+    }
+
+    private fun TensorBufferRequirements.toPlatform(): LiteRTBufferRequirements {
+        return LiteRTBufferRequirements(
+            supportedTypes = this.supportedTypes.toPlatform(),
+            bufferSize = this.bufferSize,
+            strides = this.strides
+        )
     }
 }
 

@@ -18,6 +18,12 @@ suspend fun testMobilenet() {
     val outputTensorType = compiler.getOutputTensorType("MobilenetV1/Predictions/Reshape_1")
     println("outputTensorType = $outputTensorType")
 
+    val inputRequirements = compiler.getInputBufferRequirements("input")
+    println("inputRequirements = $inputRequirements")
+
+    val outputRequirements = compiler.getOutputBufferRequirements("MobilenetV1/Predictions/Reshape_1")
+    println("outputRequirements = $outputRequirements")
+
     val inputs = compiler.getInputBuffers()
     val outputs = compiler.getOutputBuffers()
     println("inputs = ${inputs.size} | outputs = ${outputs.size}")
@@ -62,6 +68,12 @@ suspend fun testCelsiusToFahrenheit() {
 
     val outputTensorType = compiler.getOutputTensorType("Identity")
     println("outputTensorType = $outputTensorType")
+
+    val inputRequirements = compiler.getInputBufferRequirements("input_c")
+    println("inputRequirements = $inputRequirements")
+
+    val outputRequirements = compiler.getOutputBufferRequirements("Identity")
+    println("outputRequirements = $outputRequirements")
 
     val inputs = compiler.getInputBuffers()
     val outputs = compiler.getOutputBuffers()

@@ -83,12 +83,46 @@ actual class LiteRTCompiler actual constructor(
         throw IllegalArgumentException("Output tensor $outputName not found in any of the $numSignatures signatures.")
     }
 
-    actual suspend fun getInputBufferRequirements(inputName: String) {
-        // TODO: Implement
+    actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements {
+        val model = compiledModel.model ?: throw IllegalStateException("Model is not set")
+        val numSignatures = model.getNumSignatures()
+
+        for (s in 0 until numSignatures) {
+            val signature = model.getSignature(s)
+            val numInputs = signature.getNumInputs()
+            for (i in 0 until numInputs) {
+                if (signature.getInputName(i) == inputName || signature.getInputTensor(i).getName() == inputName) {
+                    val requirements = compiledModel.getInputBufferRequirements(s, i.toLong()).toPlatform()
+                    if (requirements.strides.isEmpty()) {
+                        val tensorType = signature.getInputTensor(i).getRankedTensorType().toPlatform()
+                        return requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
+                    }
+                    return requirements
+                }
+            }
+        }
+        throw IllegalArgumentException("Input tensor $inputName not found")
     }
 
-    actual suspend fun getOutputBufferRequirements(outputName: String) {
-        // TODO: Implement
+    actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements {
+        val model = compiledModel.model ?: throw IllegalStateException("Model is not set")
+        val numSignatures = model.getNumSignatures()
+
+        for (s in 0 until numSignatures) {
+            val signature = model.getSignature(s)
+            val numOutputs = signature.getNumOutputs()
+            for (i in 0 until numOutputs) {
+                if (signature.getOutputName(i) == outputName || signature.getOutputTensor(i.toLong()).getName() == outputName) {
+                    val requirements = compiledModel.getOutputBufferRequirements(s, i.toLong()).toPlatform()
+                    if (requirements.strides.isEmpty()) {
+                        val tensorType = signature.getOutputTensor(i.toLong()).getRankedTensorType().toPlatform()
+                        return requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
+                    }
+                    return requirements
+                }
+            }
+        }
+        throw IllegalArgumentException("Output tensor $outputName not found")
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
