@@ -1,5 +1,6 @@
 package io.github.leitingzi.kmplitert.core.model
 
+import io.github.leitingzi.kmplitert.core.LiteRTLayout
 import com.sun.jna.Platform
 import com.sun.jna.Structure
 
@@ -38,6 +39,17 @@ open class LiteRtLayout : Structure() {
         } else {
             flags and (1 shl 7).inv()
         }
+    }
+
+    fun toPlatform(): LiteRTLayout {
+        val rank = getRank()
+        val dims = dimensions.sliceArray(0 until rank).toList()
+        val strds = if (hasStrides()) {
+            strides.sliceArray(0 until rank).toList()
+        } else {
+            emptyList()
+        }
+        return LiteRTLayout(dimensions = dims, strides = strds)
     }
 
     class ByReference : LiteRtLayout(), Structure.ByReference

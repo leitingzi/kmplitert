@@ -14,6 +14,22 @@ actual class LiteRTCompiler actual constructor(
         compiledModel = NativeLiteRtCompiledModel.create(filePath, accelerator)
     }
 
+    actual suspend fun getInputTensorType(inputName: String): LiteRTTensorType {
+        return compiledModel.getInputTensorType(0, inputName)
+    }
+
+    actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType {
+        return compiledModel.getOutputTensorType(0, outputName)
+    }
+
+    actual suspend fun getInputBufferRequirements(inputName: String) {
+        // TODO
+    }
+
+    actual suspend fun getOutputBufferRequirements(outputName: String) {
+        // TODO
+    }
+
     actual suspend fun getInputBuffers(): List<TFBuffer> {
         return compiledModel.getInputBuffers()
     }

@@ -1,6 +1,7 @@
 package io.github.leitingzi.kmplitert.core.model
 
 import com.sun.jna.PointerType
+import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.leitingzi.kmplitert.core.LiteRtLibrary
 
@@ -18,6 +19,15 @@ class LiteRtModel: PointerType() {
         val signature = LiteRtSignature()
         signature.pointer = ref.value
         return signature
+    }
+
+    fun getNumSignatures(): Long {
+        val count = LongByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetNumModelSignatures(this, count)
+        check(status == 0) {
+            "Failed to get num signatures: $status"
+        }
+        return count.value
     }
 
     companion object {

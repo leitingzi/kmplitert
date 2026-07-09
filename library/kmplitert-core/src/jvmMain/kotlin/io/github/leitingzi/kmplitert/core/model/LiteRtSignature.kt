@@ -24,6 +24,28 @@ class LiteRtSignature : PointerType() {
         return count.value
     }
 
+    fun getInputTensor(name: String): LiteRtTensor {
+        val ref = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputTensor(this, name, ref)
+        check(status == 0) {
+            "Failed to get input tensor: $status"
+        }
+        val tensor = LiteRtTensor()
+        tensor.pointer = ref.value
+        return tensor
+    }
+
+    fun getOutputTensor(name: String): LiteRtTensor {
+        val ref = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureOutputTensor(this, name, ref)
+        check(status == 0) {
+            "Failed to get output tensor: $status"
+        }
+        val tensor = LiteRtTensor()
+        tensor.pointer = ref.value
+        return tensor
+    }
+
     fun getInputTensor(index: Long): LiteRtTensor {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputTensorByIndex(this, index, ref)
@@ -44,6 +66,24 @@ class LiteRtSignature : PointerType() {
         val tensor = LiteRtTensor()
         tensor.pointer = ref.value
         return tensor
+    }
+
+    fun getInputName(index: Long): String {
+        val ref = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputName(this, index, ref)
+        check(status == 0) {
+            "Failed to get input name: $status"
+        }
+        return ref.value.getString(0)
+    }
+
+    fun getOutputName(index: Long): String {
+        val ref = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureOutputName(this, index, ref)
+        check(status == 0) {
+            "Failed to get output name: $status"
+        }
+        return ref.value.getString(0)
     }
 }
 

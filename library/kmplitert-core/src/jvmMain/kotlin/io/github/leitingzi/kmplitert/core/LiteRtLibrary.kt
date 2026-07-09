@@ -104,6 +104,16 @@ interface LiteRtLibrary : Library {
     fun LiteRtClearTensorBuffer(buffer: LiteRtTensorBuffer): LiteRtStatus
     fun LiteRtDestroyTensorBuffer(buffer: LiteRtTensorBuffer)
 
+    fun LiteRtGetNumModelSubgraphs(
+        model: LiteRtModel,
+        num_subgraphs: LongByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetNumModelSignatures(
+        model: LiteRtModel,
+        num_signatures: LongByReference
+    ): LiteRtStatus
+
     fun LiteRtGetModelSignature(
         model: LiteRtModel,
         signature_index: LiteRtParamIndex,
@@ -117,6 +127,17 @@ interface LiteRtLibrary : Library {
         signature: LiteRtSignature,
         num_outputs: LongByReference
     ): LiteRtStatus
+    fun LiteRtGetSignatureInputTensor(
+        signature: LiteRtSignature,
+        input_name: String,
+        tensor: PointerByReference
+    ): LiteRtStatus
+    fun LiteRtGetSignatureOutputTensor(
+        signature: LiteRtSignature,
+        output_name: String,
+        tensor: PointerByReference
+    ): LiteRtStatus
+
     fun LiteRtGetSignatureInputTensorByIndex(
         signature: LiteRtSignature,
         input_idx: LiteRtParamIndex,
@@ -127,6 +148,24 @@ interface LiteRtLibrary : Library {
         output_idx: LiteRtParamIndex,
         tensor: PointerByReference
     ): LiteRtStatus
+
+    fun LiteRtGetSignatureInputName(
+        signature: LiteRtSignature,
+        input_idx: LiteRtParamIndex,
+        input_name: PointerByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetSignatureOutputName(
+        signature: LiteRtSignature,
+        output_idx: LiteRtParamIndex,
+        output_name: PointerByReference
+    ): LiteRtStatus
+
+    fun LiteRtGetTensorName(
+        tensor: LiteRtTensor,
+        name: PointerByReference
+    ): LiteRtStatus
+
     fun LiteRtGetRankedTensorType(
         tensor: LiteRtTensor,
         ranked_tensor_type: LiteRtRankedTensorType

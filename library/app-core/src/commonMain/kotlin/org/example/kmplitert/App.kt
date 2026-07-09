@@ -6,47 +6,78 @@ import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
 import io.github.leitingzi.kmplitert.core.LiteRtImage
 import kmplitert.library.app_core.generated.resources.Res
-import kotlin.io.println
+
+suspend fun testMobilenet() {
+    val modelPath = ComposeResourceUtils.getFilePath("mobilenet_v1.tflite")
+    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
+    compiler.init()
+
+    val inputTensorType = compiler.getInputTensorType("input")
+    println("inputTensorType = $inputTensorType")
+
+    val outputTensorType = compiler.getOutputTensorType("MobilenetV1/Predictions/Reshape_1")
+    println("outputTensorType = $outputTensorType")
+
+    val inputs = compiler.getInputBuffers()
+    val outputs = compiler.getOutputBuffers()
+    println("inputs = ${inputs.size} | outputs = ${outputs.size}")
+
+    val inputBuffer = inputs[0]
+
+    val dogData = Res.readBytes("files/pic/elephant.bmp")
+//    println("dogData = ${dogData.contentToString()}")
+    val data = LiteRtImage.fromBytes(dogData)
+        .resize(224, 224)
+        .toInt8Array()
+
+//    println("data = ${data.contentToString()}")
+
+    inputBuffer.writeInt8(data)
+
+    compiler.run(inputs = inputs, outputs = outputs)
+
+    val result = outputs[0].readInt8()
+//    println("result = ${result.contentToString()}")
+
+    val rIndex = result.maxIndices()
+    println("rIndex = $rIndex")
+
+    compiler.close()
+
+    val labelsByte = Res.readBytes("files/mobilenet_v1_cn.txt")
+    val labels = labelsByte.decodeToString().lines()
+
+    rIndex.forEach { index ->
+        println("image recognition result = ${labels[index]}")
+    }
+}
+
+suspend fun testCelsiusToFahrenheit() {
+    val modelPath = ComposeResourceUtils.getFilePath("CelsiusToFahrenheit.tflite")
+    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
+    compiler.init()
+
+    val inputTensorType = compiler.getInputTensorType("input_c")
+    println("inputTensorType = $inputTensorType")
+
+    val outputTensorType = compiler.getOutputTensorType("Identity")
+    println("outputTensorType = $outputTensorType")
+
+    val inputs = compiler.getInputBuffers()
+    val outputs = compiler.getOutputBuffers()
+    println("inputs = ${inputs.size} | outputs = ${outputs.size}")
+
+    inputs[0].writeFloat(floatArrayOf(100f))
+    compiler.run(inputs = inputs, outputs = outputs)
+    val result = outputs[0].readFloat()
+    println("result = ${result.contentToString()}")
+    compiler.close()
+}
 
 @Composable
 fun App() {
     LaunchedEffect(Unit) {
-        val modelPath = ComposeResourceUtils.getFilePath("mobilenet_v1.tflite")
-        val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
-        compiler.init()
-
-        val inputs = compiler.getInputBuffers()
-        val outputs = compiler.getOutputBuffers()
-        println("inputs = ${inputs.size} | outputs = ${outputs.size}")
-
-        val inputBuffer = inputs[0]
-
-        val dogData = Res.readBytes("files/pic/elephant.bmp")
-//        println("dogData = ${dogData.contentToString()}")
-        val data = LiteRtImage.fromBytes(dogData)
-            .resize(224, 224)
-            .toInt8Array()
-
-//        println("data = ${data.contentToString()}")
-
-        inputBuffer.writeInt8(data)
-
-        compiler.run(inputs = inputs, outputs = outputs)
-
-        val result = outputs[0].readInt8()
-//        println("result = ${result.contentToString()}")
-
-        val rIndex = result.maxIndices()
-        println("rIndex = $rIndex")
-
-        compiler.close()
-
-        val labelsByte = Res.readBytes("files/mobilenet_v1_cn.txt")
-        val labels = labelsByte.decodeToString().lines()
-
-        rIndex.forEach { index ->
-            println("image recognition result = ${labels[index]}")
-        }
+        testMobilenet()
     }
 }
 

@@ -6,6 +6,7 @@ import com.google.ai.edge.litert.Accelerator
 import com.google.ai.edge.litert.CompiledModel
 import com.google.ai.edge.litert.Environment
 import com.google.ai.edge.litert.TensorBuffer
+import com.google.ai.edge.litert.TensorType
 
 actual class LiteRTCompiler actual constructor(
     val filePath: String,
@@ -20,11 +21,27 @@ actual class LiteRTCompiler actual constructor(
         compiledModel = CompiledModel.create(filePath = filePath, options = options, optionalEnv = env)
     }
 
+    actual suspend fun getInputTensorType(inputName: String): LiteRTTensorType {
+        val tensorType = compiledModel.getInputTensorType(inputName = inputName)
+        return tensorType.toPlatform()
+    }
+
+    actual suspend fun getInputBufferRequirements(inputName: String) {
+    }
+
     actual suspend fun getInputBuffers(): List<TFBuffer> {
         val inputBuffers = compiledModel.createInputBuffers()
         return inputBuffers.map { buffer ->
             AndroidTFBuffer(buffer)
         }
+    }
+
+    actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType {
+        val tensorType = compiledModel.getOutputTensorType(outputName = outputName)
+        return tensorType.toPlatform()
+    }
+
+    actual suspend fun getOutputBufferRequirements(outputName: String) {
     }
 
     actual suspend fun getOutputBuffers(): List<TFBuffer> {
@@ -59,6 +76,27 @@ actual class LiteRTCompiler actual constructor(
             LiteRTAccelerator.GPU -> Accelerator.GPU
             LiteRTAccelerator.NPU -> Accelerator.NPU
         }
+    }
+
+    private fun TensorType.toPlatform(): LiteRTTensorType {
+        return LiteRTTensorType(
+            elementType = this.elementType.toPlatform(),
+            layout = this.layout?.toPlatform()
+        )
+    }
+
+    private fun TensorType.ElementType.toPlatform(): LiteRTElementType {
+        return when(this) {
+            TensorType.ElementType.INT -> LiteRTElementType.INT
+            TensorType.ElementType.FLOAT -> LiteRTElementType.FLOAT
+            TensorType.ElementType.INT8 -> LiteRTElementType.INT8
+            TensorType.ElementType.BOOLEAN -> LiteRTElementType.BOOLEAN
+            TensorType.ElementType.INT64 -> LiteRTElementType.INT64
+        }
+    }
+
+    private fun TensorType.Layout.toPlatform(): LiteRTLayout {
+        return LiteRTLayout(this.dimensions, this.strides)
     }
 }
 

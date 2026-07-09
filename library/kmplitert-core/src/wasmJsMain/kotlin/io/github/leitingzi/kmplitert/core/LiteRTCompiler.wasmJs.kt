@@ -7,6 +7,7 @@ import io.github.leitingzi.kmplitert.core.model.*
 import io.github.leitingzi.kmplitert.core.platform.LiteRtInit
 import io.github.leitingzi.kmplitert.core.platform.loadAndCompile
 import kotlinx.coroutines.await
+import org.khronos.webgl.get
 
 actual class LiteRTCompiler actual constructor(
     val filePath: String,
@@ -23,6 +24,53 @@ actual class LiteRTCompiler actual constructor(
             compileOptions = compileOptions
         )
         compiledModel = load.await()
+    }
+
+    actual suspend fun getInputTensorType(inputName: String): LiteRTTensorType {
+        val details = compiledModel.getInputDetails().toKotlinList().find { it?.name == inputName }
+            ?: throw IllegalArgumentException("Input tensor $inputName not found")
+        return details.toPlatform()
+    }
+
+    actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType {
+        val details = compiledModel.getOutputDetails().toKotlinList().find { it?.name == outputName }
+            ?: throw IllegalArgumentException("Output tensor $outputName not found")
+        return details.toPlatform()
+    }
+
+    actual suspend fun getInputBufferRequirements(inputName: String) {
+        // TODO
+    }
+
+    actual suspend fun getOutputBufferRequirements(outputName: String) {
+        // TODO
+    }
+
+    private fun <T : JsAny> JsArray<T>.toKotlinList(): List<T?> {
+        val list = mutableListOf<T?>()
+        for (i in 0 until length) {
+            list.add(this[i])
+        }
+        return list
+    }
+
+    private fun TensorDetails.toPlatform(): LiteRTTensorType {
+        val platformElementType = when (dtype) {
+            "float32" -> LiteRTElementType.FLOAT
+            "int32" -> LiteRTElementType.INT
+            "int64" -> LiteRTElementType.INT64
+            "bool" -> LiteRTElementType.BOOLEAN
+            "int8" -> LiteRTElementType.INT8
+            else -> LiteRTElementType.FLOAT // Default
+        }
+        val dims = mutableListOf<Int>()
+        for (i in 0 until shape.length) {
+            dims.add(shape.get(i))
+        }
+        return LiteRTTensorType(
+            elementType = platformElementType,
+            layout = LiteRTLayout(dimensions = dims, strides = emptyList())
+        )
     }
 
     actual suspend fun getInputBuffers(): List<TFBuffer> {
