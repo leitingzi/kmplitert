@@ -14,13 +14,11 @@ actual class LiteRTCompiler actual constructor(
     val filePath: String,
     val accelerator: LiteRTAccelerator
 ) {
-    private lateinit var env: Environment
     private lateinit var compiledModel: CompiledModel
 
     actual suspend fun init() {
-        env = Environment.create()
         val options = CompiledModel.Options(accelerator.toAndroid())
-        compiledModel = CompiledModel.create(filePath = filePath, options = options, optionalEnv = env)
+        compiledModel = CompiledModel.create(filePath = filePath, options = options)
     }
 
     actual suspend fun getInputTensorType(inputName: String): LiteRTTensorType {
@@ -73,7 +71,6 @@ actual class LiteRTCompiler actual constructor(
 
     actual suspend fun close() {
         compiledModel.close()
-        env.close()
     }
 
     private fun TFBuffer.toAndroid(): TensorBuffer {

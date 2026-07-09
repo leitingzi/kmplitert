@@ -12,6 +12,7 @@ suspend fun testMobilenet() {
     val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
     compiler.init()
 
+    // TODO Android Bug [litert_compiled_model_jni.cc:619] Unsupported element type in Kotlin: 3
     val inputTensorType = compiler.getInputTensorType("input")
     println("inputTensorType = $inputTensorType")
 
