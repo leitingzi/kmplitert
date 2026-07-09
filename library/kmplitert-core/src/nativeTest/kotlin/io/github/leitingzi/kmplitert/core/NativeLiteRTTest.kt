@@ -23,6 +23,16 @@ class NativeLiteRTTest {
             assertTrue(inputs.isNotEmpty(), "Input buffers should not be empty")
             assertTrue(outputs.isNotEmpty(), "Output buffers should not be empty")
 
+            // Test Input Tensor Type
+            val inputType = compiler.getInputTensorType("input_c")
+            assertTrue(inputType.elementType == LiteRTElementType.FLOAT, "Input element type should be FLOAT")
+            assertTrue(inputType.layout?.rank!! >= 1, "Input rank should be >= 1")
+
+            // Test Output Tensor Type
+            val outputType = compiler.getOutputTensorType("Identity")
+            assertTrue(outputType.elementType == LiteRTElementType.FLOAT, "Output element type should be FLOAT")
+            assertTrue(outputType.layout?.rank!! >= 1, "Output rank should be >= 1")
+
             // 写入测试数据 (100摄氏�?
             inputs[0].writeFloat(floatArrayOf(100f))
 

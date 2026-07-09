@@ -167,6 +167,24 @@ class JvmLiteRTTest {
 
         compiledModel.destroy()
     }
+
+    @Test
+    fun testCompilerTensorTypeApi() = runTest {
+        val compiler = LiteRTCompiler(filePath = modelFilePath, accelerator = LiteRTAccelerator.CPU)
+        compiler.init()
+
+        // Test Input Tensor Type
+        val inputType = compiler.getInputTensorType("input_c")
+        assertEquals(LiteRTElementType.FLOAT, inputType.elementType)
+        assertTrue(inputType.layout?.rank!! >= 1)
+
+        // Test Output Tensor Type
+        val outputType = compiler.getOutputTensorType("Identity")
+        assertEquals(LiteRTElementType.FLOAT, outputType.elementType)
+        assertTrue(outputType.layout?.rank!! >= 1)
+
+        compiler.close()
+    }
 }
 
 
