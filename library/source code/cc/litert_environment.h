@@ -23,6 +23,7 @@
 #include <variant>
 #include <vector>
 
+#include "absl/types/span.h"  // from @com_google_absl
 #include "litert/c/internal/litert_logging.h"
 #include "litert/c/litert_any.h"
 #include "litert/c/litert_common.h"
@@ -30,7 +31,6 @@
 #include "litert/cc/internal/litert_handle.h"
 #include "litert/cc/internal/litert_runtime_proxy.h"
 #include "litert/cc/litert_any.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_common.h"
 #include "litert/cc/litert_environment_options.h"
 #include "litert/cc/litert_expected.h"
@@ -89,13 +89,8 @@ class Environment {
     MagicNumberConfigs = kLiteRtEnvOptionTagMagicNumberConfigs,
     MagicNumberVerifications = kLiteRtEnvOptionTagMagicNumberVerifications,
     CompilerCacheDir = kLiteRtEnvOptionTagCompilerCacheDir,
-     CompilerCacheMaxConfigsPerModel =
-        kLiteRtEnvOptionTagCompilerCacheMaxConfigsPerModel,
-     CompilerCacheMaxTotalSize = kLiteRtEnvOptionTagCompilerCacheMaxTotalSize,
     WebGpuInstance = kLiteRtEnvOptionTagWebGpuInstance,
-    // TODO(b/515525631): Remove WebGpuProcs once downstream dependencies are
-    // updated.
-    WebGpuProcs = kLiteRtEnvOptionTagWebGpuProcs,  // Deprecated.
+    WebGpuProcs = kLiteRtEnvOptionTagWebGpuProcs,
     RuntimeLibraryDir = kLiteRtEnvOptionTagRuntimeLibraryDir,
     AutoRegisterAccelerators = kLiteRtEnvOptionTagAutoRegisterAccelerators,
   };
@@ -112,7 +107,7 @@ class Environment {
     return FromCOptions(options);
   }
 
-  static Expected<Environment> Create(Span<const Option> options) {
+  static Expected<Environment> Create(absl::Span<const Option> options) {
     std::vector<EnvironmentOptions::Option> env_options;
     env_options.reserve(options.size());
     for (const auto& option : options) {
@@ -280,7 +275,7 @@ class Environment {
       handle_;
 
   static Expected<std::vector<LiteRtEnvOption>> ToCOptions(
-      Span<const EnvironmentOptions::Option> options) {
+      absl::Span<const EnvironmentOptions::Option> options) {
     std::vector<LiteRtEnvOption> c_options;
     c_options.reserve(options.size());
 

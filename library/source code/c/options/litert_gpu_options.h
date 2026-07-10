@@ -161,14 +161,6 @@ LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsModelCacheKey(
 LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsProgramCacheFd(
     LrtGpuOptions* gpu_options, int program_cache_fd);
 
-// The file descriptor to use for weight caching.
-// If set, the delegate will use this file descriptor to read and write the
-// weight cache.
-// If it is not set, the delegate will use the serialization_dir + model_token
-// to determine where to read and write the weight cache from.
-LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsWeightCacheFd(
-    LrtGpuOptions* gpu_options, int weight_cache_fd);
-
 // When set to true AND the serialization_dir and model_cache_key are also set,
 // the delegate will serialize the program cache.
 LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsSerializeProgramCache(
@@ -193,13 +185,6 @@ LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsMadviseOriginalSharedTensors(
 // Sets whether to disable Vulkan kernel shader optimization.
 LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsDisableShaderOptimization(
     LrtGpuOptions* gpu_options, bool disable_shader_optimization);
-
-// Sets the pointer to the shared tensor maps.
-// The pointer must point to a litert::ml_drift::SharedTensorMaps struct.
-// The caller is responsible for maintaining the lifetime of the struct
-// until the model is destroyed.
-LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsSharedTensorMaps(
-    LrtGpuOptions* gpu_options, void* shared_tensor_maps);
 
 // Sets the number of steps of command buffer preparations.
 LiteRtStatus
@@ -295,9 +280,6 @@ LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsModelCacheKey(
 LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsProgramCacheFd(
     int* program_cache_fd, const LrtGpuOptions* options);
 
-LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsWeightCacheFd(
-    int* weight_cache_fd, const LrtGpuOptions* options);
-
 LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsSerializeProgramCache(
     bool* serialize_program_cache, const LrtGpuOptions* options);
 
@@ -330,9 +312,6 @@ LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsMadviseOriginalSharedTensors(
 
 LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsDisableShaderOptimization(
     bool* disable_shader_optimization, const LrtGpuOptions* options);
-
-LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsSharedTensorMaps(
-    void** shared_tensor_maps, const LrtGpuOptions* gpu_options);
 
 LiteRtStatus
 LrtGetGpuAcceleratorRuntimeOptionsNumStepsOfCommandBufferPreparations(

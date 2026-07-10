@@ -43,7 +43,6 @@ inline constexpr absl::string_view kElementTypeStrF16 = "f16";
 inline constexpr absl::string_view kElementTypeStrF64 = "f64";
 inline constexpr absl::string_view kElementTypeStrI16 = "i16";
 inline constexpr absl::string_view kElementTypeStrI8 = "i8";
-inline constexpr absl::string_view kElementTypeStrU4 = "u4";
 inline constexpr absl::string_view kElementTypeStrU8 = "u8";
 inline constexpr absl::string_view kElementTypeStrU16 = "u16";
 inline constexpr absl::string_view kElementTypeStrU32 = "u32";
@@ -51,8 +50,6 @@ inline constexpr absl::string_view kElementTypeStrU64 = "u64";
 inline constexpr absl::string_view kElementTypeStrI4 = "i4";
 inline constexpr absl::string_view kElementTypeStrI2 = "i2";
 inline constexpr absl::string_view kElementTypeStrI1 = "i1";
-inline constexpr absl::string_view kElementTypeStrF8E4M3FN = "f8e4m3fn";
-inline constexpr absl::string_view kElementTypeStrF8E5M2 = "f8e5m2";
 
 // String representations of LiteRtOpCode.
 inline constexpr absl::string_view kOpCodeStrShloAbs = "shlo.abs";
@@ -339,12 +336,6 @@ void AbslStringify(Sink& sink, const LiteRtElementType& type) {
     case kLiteRtElementTypeFloat16:
       dtype_str = ::litert::kElementTypeStrF16;
       break;
-    case kLiteRtElementTypeFloat8E4M3FN:
-      dtype_str = ::litert::kElementTypeStrF8E4M3FN;
-      break;
-    case kLiteRtElementTypeFloat8E5M2:
-      dtype_str = ::litert::kElementTypeStrF8E5M2;
-      break;
     case kLiteRtElementTypeFloat64:
       dtype_str = ::litert::kElementTypeStrF64;
       break;
@@ -356,9 +347,6 @@ void AbslStringify(Sink& sink, const LiteRtElementType& type) {
       break;
     case kLiteRtElementTypeUInt8:
       dtype_str = ::litert::kElementTypeStrU8;
-      break;
-    case kLiteRtElementTypeUInt4:
-      dtype_str = ::litert::kElementTypeStrU4;
       break;
     case kLiteRtElementTypeUInt16:
       dtype_str = ::litert::kElementTypeStrU16;

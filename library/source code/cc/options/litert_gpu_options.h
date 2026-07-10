@@ -174,10 +174,6 @@ class GpuOptions {
     return LrtSetGpuAcceleratorCompilationOptionsModelCacheKey(options_,
                                                                model_cache_key);
   }
-  LiteRtStatus SetWeightCacheFd(int weight_cache_fd) {
-    return LrtSetGpuAcceleratorCompilationOptionsWeightCacheFd(options_,
-                                                               weight_cache_fd);
-  }
   LiteRtStatus SetProgramCacheFd(int program_cache_fd) {
     return LrtSetGpuAcceleratorCompilationOptionsProgramCacheFd(
         options_, program_cache_fd);
@@ -198,12 +194,6 @@ class GpuOptions {
   }
   LiteRtStatus AddBufferStorageTensorPattern(const char* pattern) {
     return LrtAddGpuOptionsBufferStorageTensorPattern(options_, pattern);
-  }
-
-  /// @brief Sets the pointer to the shared tensor maps.
-  LiteRtStatus SetSharedTensorMaps(void* shared_tensor_maps) {
-    return LrtSetGpuAcceleratorCompilationOptionsSharedTensorMaps(
-        options_, shared_tensor_maps);
   }
 
   enum class Backend : int {

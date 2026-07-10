@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <limits>
 
 #include "litert/c/litert_common.h"
 
@@ -29,20 +28,12 @@ LiteRtStatus LiteRtGetNumLayoutElements(const LiteRtLayout* layout,
   if (!layout || !num_elements) {
     return kLiteRtStatusErrorInvalidArgument;
   }
-  if (layout->rank > LITERT_TENSOR_MAX_RANK) {
-    return kLiteRtStatusErrorInvalidArgument;
-  }
   *num_elements = 1;
   for (size_t i = 0; i < layout->rank; ++i) {
     if (layout->dimensions[i] < 0) {
       return kLiteRtStatusErrorInvalidArgument;
     }
-    const size_t dimension = static_cast<size_t>(layout->dimensions[i]);
-    if (*num_elements != 0 &&
-        dimension > std::numeric_limits<size_t>::max() / *num_elements) {
-      return kLiteRtStatusErrorInvalidArgument;
-    }
-    *num_elements *= dimension;
+    *num_elements *= layout->dimensions[i];
   }
   return kLiteRtStatusOk;
 }
@@ -50,10 +41,6 @@ LiteRtStatus LiteRtGetNumLayoutElements(const LiteRtLayout* layout,
 LiteRtStatus LiteRtIsSameLayout(const LiteRtLayout* layout1,
                                 const LiteRtLayout* layout2, bool* result) {
   if (!layout1 || !layout2 || !result) {
-    return kLiteRtStatusErrorInvalidArgument;
-  }
-  if (layout1->rank > LITERT_TENSOR_MAX_RANK ||
-      layout2->rank > LITERT_TENSOR_MAX_RANK) {
     return kLiteRtStatusErrorInvalidArgument;
   }
 

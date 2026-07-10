@@ -17,10 +17,13 @@
 
 #include <cstddef>
 #include <cstring>
-#include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/cleanup/cleanup.h"  // from @com_google_absl
+#include "absl/log/absl_check.h"  // from @com_google_absl
+#include "absl/strings/str_format.h"  // from @com_google_absl
+#include "absl/types/span.h"  // from @com_google_absl
 #include "litert/c/litert_common.h"
 #include "litert/c/litert_custom_tensor_buffer.h"
 #include "litert/c/litert_gl_types.h"
@@ -29,7 +32,6 @@
 #include "litert/c/litert_tensor_buffer_types.h"
 #include "litert/c/litert_webgpu_types.h"
 #include "litert/cc/internal/litert_handle.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_common.h"
 #include "litert/cc/litert_environment.h"
 #include "litert/cc/litert_event.h"
@@ -118,7 +120,7 @@ class TensorBuffer : public internal::BaseHandle<LiteRtTensorBuffer> {
         internal::tensor_buffer_detail::ToLiteRtTensorBufferRequirements(
             env_holder, requirements));
 
-    auto cleanup = internal::MakeCleanup([&env_holder, litert_requirements] {
+    auto cleanup = absl::MakeCleanup([&env_holder, litert_requirements] {
       env_holder.runtime->DestroyTensorBufferRequirements(litert_requirements);
     });
 
@@ -201,85 +203,6 @@ class TensorBuffer : public internal::BaseHandle<LiteRtTensorBuffer> {
     return litert::Unexpected(
         kLiteRtStatusErrorRuntimeFailure,
         "AHardwareBuffer is not supported on this platform");
-#endif
-  }
-
-  /// @brief Creates a `TensorBuffer` that wraps an ION buffer.
-  ///
-  /// The provided ION buffer is not owned by the `TensorBuffer` and must
-  /// outlive it.
-  /// @param ion_buffer_offset The offset in bytes from the start of the
-  /// ION buffer where the tensor data begins.
-  static Expected<TensorBuffer> CreateFromIonBuffer(
-      const Environment& env, const RankedTensorType& tensor_type,
-      void* ion_buffer_addr, int ion_buffer_fd, size_t ion_buffer_size,
-      size_t ion_buffer_offset) {
-#if LITERT_HAS_ION_SUPPORT
-    LiteRtTensorBuffer tensor_buffer;
-    auto litert_tensor_type = static_cast<LiteRtRankedTensorType>(tensor_type);
-    auto env_holder = env.GetHolder();
-
-    LITERT_RETURN_IF_ERROR(env_holder.runtime->CreateTensorBufferFromIonBuffer(
-        &litert_tensor_type, ion_buffer_addr, ion_buffer_fd, ion_buffer_size,
-        ion_buffer_offset, /*deallocator=*/nullptr, &tensor_buffer));
-    return TensorBuffer(env_holder, tensor_buffer, OwnHandle::kYes);
-#else
-    return litert::Unexpected(Status::kErrorRuntimeFailure,
-                              "ION is not supported on this platform");
-#endif
-  }
-
-  /// @brief Creates a `TensorBuffer` that wraps a DMA-BUF buffer.
-  ///
-  /// The provided DMA-BUF buffer is not owned by the `TensorBuffer` and must
-  /// outlive it.
-  /// @param dmabuf_buffer_offset The offset in bytes from the start of the
-  /// DMA-BUF buffer where the tensor data begins.
-  static Expected<TensorBuffer> CreateFromDmaBufBuffer(
-      const Environment& env, const RankedTensorType& tensor_type,
-      void* dmabuf_buffer_addr, int dmabuf_buffer_fd, size_t dmabuf_buffer_size,
-      size_t dmabuf_buffer_offset) {
-#if LITERT_HAS_DMABUF_SUPPORT
-    LiteRtTensorBuffer tensor_buffer;
-    auto litert_tensor_type = static_cast<LiteRtRankedTensorType>(tensor_type);
-    auto env_holder = env.GetHolder();
-
-    LITERT_RETURN_IF_ERROR(
-        env_holder.runtime->CreateTensorBufferFromDmaBufBuffer(
-            &litert_tensor_type, dmabuf_buffer_addr, dmabuf_buffer_fd,
-            dmabuf_buffer_size, dmabuf_buffer_offset, /*deallocator=*/nullptr,
-            &tensor_buffer));
-    return TensorBuffer(env_holder, tensor_buffer, OwnHandle::kYes);
-#else
-    return litert::Unexpected(Status::kErrorRuntimeFailure,
-                              "DMA-BUF is not supported on this platform");
-#endif
-  }
-
-  /// @brief Creates a `TensorBuffer` that wraps a FastRPC buffer.
-  ///
-  /// The provided FastRPC buffer is not owned by the `TensorBuffer` and must
-  /// outlive it.
-  /// @param fastrpc_buffer_offset The offset in bytes from the start of the
-  /// FastRPC buffer where the tensor data begins.
-  static Expected<TensorBuffer> CreateFromFastRpcBuffer(
-      const Environment& env, const RankedTensorType& tensor_type,
-      void* fastrpc_buffer_addr, int fastrpc_buffer_fd,
-      size_t fastrpc_buffer_size, size_t fastrpc_buffer_offset) {
-#if LITERT_HAS_FASTRPC_SUPPORT
-    LiteRtTensorBuffer tensor_buffer;
-    auto litert_tensor_type = static_cast<LiteRtRankedTensorType>(tensor_type);
-    auto env_holder = env.GetHolder();
-
-    LITERT_RETURN_IF_ERROR(
-        env_holder.runtime->CreateTensorBufferFromFastRpcBuffer(
-            &litert_tensor_type, fastrpc_buffer_addr, fastrpc_buffer_fd,
-            fastrpc_buffer_size, fastrpc_buffer_offset, /*deallocator=*/nullptr,
-            &tensor_buffer));
-    return TensorBuffer(env_holder, tensor_buffer, OwnHandle::kYes);
-#else
-    return litert::Unexpected(Status::kErrorRuntimeFailure,
-                              "FastRPC is not supported on this platform");
 #endif
   }
 
@@ -415,40 +338,6 @@ class TensorBuffer : public internal::BaseHandle<LiteRtTensorBuffer> {
 #else
     return litert::Unexpected(Status::kErrorRuntimeFailure,
                               "DMA-BUF is not supported on this platform");
-#endif
-  }
-
-  struct IonBuf {
-    void* addr;
-    int fd;
-  };
-
-  litert::Expected<IonBuf> GetIonBuf() const {
-#if LITERT_HAS_ION_SUPPORT
-    IonBuf ion_buf;
-    LITERT_RETURN_IF_ERROR(env_.runtime->GetTensorBufferIonBuffer(
-        Get(), &ion_buf.addr, &ion_buf.fd));
-    return ion_buf;
-#else
-    return litert::Unexpected(Status::kErrorRuntimeFailure,
-                              "ION is not supported on this platform");
-#endif
-  }
-
-  struct FastRpcBuf {
-    void* addr;
-    int fd;
-  };
-
-  litert::Expected<FastRpcBuf> GetFastRpcBuf() const {
-#if LITERT_HAS_FASTRPC_SUPPORT
-    FastRpcBuf fastrpc_buf;
-    LITERT_RETURN_IF_ERROR(env_.runtime->GetTensorBufferFastRpcBuffer(
-        Get(), &fastrpc_buf.addr, &fastrpc_buf.fd));
-    return fastrpc_buf;
-#else
-    return litert::Unexpected(Status::kErrorRuntimeFailure,
-                              "FastRPC is not supported on this platform");
 #endif
   }
 
@@ -630,7 +519,7 @@ class TensorBuffer : public internal::BaseHandle<LiteRtTensorBuffer> {
   bool HasEvent() const {
     bool has_event;
     auto status = env_.runtime->HasTensorBufferEvent(Get(), &has_event);
-    LITERT_INTERNAL_CHECK_EQ(status, kLiteRtStatusOk);
+    ABSL_CHECK_EQ(status, kLiteRtStatusOk);
     return has_event;
   }
 
@@ -706,46 +595,47 @@ class TensorBuffer : public internal::BaseHandle<LiteRtTensorBuffer> {
     return {};
   }
 
-  /// @brief Writes data from a user-provided `Span<const T>` to the
+  /// @brief Writes data from a user-provided `absl::Span<const T>` to the
   /// tensor buffer.
   ///
   /// Returns an error if the provided buffer is larger than the tensor
   /// buffer's size.
   template <typename T>
-  Expected<void> Write(Span<const T> data) {
+  Expected<void> Write(absl::Span<const T> data) {
     LITERT_ASSIGN_OR_RETURN(void* host_mem_addr, Lock(LockMode::kWrite));
-    auto unlock = internal::MakeCleanup([this] { Unlock(); });
+    absl::Cleanup unlock = [this] { Unlock(); };
     LITERT_ASSIGN_OR_RETURN(size_t size, PackedSize());
     if (size < data.size() * sizeof(T)) {
       return Unexpected(
           kLiteRtStatusErrorRuntimeFailure,
-          "TensorBuffer host memory buffer size is smaller than the given "
-          "data size, " +
-              std::to_string(size) + " vs " +
-              std::to_string(data.size() * sizeof(T)));
+          absl::StrFormat(
+              "TensorBuffer host memory buffer size is smaller than the "
+              "given data size, %zu vs %zu",
+              size, data.size() * sizeof(T)));
     }
     std::memcpy(host_mem_addr, data.data(), data.size() * sizeof(T));
     return {};
   }
 
   /// @brief Reads data from the tensor buffer into a user-provided
-  /// `Span<T>`.
+  /// `absl::Span<T>`.
   ///
   /// If the provided buffer is smaller than the tensor buffer, data will be
   /// read up to the size of the provided buffer. Returns an error if the
   /// provided buffer is larger than the tensor buffer.
   template <typename T>
-  Expected<void> Read(Span<T> data) {
+  Expected<void> Read(absl::Span<T> data) {
     LITERT_ASSIGN_OR_RETURN(void* host_mem_addr, Lock(LockMode::kRead));
-    auto unlock = internal::MakeCleanup([this] { Unlock(); });
+    absl::Cleanup unlock = [this] { Unlock(); };
     LITERT_ASSIGN_OR_RETURN(size_t size, PackedSize());
     size_t total_read_size = data.size() * sizeof(T);
     if (size < total_read_size) {
       return Unexpected(
           kLiteRtStatusErrorRuntimeFailure,
-          "TensorBuffer host memory buffer size is smaller than the given "
-          "data size, " +
-              std::to_string(size) + " vs " + std::to_string(total_read_size));
+          absl::StrFormat(
+              "TensorBuffer host memory buffer size is smaller than the "
+              "given data size, %zu vs %zu",
+              size, total_read_size));
     }
     std::memcpy(data.data(), host_mem_addr, total_read_size);
     return {};
@@ -762,7 +652,7 @@ class TensorBuffer : public internal::BaseHandle<LiteRtTensorBuffer> {
 
     // Fall back to synchronous write.
     LITERT_ASSIGN_OR_RETURN(void* host_mem_addr, Lock(LockMode::kWrite));
-    auto unlock = internal::MakeCleanup([this] { Unlock(); });
+    absl::Cleanup unlock = [this] { Unlock(); };
     LITERT_ASSIGN_OR_RETURN(size_t size, PackedSize());
     std::memset(host_mem_addr, 0, size);
     return {};

@@ -17,10 +17,10 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/string_view.h"  // from @com_google_absl
 #include "litert/c/options/litert_mediatek_options.h"
 #include "litert/cc/internal/litert_detail.h"
 #include "litert/cc/internal/litert_handle.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_expected.h"
 #include "litert/cc/litert_macros.h"
 
@@ -45,45 +45,17 @@ class MediatekOptions {
   LrtMediatekOptions* Get() const { return options_.get(); }
   LrtMediatekOptions* Release() { return options_.release(); }
 
-  /// @brief Specifies the version of the Neuron SDK to use.
-  enum class NeronSDKVersion : int {
-    kVersion7 = kLiteRtMediatekOptionsNeronSDKVersionTypeVersion7,
-    kVersion8 = kLiteRtMediatekOptionsNeronSDKVersionTypeVersion8,
-    kVersion9 = kLiteRtMediatekOptionsNeronSDKVersionTypeVersion9,
-  };
-
-  /// @brief Configures MTK devices to optimize for performance or power
-  /// efficiency.
-  enum class PerformanceMode : int {
-    kLowPower = kLiteRtMediatekNeuronAdapterPerformanceModeNeuronPreferLowPower,
-    kFastSingleAnswer =
-        kLiteRtMediatekNeuronAdapterPerformanceModeNeuronPreferFastSingleAnswer,
-    kSustainedSpeed =
-        kLiteRtMediatekNeuronAdapterPerformanceModeNeuronPreferSustainedSpeed,
-    kTurboBoost =
-        kLiteRtMediatekNeuronAdapterPerformanceModeNeuronPreferTurboBoost,
-  };
-
-  /// @brief Configures MTK devices with optimization hints.
-  enum class OptimizationHint : int {
-    kNormal = kLiteRtMediatekNeuronAdapterOptimizationHintNormal,
-    kLowLatency = kLiteRtMediatekNeuronAdapterOptimizationHintLowLatency,
-    kDeepFusion = kLiteRtMediatekNeuronAdapterOptimizationHintDeepFusion,
-    kBatchProcessing =
-        kLiteRtMediatekNeuronAdapterOptimizationHintBatchProcessing,
-  };
-
-  void SetNeronSDKVersionType(NeronSDKVersion sdk_version_type) {
+  void SetNeronSDKVersionType(
+      LiteRtMediatekOptionsNeronSDKVersionType sdk_version_type) {
     internal::AssertOk(LrtSetMediatekOptionsNeronSDKVersionType, Get(),
-                       static_cast<LiteRtMediatekOptionsNeronSDKVersionType>(
-                           sdk_version_type));
+                       sdk_version_type);
   }
 
-  NeronSDKVersion GetNeronSDKVersionType() {
+  LiteRtMediatekOptionsNeronSDKVersionType GetNeronSDKVersionType() {
     LiteRtMediatekOptionsNeronSDKVersionType sdk_version_type;
     internal::AssertOk(LrtGetMediatekOptionsNeronSDKVersionType, Get(),
                        &sdk_version_type);
-    return static_cast<NeronSDKVersion>(sdk_version_type);
+    return sdk_version_type;
   }
 
   void SetEnableGemmaCompilerOptimizations(
@@ -99,17 +71,17 @@ class MediatekOptions {
     return enable_gemma_compiler_optimizations;
   }
 
-  void SetPerformanceMode(PerformanceMode performance_mode) {
+  void SetPerformanceMode(
+      LiteRtMediatekNeuronAdapterPerformanceMode performance_mode) {
     internal::AssertOk(LrtSetMediatekOptionsPerformanceMode, Get(),
-                       static_cast<LiteRtMediatekNeuronAdapterPerformanceMode>(
-                           performance_mode));
+                       performance_mode);
   }
 
-  PerformanceMode GetPerformanceMode() {
+  LiteRtMediatekNeuronAdapterPerformanceMode GetPerformanceMode() {
     LiteRtMediatekNeuronAdapterPerformanceMode performance_mode;
     internal::AssertOk(LrtGetMediatekOptionsPerformanceMode, Get(),
                        &performance_mode);
-    return static_cast<PerformanceMode>(performance_mode);
+    return performance_mode;
   }
 
   void SetEnableL1CacheOptimizations(bool enable_l1_cache_optimizations) {
@@ -124,17 +96,17 @@ class MediatekOptions {
     return enable_l1_cache_optimizations;
   }
 
-  void SetOptimizationHint(OptimizationHint optimization_hint) {
+  void SetOptimizationHint(
+      LiteRtMediatekNeuronAdapterOptimizationHint optimization_hint) {
     internal::AssertOk(LrtSetMediatekOptionsOptimizationHint, Get(),
-                       static_cast<LiteRtMediatekNeuronAdapterOptimizationHint>(
-                           optimization_hint));
+                       optimization_hint);
   }
 
-  OptimizationHint GetOptimizationHint() {
+  LiteRtMediatekNeuronAdapterOptimizationHint GetOptimizationHint() {
     LiteRtMediatekNeuronAdapterOptimizationHint optimization_hint;
     internal::AssertOk(LrtGetMediatekOptionsOptimizationHint, Get(),
                        &optimization_hint);
-    return static_cast<OptimizationHint>(optimization_hint);
+    return optimization_hint;
   }
 
   void SetDisableDlaDirRemoval(bool disable_dla_dir_removal) {
@@ -154,11 +126,11 @@ class MediatekOptions {
                        mediatek_dla_dir.c_str());
   }
 
-  StringView GetMediatekDlaDir() {
+  absl::string_view GetMediatekDlaDir() {
     const char* mediatek_dla_dir;
     internal::AssertOk(LrtGetMediatekOptionsMediatekDlaDir, Get(),
                        &mediatek_dla_dir);
-    return StringView(mediatek_dla_dir);
+    return absl::string_view(mediatek_dla_dir);
   }
 
   void SetAotCompilationOptions(const std::string& aot_compilation_options) {
@@ -166,11 +138,11 @@ class MediatekOptions {
                        aot_compilation_options.c_str());
   }
 
-  StringView GetAotCompilationOptions() {
+  absl::string_view GetAotCompilationOptions() {
     const char* aot_compilation_options;
     internal::AssertOk(LrtGetMediatekOptionsAotCompilationOptions, Get(),
                        &aot_compilation_options);
-    return StringView(aot_compilation_options);
+    return absl::string_view(aot_compilation_options);
   }
 
  private:

@@ -67,15 +67,6 @@ class SamsungOptions {
         Get(), &large_model_support));
     return large_model_support;
   }
-  Expected<void> SetSocModel(const char* soc_model) {
-    LITERT_RETURN_IF_ERROR(LrtSamsungOptionsSetSocModel(Get(), soc_model));
-    return {};
-  }
-  Expected<const char*> GetSocModel() const {
-    const char* soc_model;
-    LITERT_RETURN_IF_ERROR(LrtSamsungOptionsGetSocModel(Get(), &soc_model));
-    return soc_model;
-  }
 
  private:
   std::unique_ptr<LrtSamsungOptionsT, void (*)(LrtSamsungOptions)> options_;

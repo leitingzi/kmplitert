@@ -42,7 +42,7 @@ extern "C" {
 // 6. Evaluate the output LiteRtTensorBuffer
 
 // Creates a LiteRtCompiledModel from a LiteRtModel object. Parameter
-// `compilation_options` is optional and can be null, and is owned by the
+// `jit_compilation_options` is optional and can be null, and is owned by the
 // caller.  The model is loaded into memory and the caller takes ownership of
 // the returned object.
 //
@@ -119,6 +119,9 @@ LiteRtStatus LiteRtGetCompiledModelOutputTensorLayouts(
     LiteRtCompiledModel compiled_model, LiteRtParamIndex signature_index,
     size_t num_layouts, LiteRtLayout* layouts, bool update_allocation);
 
+// Returns the associated environment of the given compiled model.
+LiteRtStatus LiteRtGetCompiledModelEnvironment(
+    LiteRtCompiledModel compiled_model, LiteRtEnvironment* environment);
 
 // Runs the model of the given signature synchronously, with the provided
 // input/output LiteRtTensorBuffer.

@@ -118,28 +118,12 @@ LiteRtStatus LrtQualcommOptionsGetUseInt64BiasAsInt32(
 
 // Weight sharing indicates whether different subgraphs may share weight
 // tensors. This is only supported on x86 AOT. Defaults to false.
-//
-// Note: weight sharing is mutually exclusive with HTP DLBC weights (QAIRT
-// 2.36+). When both are requested, weight sharing wins and DLBC weights is
-// forced off.
 
 LiteRtStatus LrtQualcommOptionsSetEnableWeightSharing(
     LrtQualcommOptions options, bool enable_weight_sharing);
 
 LiteRtStatus LrtQualcommOptionsGetEnableWeightSharing(
     LrtQualcommOptions options, bool* enable_weight_sharing);
-
-// enable_just_in_time
-
-// Just-In-Time allows passing the QNN Context directly from the compiler plugin
-// to the dispatcher in-memory, bypassing graph finalization and serialization.
-// Defaults to false.
-
-LiteRtStatus LrtQualcommOptionsSetEnableJustInTime(LrtQualcommOptions options,
-                                                   bool enable_just_in_time);
-
-LiteRtStatus LrtQualcommOptionsGetEnableJustInTime(LrtQualcommOptions options,
-                                                   bool* enable_just_in_time);
 
 LiteRtStatus LrtQualcommOptionsSetDumpTensorIds(LrtQualcommOptions options,
                                                 const int32_t* ids,
@@ -186,15 +170,6 @@ LiteRtStatus LrtQualcommOptionsSetGraphIOTensorMemType(
 LiteRtStatus LrtQualcommOptionsGetGraphIOTensorMemType(
     LrtQualcommOptions options,
     LrtQualcommOptionsGraphIOTensorMemType* mem_type);
-
-// P points are experimental (HTP backend with O3 only) and map to predefined
-// compiler configurations affecting latency and DRAM bandwidth.
-
-LiteRtStatus LrtQualcommOptionsSetHtpPPoint(LrtQualcommOptions options,
-                                            int32_t htp_p_point);
-
-LiteRtStatus LrtQualcommOptionsGetHtpPPoint(LrtQualcommOptions options,
-                                            int32_t* htp_p_point);
 
 // DISPATCH OPTIONS ////////////////////////////////////////////////////////////
 
@@ -338,24 +313,6 @@ LiteRtStatus LrtQualcommOptionsSetSaverOutputDir(LrtQualcommOptions options,
 
 LiteRtStatus LrtQualcommOptionsGetSaverOutputDir(LrtQualcommOptions options,
                                                  const char** saver_output_dir);
-
-LiteRtStatus LrtQualcommOptionsSetSchematicDir(LrtQualcommOptions options,
-                                               const char* schematic_dir);
-
-LiteRtStatus LrtQualcommOptionsGetSchematicDir(LrtQualcommOptions options,
-                                               const char** schematic_dir);
-
-
-LiteRtStatus LrtQualcommOptionsSetCustomOpPackage(
-    LrtQualcommOptions options, const char* name,
-    const char* interface_provider, const char* compile_package_path,
-    const char* dispatch_package_path, const char* target);
-
-LiteRtStatus LrtQualcommOptionsGetCustomOpPackage(
-    LrtQualcommOptions options, const char** name,
-    const char** interface_provider, const char** compile_package_path,
-    const char** dispatch_package_path, const char** target);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -27,7 +27,6 @@
 struct LrtSamsungOptionsT {
   // Set to true when compile LLM.
   std::optional<bool> enable_large_model_support;
-  std::optional<std::string> soc_model;
 };
 
 const char* LrtSamsungOptionsGetIdentifier() { return "samsung"; }
@@ -67,10 +66,6 @@ LiteRtStatus LrtCreateSamsungOptionsFromToml(const char* toml_payload,
                                   litert::internal::ParseTomlBool(value));
           return kLiteRtStatusOk;
         }
-        if (key == "samsung_soc_model") {
-          options_ref.soc_model = std::string(value);
-          return kLiteRtStatusOk;
-        }
         return kLiteRtStatusOk;
       });
 
@@ -99,10 +94,6 @@ LiteRtStatus LrtGetOpaqueSamsungOptionsData(LrtSamsungOptions options,
          << (*options->enable_large_model_support ? "true" : "false") << "\n";
   }
 
-  if (options->soc_model.has_value()) {
-    toml << "samsung_soc_model = " << *options->soc_model << "\n";
-  }
-
   std::string toml_str = toml.str();
   *payload = new char[toml_str.size() + 1];
   memcpy(*payload, toml_str.c_str(), toml_str.size() + 1);
@@ -127,27 +118,5 @@ LiteRtStatus LrtSamsungOptionsGetEnableLargeModelSupport(
   }
   *enable_large_model_support =
       options->enable_large_model_support.value_or(false);
-  return kLiteRtStatusOk;
-}
-
-LiteRtStatus LrtSamsungOptionsSetSocModel(LrtSamsungOptions options,
-                                          const char* soc_model) {
-  if (options == nullptr) {
-    return kLiteRtStatusErrorInvalidArgument;
-  }
-  if (soc_model != nullptr) {
-    options->soc_model = std::string(soc_model);
-  }
-  return kLiteRtStatusOk;
-}
-
-LiteRtStatus LrtSamsungOptionsGetSocModel(LrtSamsungOptions options,
-                                          const char** soc_model) {
-  if (options == nullptr || soc_model == nullptr) {
-    return kLiteRtStatusErrorInvalidArgument;
-  }
-  static constexpr char kDefaultSocModel[] = "";
-  *soc_model = options->soc_model.has_value() ? options->soc_model->c_str()
-                                              : kDefaultSocModel;
   return kLiteRtStatusOk;
 }

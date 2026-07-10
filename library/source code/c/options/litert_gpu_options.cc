@@ -14,7 +14,6 @@
 
 #include "litert/c/options/litert_gpu_options.h"
 
-#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <optional>
@@ -139,10 +138,6 @@ struct LrtGpuOptions {
   // serialization_dir.
   std::optional<int> program_cache_fd;
 
-  // The file descriptor to use for weight caching. If set, it overrides the
-  // serialization_dir.
-  std::optional<int> weight_cache_fd;
-
   // Added in version 2.1.0.
   // If true, only the compiled programs will be cached. If false, gpu graph
   // info including work group sizes (and all compiled programs depending on
@@ -165,10 +160,6 @@ struct LrtGpuOptions {
   // If > 0, specifies the kernel (op) batch size, for a flush.
   // Only for OpenCL backend.
   std::optional<int> kernel_batch_size;
-
-  // Added in version 2.1.7.
-  // Pointer to SharedTensorMaps to share pre-loaded weights between models.
-  std::optional<void*> shared_tensor_maps;
 };
 
 LiteRtStatus LrtCreateGpuOptions(LrtGpuOptions** options) {
@@ -217,11 +208,6 @@ LiteRtStatus LrtGetOpaqueGpuOptionsData(const LrtGpuOptions* options,
   }
   if (options->kernel_batch_size.has_value()) {
     ss << "kernel_batch_size = " << options->kernel_batch_size.value() << "\n";
-  }
-  if (options->shared_tensor_maps.has_value() &&
-      *(options->shared_tensor_maps) != nullptr) {
-    ss << "shared_tensor_maps = "
-       << reinterpret_cast<int64_t>(*(options->shared_tensor_maps)) << "\n";
   }
   if (options->precision.has_value()) {
     ss << "precision = " << static_cast<int>(options->precision.value())
@@ -326,10 +312,6 @@ LiteRtStatus LrtGetOpaqueGpuOptionsData(const LrtGpuOptions* options,
     ss << "program_cache_fd = "
        << static_cast<int>(options->program_cache_fd.value()) << "\n";
   }
-  if (options->weight_cache_fd.has_value()) {
-    ss << "weight_cache_fd = "
-       << static_cast<int>(options->weight_cache_fd.value()) << "\n";
-  }
   if (options->cache_only_compiled_programs.has_value()) {
     ss << "cache_only_compiled_programs = "
        << (options->cache_only_compiled_programs.value() ? "true" : "false")
@@ -384,10 +366,6 @@ LiteRtStatus LrtCreateGpuOptionsFromToml(const char* toml_string,
           auto res = ParseTomlInt(value);
           if (!res) return kLiteRtStatusErrorInvalidArgument;
           (*options)->kernel_batch_size = *res;
-        } else if (key == "shared_tensor_maps") {
-          auto res = ParseTomlInt(value);
-          if (!res) return kLiteRtStatusErrorInvalidArgument;
-          (*options)->shared_tensor_maps = reinterpret_cast<void*>(*res);
         } else if (key == "precision") {
           auto res = ParseTomlInt(value);
           if (!res) return kLiteRtStatusErrorInvalidArgument;
@@ -475,10 +453,6 @@ LiteRtStatus LrtCreateGpuOptionsFromToml(const char* toml_string,
           auto res = ParseTomlInt(value);
           if (!res) return kLiteRtStatusErrorInvalidArgument;
           (*options)->program_cache_fd = *res;
-        } else if (key == "weight_cache_fd") {
-          auto res = ParseTomlInt(value);
-          if (!res) return kLiteRtStatusErrorInvalidArgument;
-          (*options)->weight_cache_fd = *res;
         } else if (key == "cache_only_compiled_programs") {
           auto res = ParseTomlBool(value);
           if (!res) return kLiteRtStatusErrorInvalidArgument;
@@ -644,14 +618,6 @@ LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsProgramCacheFd(
   return kLiteRtStatusOk;
 }
 
-LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsWeightCacheFd(
-    LrtGpuOptions* gpu_options, int weight_cache_fd) {
-  if (!gpu_options) return kLiteRtStatusErrorInvalidArgument;
-
-  gpu_options->weight_cache_fd = weight_cache_fd;
-  return kLiteRtStatusOk;
-}
-
 LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsSerializeProgramCache(
     LrtGpuOptions* gpu_options, bool serialize_program_cache) {
   if (!gpu_options) return kLiteRtStatusErrorInvalidArgument;
@@ -690,14 +656,6 @@ LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsDisableShaderOptimization(
   if (!gpu_options) return kLiteRtStatusErrorInvalidArgument;
 
   gpu_options->disable_shader_optimization = disable_shader_optimization;
-  return kLiteRtStatusOk;
-}
-
-LiteRtStatus LrtSetGpuAcceleratorCompilationOptionsSharedTensorMaps(
-    LrtGpuOptions* gpu_options, void* shared_tensor_maps) {
-  if (!gpu_options) return kLiteRtStatusErrorInvalidArgument;
-
-  gpu_options->shared_tensor_maps = shared_tensor_maps;
   return kLiteRtStatusOk;
 }
 
@@ -946,16 +904,6 @@ LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsProgramCacheFd(
   return kLiteRtStatusOk;
 }
 
-LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsWeightCacheFd(
-    int* weight_cache_fd, const LrtGpuOptions* options) {
-  LITERT_RETURN_IF_ERROR(weight_cache_fd, ErrorStatusBuilder::InvalidArgument())
-      << "`weight_cache_fd` cannot be null.";
-  LITERT_RETURN_IF_ERROR(options, ErrorStatusBuilder::InvalidArgument())
-      << "`options` cannot be null.";
-  *weight_cache_fd = options->weight_cache_fd.value_or(-1);
-  return kLiteRtStatusOk;
-}
-
 LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsSerializeProgramCache(
     bool* serialize_program_cache, const LrtGpuOptions* options) {
   LITERT_RETURN_IF_ERROR(serialize_program_cache,
@@ -1065,17 +1013,6 @@ LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsDisableShaderOptimization(
       << "`options` cannot be null.";
   *disable_shader_optimization =
       options->disable_shader_optimization.value_or(0);
-  return kLiteRtStatusOk;
-}
-
-LiteRtStatus LrtGetGpuAcceleratorCompilationOptionsSharedTensorMaps(
-    void** shared_tensor_maps, const LrtGpuOptions* options) {
-  LITERT_RETURN_IF_ERROR(shared_tensor_maps,
-                         ErrorStatusBuilder::InvalidArgument())
-      << "`shared_tensor_maps` cannot be null.";
-  LITERT_RETURN_IF_ERROR(options, ErrorStatusBuilder::InvalidArgument())
-      << "`options` cannot be null.";
-  *shared_tensor_maps = options->shared_tensor_maps.value_or(nullptr);
   return kLiteRtStatusOk;
 }
 

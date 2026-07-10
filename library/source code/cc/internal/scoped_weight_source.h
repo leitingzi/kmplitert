@@ -19,8 +19,8 @@
 #include <string>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"  // from @com_google_absl
 #include "litert/cc/internal/scoped_file.h"
-#include "litert/cc/litert_api_types.h"
 
 /// @file
 /// @brief Defines structures for managing external model weights from a scoped
@@ -39,8 +39,9 @@ struct ScopedWeightSection {
 /// sliced from it to satisfy external weight loads.
 struct ScopedWeightSource {
   ScopedWeightSource() = default;
-  ScopedWeightSource(ScopedFile scoped_file,
-                     FlatHashMap<std::string, ScopedWeightSection> sections)
+  ScopedWeightSource(
+      ScopedFile scoped_file,
+      absl::flat_hash_map<std::string, ScopedWeightSection> sections)
       : file(std::move(scoped_file)), sections(std::move(sections)) {}
 
   ScopedWeightSource(ScopedWeightSource&&) = default;
@@ -51,7 +52,7 @@ struct ScopedWeightSource {
   bool empty() const { return sections.empty(); }
 
   ScopedFile file;
-  FlatHashMap<std::string, ScopedWeightSection> sections;
+  absl::flat_hash_map<std::string, ScopedWeightSection> sections;
 };
 
 }  // namespace litert

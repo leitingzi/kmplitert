@@ -18,9 +18,9 @@
 #include <cstdint>
 #include <memory>
 
+#include "absl/strings/string_view.h"  // from @com_google_absl
 #include "litert/c/litert_common.h"
 #include "litert/c/options/litert_cpu_options.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_expected.h"
 #include "litert/cc/litert_macros.h"
 
@@ -92,17 +92,6 @@ class CpuOptions {
     return flags;
   }
 
-  /// @brief Sets whether to hint at fully delegating to a single delegate so
-  /// certain allocations can be skipped.
-  /// Bypassing early graph validation on operations missing reference kernel
-  /// support (e.g. float16) requires that the graph be fully delegated or
-  /// loading will fail.
-  Expected<void> SetHintFullyDelegatedToSingleDelegate(bool enabled) {
-    LITERT_RETURN_IF_ERROR(LrtSetCpuOptionsHintFullyDelegatedToSingleDelegate(
-        options_.get(), enabled));
-    return {};
-  }
-
   /// @brief Sets the XNNPack weight cache file path.
   Expected<void> SetXNNPackWeightCachePath(const char* path) {
     LITERT_RETURN_IF_ERROR(
@@ -111,14 +100,14 @@ class CpuOptions {
   }
 
   /// @brief Gets the XNNPack weight cache file path.
-  Expected<StringView> GetXNNPackWeightCachePath() const {
+  Expected<absl::string_view> GetXNNPackWeightCachePath() const {
     const char* path;
     auto s = LrtGetCpuOptionsXnnPackWeightCachePath(options_.get(), &path);
     if (s == kLiteRtStatusErrorNotFound) {
-      return StringView();
+      return absl::string_view();
     }
     LITERT_RETURN_IF_ERROR(s);
-    return internal::NullSafeStringView(path);
+    return absl::NullSafeStringView(path);
   }
 
   /// @brief Sets the XNNPack weight cache file descriptor.

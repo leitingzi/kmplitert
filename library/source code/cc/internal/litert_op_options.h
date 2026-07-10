@@ -15,7 +15,6 @@
 #ifndef ODML_LITERT_LITERT_CC_LITERT_OP_OPTIONS_H_
 #define ODML_LITERT_LITERT_CC_LITERT_OP_OPTIONS_H_
 
-#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <type_traits>
@@ -58,12 +57,8 @@ enum TfliteTensorType : uint32_t {
   TensorType_UINT16 = 16,
   TensorType_INT4 = 17,
   TensorType_BFLOAT16 = 18,
-  TensorType_INT2 = 19,
-  TensorType_UINT4 = 20,
-  TensorType_FLOAT8_E4M3FN = 21,
-  TensorType_FLOAT8_E5M2 = 22,
   TensorType_MIN = TensorType_FLOAT32,
-  TensorType_MAX = TensorType_FLOAT8_E5M2
+  TensorType_MAX = TensorType_BFLOAT16
 };
 
 inline LiteRtElementType GetElementType(uint32_t tflite_element_type) {
@@ -76,8 +71,6 @@ inline LiteRtElementType GetElementType(uint32_t tflite_element_type) {
       return kLiteRtElementTypeInt32;
     case TensorType_UINT8:
       return kLiteRtElementTypeUInt8;
-    case TensorType_UINT4:
-      return kLiteRtElementTypeUInt4;
     case TensorType_INT64:
       return kLiteRtElementTypeInt64;
     case TensorType_STRING:
@@ -108,12 +101,6 @@ inline LiteRtElementType GetElementType(uint32_t tflite_element_type) {
       return kLiteRtElementTypeInt4;
     case TensorType_BFLOAT16:
       return kLiteRtElementTypeBFloat16;
-    case TensorType_INT2:
-      return kLiteRtElementTypeInt2;
-    case TensorType_FLOAT8_E4M3FN:
-      return kLiteRtElementTypeFloat8E4M3FN;
-    case TensorType_FLOAT8_E5M2:
-      return kLiteRtElementTypeFloat8E5M2;
     default:
       return kLiteRtElementTypeNone;
   }
@@ -129,8 +116,6 @@ inline uint32_t GetTfliteTensorType(LiteRtElementType element_type) {
       return TensorType_INT32;
     case kLiteRtElementTypeUInt8:
       return TensorType_UINT8;
-    case kLiteRtElementTypeUInt4:
-      return TensorType_UINT4;
     case kLiteRtElementTypeInt64:
       return TensorType_INT64;
     case kLiteRtElementTypeTfString:
@@ -161,12 +146,6 @@ inline uint32_t GetTfliteTensorType(LiteRtElementType element_type) {
       return TensorType_INT4;
     case kLiteRtElementTypeBFloat16:
       return TensorType_BFLOAT16;
-    case kLiteRtElementTypeInt2:
-      return TensorType_INT2;
-    case kLiteRtElementTypeFloat8E4M3FN:
-      return TensorType_FLOAT8_E4M3FN;
-    case kLiteRtElementTypeFloat8E5M2:
-      return TensorType_FLOAT8_E5M2;
     default:
       return TensorType_FLOAT32;
   }
@@ -256,20 +235,9 @@ struct CompositeOptions : public OpOptions {
     LITERT_RETURN_IF_ERROR(LiteRtGetSHLOCompositeOpAttributes(
         op, &impl_attributes, &impl_attributes_size));
 
-    if (impl_attributes_size < 0) {
-      return kLiteRtStatusErrorInvalidArgument;
-    }
     if (impl_attributes_size > 0) {
-      if (impl_attributes == nullptr ||
-          !flexbuffers::VerifyBuffer(
-              impl_attributes, static_cast<size_t>(impl_attributes_size))) {
-        return kLiteRtStatusErrorInvalidArgument;
-      }
-      auto root = flexbuffers::GetRoot(impl_attributes, impl_attributes_size);
-      if (!root.IsMap()) {
-        return kLiteRtStatusErrorInvalidArgument;
-      }
-      attributes_map = root.AsMap();
+      attributes_map =
+          flexbuffers::GetRoot(impl_attributes, impl_attributes_size).AsMap();
     }
     this->op = op;
 

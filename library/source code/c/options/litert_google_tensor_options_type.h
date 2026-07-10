@@ -25,7 +25,6 @@ typedef enum LrtGoogleTensorOptionsTruncationType {
 } LrtGoogleTensorOptionsTruncationType;
 
 typedef enum LrtGoogleTensorOptionsShardingIntensity {
-  kLiteRtGoogleTensorShardingIntensityUnspecified = -1,
   kLiteRtGoogleTensorShardingIntensityMinimal = 0,
   kLiteRtGoogleTensorShardingIntensityModerate = 1,
   kLiteRtGoogleTensorShardingIntensityExtensive = 2,

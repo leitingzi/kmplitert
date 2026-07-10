@@ -24,24 +24,22 @@
 #include <variant>
 #include <vector>
 
+#include "absl/strings/string_view.h"  // from @com_google_absl
+#include "absl/types/span.h"  // from @com_google_absl
 #include "litert/c/litert_common.h"
 #include "litert/c/litert_model.h"
 #include "litert/c/litert_model_types.h"
 #include "litert/cc/internal/litert_consts.h"
 #include "litert/cc/internal/litert_detail.h"
 #include "litert/cc/internal/litert_handle.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_buffer_ref.h"
 #include "litert/cc/litert_common.h"
-#include "litert/cc/litert_environment.h"
 #include "litert/cc/litert_expected.h"
 #include "litert/cc/litert_macros.h"
 #include "litert/cc/litert_model_types.h"
 #include "litert/cc/litert_ranked_tensor_type.h"
 // copybara:uncomment_begin(google_only)
-// #ifndef LITERT_NO_ABSL
 // #include "tflite/converter/allocation.h"  // IWYU pragma: keep
-// #endif  // LITERT_NO_ABSL
 // copybara:uncomment_end
 
 /// @file
@@ -52,7 +50,7 @@ namespace litert {
 
 namespace internal::model_detail {
 
-inline StringView FetchTensorName(LiteRtTensor tensor) {
+inline absl::string_view FetchTensorName(LiteRtTensor tensor) {
   const char* name;
   internal::AssertOk(LiteRtGetTensorName, tensor, &name);
   return name;
@@ -114,28 +112,17 @@ inline LiteRtQuantizationPerChannel FetchTensorQuantizationPerChannel(
   return per_channel_quantization;
 }
 
-inline LiteRtQuantizationBlockWise FetchTensorQuantizationBlockWise(
-    LiteRtTensor tensor) {
-  if (FetchTensorQuantizationTypeId(tensor) != kLiteRtQuantizationBlockWise) {
-    return {};
-  }
-  LiteRtQuantizationBlockWise block_wise_quantization;
-  internal::AssertOk(LiteRtGetBlockWiseQuantization, tensor,
-                     &block_wise_quantization);
-  return block_wise_quantization;
-}
-
-inline StringView FetchSignatureKey(LiteRtSignature signature) {
+inline absl::string_view FetchSignatureKey(LiteRtSignature signature) {
   const char* key;
   internal::AssertOk(LiteRtGetSignatureKey, signature, &key);
   return key;
 }
 
-inline std::vector<StringView> FetchSignatureInputNames(
+inline std::vector<absl::string_view> FetchSignatureInputNames(
     LiteRtSignature signature) {
   LiteRtParamIndex num_inputs;
   internal::AssertOk(LiteRtGetNumSignatureInputs, signature, &num_inputs);
-  std::vector<StringView> input_names;
+  std::vector<absl::string_view> input_names;
   input_names.reserve(num_inputs);
   for (int i = 0; i < num_inputs; ++i) {
     const char* name;
@@ -145,11 +132,11 @@ inline std::vector<StringView> FetchSignatureInputNames(
   return input_names;
 }
 
-inline std::vector<StringView> FetchSignatureOutputNames(
+inline std::vector<absl::string_view> FetchSignatureOutputNames(
     LiteRtSignature signature) {
   LiteRtParamIndex num_outputs;
   internal::AssertOk(LiteRtGetNumSignatureOutputs, signature, &num_outputs);
-  std::vector<StringView> output_names;
+  std::vector<absl::string_view> output_names;
   output_names.reserve(num_outputs);
   for (int i = 0; i < num_outputs; ++i) {
     const char* name;
@@ -175,8 +162,7 @@ inline std::vector<std::unique_ptr<SimpleTensor>> FetchSignatureInputTensors(
         FetchTensorType(tensor, FetchTensorTypeId(tensor)),
         FetchTensorQuantizationTypeId(tensor),
         FetchTensorQuantizationPerTensor(tensor),
-        FetchTensorQuantizationPerChannel(tensor),
-        FetchTensorQuantizationBlockWise(tensor)));
+        FetchTensorQuantizationPerChannel(tensor)));
   }
   return input_tensors;
 }
@@ -197,8 +183,7 @@ inline std::vector<std::unique_ptr<SimpleTensor>> FetchSignatureOutputTensors(
         FetchTensorType(tensor, FetchTensorTypeId(tensor)),
         FetchTensorQuantizationTypeId(tensor),
         FetchTensorQuantizationPerTensor(tensor),
-        FetchTensorQuantizationPerChannel(tensor),
-        FetchTensorQuantizationBlockWise(tensor)));
+        FetchTensorQuantizationPerChannel(tensor)));
   }
   return output_tensors;
 }
@@ -220,24 +205,9 @@ class Model : public internal::BaseHandle<LiteRtModel> {
     return Model(model, OwnHandle::kNo);
   }
 
-  static Expected<Model> CreateFromFile(Environment& env,
-                                        const std::string& filename) {
-    LiteRtModel model;
-    if (auto status =
-            LiteRtCreateModelFromFile(env.Get(), filename.c_str(), &model);
-        status != kLiteRtStatusOk) {
-      return Unexpected(ToStatus(status), "Failed to load model from file");
-    }
-    return CreateFromOwnedHandle(model);
-  }
-
-  /// @deprecated Use API with explicit Environment instead.
-  [[deprecated("Use API with explicit Environment instead.")]]
   static Expected<Model> CreateFromFile(const std::string& filename) {
-    const auto& env = GetDefaultEnvironment();
     LiteRtModel model;
-    if (auto status =
-            LiteRtCreateModelFromFile(env->Get(), filename.c_str(), &model);
+    if (auto status = LiteRtCreateModelFromFile(filename.c_str(), &model);
         status != kLiteRtStatusOk) {
       return Unexpected(ToStatus(status), "Failed to load model from file");
     }
@@ -248,95 +218,28 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   ///
   /// The caller must ensure that the buffer remains valid for the lifetime of
   /// the model.
-  static Expected<Model> CreateFromBuffer(Environment& env,
-                                          BufferRef<uint8_t> buffer) {
-    LiteRtModel model;
-    if (auto status = LiteRtCreateModelFromBuffer(env.Get(), buffer.Data(),
-                                                  buffer.Size(), &model);
-        status != kLiteRtStatusOk) {
-      return Unexpected(ToStatus(status), "Failed to load model from buffer");
-    }
-    return CreateFromOwnedHandle(model);
-  }
-
-  /// @brief Creates a model from a buffer.
-  ///
-  /// The caller must ensure that the buffer remains valid for the lifetime of
-  /// the model.
-  /// @deprecated Use API with explicit Environment instead.
   static Expected<Model> CreateFromBuffer(BufferRef<uint8_t> buffer) {
-    const auto& env = GetDefaultEnvironment();
     LiteRtModel model;
-    if (auto status = LiteRtCreateModelFromBuffer(env->Get(), buffer.Data(),
-                                                  buffer.Size(), &model);
+    if (auto status =
+            LiteRtCreateModelFromBuffer(buffer.Data(), buffer.Size(), &model);
         status != kLiteRtStatusOk) {
       return Unexpected(ToStatus(status), "Failed to load model from buffer");
     }
     return CreateFromOwnedHandle(model);
   }
 
-  /// @brief Creates a model from a file descriptor region.
-  ///
-  /// LiteRT duplicates the file descriptor internally; the caller retains
-  /// ownership of `fd`.
-  static Expected<Model> CreateFromFd(Environment& env, int fd, size_t offset,
-                                      size_t size) {
-    LiteRtModel model;
-    if (auto status =
-            LiteRtCreateModelFromFd(env.Get(), fd, offset, size, &model);
-        status != kLiteRtStatusOk) {
-      return Unexpected(ToStatus(status), "Failed to load model from fd");
-    }
-    return CreateFromOwnedHandle(model);
-  }
-
-  /// @brief Creates a model from a file descriptor region.
-  ///
-  /// LiteRT duplicates the file descriptor internally; the caller retains
-  /// ownership of `fd`.
-  /// @deprecated Use API with explicit Environment instead.
-  static Expected<Model> CreateFromFd(int fd, size_t offset, size_t size) {
-    const auto& env = GetDefaultEnvironment();
-    LiteRtModel model;
-    if (auto status =
-            LiteRtCreateModelFromFd(env->Get(), fd, offset, size, &model);
-        status != kLiteRtStatusOk) {
-      return Unexpected(ToStatus(status), "Failed to load model from fd");
-    }
-    return CreateFromOwnedHandle(model);
-  }
-
-#if !defined(LITERT_DYNAMIC_RUNTIME) && !defined(LITERT_NO_ABSL)
+#if !defined(LITERT_DYNAMIC_RUNTIME)
   // copybara:uncomment_begin(google_only)
   // /// @internal
   // /// @brief Creates a model from an owned TFLite allocation.
   // ///
-  // /// @note This is an internal experimental API which is not available through
-  // /// libLiteRt.so. It's not part of the official LiteRT public C++ API.
-  // static Expected<Model> CreateFromAllocation(
-      // Environment& env, std::unique_ptr<tflite::Allocation> allocation) {
-    // LiteRtModel model;
-    // LiteRtAllocation c_allocation = allocation.release();
-    // if (auto status = LiteRtCreateModelFromAllocation(
-            // env.Get(), c_allocation, &model);
-        // status != kLiteRtStatusOk) {
-      // return Unexpected(ToStatus(status),
-                        // "Failed to load model from allocation");
-    // }
-    // return CreateFromOwnedHandle(model);
-  // }
-// 
-  // /// @internal
-  // /// @brief Creates a model from an owned TFLite allocation.
-  // ///
-  // /// @note This is an internal experimental API which is not available through
+  // /// @note This is an internal experimetal API which is not available through
   // /// libLiteRt.so. It's not part of the official LiteRT public C++ API.
   // static Expected<Model> CreateFromAllocation(
       // std::unique_ptr<tflite::Allocation> allocation) {
     // LiteRtModel model;
-    // LiteRtAllocation c_allocation = allocation.release();
-    // if (auto status = LiteRtCreateModelFromAllocation(
-            // /*environment=*/nullptr, c_allocation, &model);
+    // if (auto status =
+            // LiteRtCreateModelFromAllocation(std::move(allocation), &model);
         // status != kLiteRtStatusOk) {
       // return Unexpected(ToStatus(status),
                         // "Failed to load model from allocation");
@@ -344,9 +247,9 @@ class Model : public internal::BaseHandle<LiteRtModel> {
     // return CreateFromOwnedHandle(model);
   // }
   // copybara:uncomment_end
-#endif  // !defined(LITERT_DYNAMIC_RUNTIME) && !defined(LITERT_NO_ABSL)
+#endif  // !defined(LITERT_DYNAMIC_RUNTIME)
 
-  Expected<Span<const uint8_t>> Metadata(
+  Expected<absl::Span<const uint8_t>> Metadata(
       const std::string& metadata_key) const {
     const void* buffer;
     size_t buffer_size;
@@ -354,8 +257,7 @@ class Model : public internal::BaseHandle<LiteRtModel> {
                                &buffer_size) != kLiteRtStatusOk) {
       return Unexpected(Status::kErrorNotFound, "Metadata key not found");
     }
-    return internal::MakeLiteRtSpan(static_cast<const uint8_t*>(buffer),
-                                    buffer_size);
+    return absl::MakeSpan(static_cast<const uint8_t*>(buffer), buffer_size);
   }
 
   size_t GetNumSignatures() const {
@@ -377,24 +279,24 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   }
 
   /// @brief Returns the list of signature key names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureKeys() const {
+  Expected<std::vector<absl::string_view>> GetSignatureKeys() const {
     return GetSignatureKeysImpl();
   }
 
   /// @brief Returns the list of input names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureInputNames(
+  Expected<std::vector<absl::string_view>> GetSignatureInputNames(
       size_t signature_index) const {
     return GetSignatureInputNamesImpl(signature_index);
   }
 
   /// @brief Returns the list of input names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureInputNames() const {
+  Expected<std::vector<absl::string_view>> GetSignatureInputNames() const {
     return GetSignatureInputNames(/*signature_index=*/0);
   }
 
   /// @brief Returns the list of input names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureInputNames(
-      StringView signature_key) const {
+  Expected<std::vector<absl::string_view>> GetSignatureInputNames(
+      absl::string_view signature_key) const {
     auto signature = FindSignature(signature_key);
     if (!signature) {
       return Unexpected(Status::kErrorNotFound, "Signature not found");
@@ -403,25 +305,26 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   }
 
   /// @brief Returns the list of output names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureOutputNames(
+  Expected<std::vector<absl::string_view>> GetSignatureOutputNames(
       size_t signature_index) const {
     return GetSignatureOutputNamesImpl(signature_index);
   }
 
   /// @brief Returns the list of output names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureOutputNames() const {
+  Expected<std::vector<absl::string_view>> GetSignatureOutputNames() const {
     return GetSignatureOutputNames(/*signature_index=*/0);
   }
 
   /// @brief Returns the list of output names defined in the signature.
-  Expected<std::vector<StringView>> GetSignatureOutputNames(
-      StringView signature_key) const {
+  Expected<std::vector<absl::string_view>> GetSignatureOutputNames(
+      absl::string_view signature_key) const {
     auto signature = FindSignature(signature_key);
     if (!signature) {
       return Unexpected(Status::kErrorNotFound, "Signature not found");
     }
     return signature->OutputNames();
   }
+
 
   /// @brief Returns the signature at the given index.
   Expected<SimpleSignature> GetSignature(size_t signature_index) const {
@@ -439,7 +342,7 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   /// @brief Returns the signature index for the given signature key.
   ///
   /// Returns 0 if the signature key is empty.
-  Expected<size_t> GetSignatureIndex(StringView signature_key) const {
+  Expected<size_t> GetSignatureIndex(absl::string_view signature_key) const {
     if (signature_key.empty()) {
       return 0;
     }
@@ -458,13 +361,16 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   /// @brief Returns the `SimpleSignature` object for the given signature key.
   ///
   /// Returns the default signature if the signature key is empty.
-  Expected<SimpleSignature> FindSignature(StringView signature_key) const {
+  Expected<SimpleSignature> FindSignature(
+      absl::string_view signature_key) const {
     LITERT_ASSIGN_OR_RETURN(auto signature_index,
                             GetSignatureIndex(signature_key));
     return GetSignature(signature_index);
   }
 
-  static StringView DefaultSignatureKey() { return kDefaultSignatureKey; }
+  static absl::string_view DefaultSignatureKey() {
+    return kDefaultSignatureKey;
+  }
 
   /// @brief Returns the tensor type for the n-th input tensor.
   Expected<RankedTensorType> GetInputTensorType(size_t signature_index,
@@ -475,16 +381,16 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   }
 
   /// @brief Returns the tensor type for the given input tensor name.
-  Expected<RankedTensorType> GetInputTensorType(size_t signature_index,
-                                                StringView input_name) const {
+  Expected<RankedTensorType> GetInputTensorType(
+      size_t signature_index, absl::string_view input_name) const {
     LITERT_ASSIGN_OR_RETURN(const SimpleSignature& signature,
                             GetSignature(signature_index));
     return signature.InputTensorType(input_name);
   }
 
   /// @brief Returns the tensor type for the given input tensor name.
-  Expected<RankedTensorType> GetInputTensorType(StringView signature_key,
-                                                StringView input_name) const {
+  Expected<RankedTensorType> GetInputTensorType(
+      absl::string_view signature_key, absl::string_view input_name) const {
     LITERT_ASSIGN_OR_RETURN(const SimpleSignature& signature,
                             FindSignature(signature_key));
     return signature.InputTensorType(input_name);
@@ -492,7 +398,8 @@ class Model : public internal::BaseHandle<LiteRtModel> {
 
   /// @brief Gets the input tensor type of the default signature for a given
   /// input name.
-  Expected<RankedTensorType> GetInputTensorType(StringView input_name) const {
+  Expected<RankedTensorType> GetInputTensorType(
+      absl::string_view input_name) const {
     return GetInputTensorType(/*signature_index=*/0, input_name);
   }
 
@@ -505,16 +412,16 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   }
 
   /// @brief Returns the tensor type for the given output tensor name.
-  Expected<RankedTensorType> GetOutputTensorType(size_t signature_index,
-                                                 StringView output_name) const {
+  Expected<RankedTensorType> GetOutputTensorType(
+      size_t signature_index, absl::string_view output_name) const {
     LITERT_ASSIGN_OR_RETURN(const SimpleSignature& signature,
                             GetSignature(signature_index));
     return signature.OutputTensorType(output_name);
   }
 
   /// @brief Returns the tensor type for the given output tensor name.
-  Expected<RankedTensorType> GetOutputTensorType(StringView signature_key,
-                                                 StringView output_name) const {
+  Expected<RankedTensorType> GetOutputTensorType(
+      absl::string_view signature_key, absl::string_view output_name) const {
     LITERT_ASSIGN_OR_RETURN(const SimpleSignature& signature,
                             FindSignature(signature_key));
     return signature.OutputTensorType(output_name);
@@ -522,7 +429,8 @@ class Model : public internal::BaseHandle<LiteRtModel> {
 
   /// @brief Gets the output tensor type of the default signature for a given
   /// output name.
-  Expected<RankedTensorType> GetOutputTensorType(StringView output_name) const {
+  Expected<RankedTensorType> GetOutputTensorType(
+      absl::string_view output_name) const {
     return GetOutputTensorType(/*signature_index=*/0, output_name);
   }
 
@@ -532,19 +440,10 @@ class Model : public internal::BaseHandle<LiteRtModel> {
   Model(LiteRtModel model, OwnHandle owned)
       : internal::BaseHandle<LiteRtModel>(model, LiteRtDestroyModel, owned) {}
 
-  // This is only used for managing the lifetime of ad-hoc environment for
-  // legacy cases.
-  [[deprecated("Do not use this field.")]]
-  static const Expected<Environment>& GetDefaultEnvironment() {
-    static const Expected<Environment>* kDefaultEnvironment =
-        new Expected<Environment>(Environment::Create({}));
-    return *kDefaultEnvironment;
-  }
-
  private:
-  Expected<std::vector<StringView>> GetSignatureKeysImpl() const {
+  Expected<std::vector<absl::string_view>> GetSignatureKeysImpl() const {
     size_t num_signatures = GetNumSignatures();
-    std::vector<StringView> signature_keys;
+    std::vector<absl::string_view> signature_keys;
     signature_keys.reserve(num_signatures);
     for (int i = 0; i < num_signatures; ++i) {
       LiteRtSignature lite_rt_signature;
@@ -554,14 +453,14 @@ class Model : public internal::BaseHandle<LiteRtModel> {
     }
     return signature_keys;
   }
-  Expected<std::vector<StringView>> GetSignatureInputNamesImpl(
+  Expected<std::vector<absl::string_view>> GetSignatureInputNamesImpl(
       size_t signature_index) const {
     LiteRtSignature lite_rt_signature;
     internal::AssertOk(LiteRtGetModelSignature, Get(), signature_index,
                        &lite_rt_signature);
     return internal::model_detail::FetchSignatureInputNames(lite_rt_signature);
   }
-  Expected<std::vector<StringView>> GetSignatureOutputNamesImpl(
+  Expected<std::vector<absl::string_view>> GetSignatureOutputNamesImpl(
       size_t signature_index) const {
     LiteRtSignature lite_rt_signature;
     internal::AssertOk(LiteRtGetModelSignature, Get(), signature_index,

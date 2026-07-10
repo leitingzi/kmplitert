@@ -48,6 +48,7 @@ inline const LiteRtRuntimeCApiStruct kBuiltinStruct = {
     .litert_environment_has_gpu_environment =
         LiteRtEnvironmentHasGpuEnvironment,
     .litert_get_environment_options_value = LiteRtGetEnvironmentOptionsValue,
+    .litert_set_environment_options_value = LiteRtSetEnvironmentOptionsValue,
     .litert_get_tensor_name = LiteRtGetTensorName,
     .litert_get_tensor_index = LiteRtGetTensorIndex,
     .litert_get_tensor_type_id = LiteRtGetTensorTypeId,
@@ -70,10 +71,12 @@ inline const LiteRtRuntimeCApiStruct kBuiltinStruct = {
     .litert_get_signature_subgraph = LiteRtGetSignatureSubgraph,
     .litert_get_num_signature_inputs = LiteRtGetNumSignatureInputs,
     .litert_get_signature_input_name = LiteRtGetSignatureInputName,
+    .litert_get_signature_input_tensor = LiteRtGetSignatureInputTensor,
     .litert_get_signature_input_tensor_by_index =
         LiteRtGetSignatureInputTensorByIndex,
     .litert_get_num_signature_outputs = LiteRtGetNumSignatureOutputs,
     .litert_get_signature_output_name = LiteRtGetSignatureOutputName,
+    .litert_get_signature_output_tensor = LiteRtGetSignatureOutputTensor,
     .litert_get_signature_output_tensor_by_index =
         LiteRtGetSignatureOutputTensorByIndex,
     .litert_create_model_from_file = LiteRtCreateModelFromFile,
@@ -99,6 +102,7 @@ inline const LiteRtRuntimeCApiStruct kBuiltinStruct = {
         LiteRtGetCompiledModelInputTensorLayout,
     .litert_get_compiled_model_output_tensor_layouts =
         LiteRtGetCompiledModelOutputTensorLayouts,
+    .litert_get_compiled_model_environment = LiteRtGetCompiledModelEnvironment,
     .litert_run_compiled_model = LiteRtRunCompiledModel,
     .litert_run_compiled_model_with_options = LiteRtRunCompiledModelWithOptions,
     .litert_run_compiled_model_async = LiteRtRunCompiledModelAsync,
@@ -249,8 +253,6 @@ inline const LiteRtRuntimeCApiStruct kBuiltinStruct = {
     .litert_run_compiled_model_async_with_scheduling_info =
         LiteRtRunCompiledModelAsyncWithSchedulingInfo,
     .litert_environment_supports_fp16 = LiteRtEnvironmentSupportsFP16,
-    .litert_create_model_from_fd = LiteRtCreateModelFromFd,
-    .litert_get_block_wise_quantization = LiteRtGetBlockWiseQuantization,
 };
 
 inline const LiteRtRuntimeCApiStruct* const kLiteRtRuntimeBuiltin =

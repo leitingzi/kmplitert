@@ -28,7 +28,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "litert/cc/litert_api_types.h"
+#include "absl/strings/str_format.h"  // from @com_google_absl
+#include "absl/strings/string_view.h"  // from @com_google_absl
+#include "absl/types/span.h"  // from @com_google_absl
 
 namespace litert {
 
@@ -122,23 +124,16 @@ class BufferRef {
       : end_offset_(end_offset),
         start_offset_(start_offset),
         data_(const_cast<ByteT*>(reinterpret_cast<const ByteT*>(data))) {}
-  explicit BufferRef(Span<const ByteT> data)
+  explicit BufferRef(absl::Span<const ByteT> data)
       : end_offset_(data.size()),
         start_offset_(0),
         data_(const_cast<ByteT*>(data.data())) {}
 
-  /// @brief Returns whether the configured offsets describe a valid range.
-  bool HasValidRange() const { return start_offset_ <= end_offset_; }
-
   /// @brief Returns a pointer to the start of the actual data.
-  const ByteT* Data() const {
-    return HasValidRange() ? data_ + start_offset_ : nullptr;
-  }
+  const ByteT* Data() const { return data_ + start_offset_; }
 
   /// @brief Returns the size of the actual data.
-  size_t Size() const {
-    return HasValidRange() ? end_offset_ - start_offset_ : 0;
-  }
+  size_t Size() const { return end_offset_ - start_offset_; }
 
   /// @brief Returns the buffer details as a tuple.
   TupleT Get() const { return TupleT(data_, end_offset_, start_offset_); }
@@ -149,11 +144,13 @@ class BufferRef {
 
   /// @brief Returns a string view of the actual data.
   /// @note Ensures the view is null-terminated.
-  StringView StrView() const { return StringView(StrData(), Size()); }
+  absl::string_view StrView() const {
+    return absl::string_view(StrData(), Size());
+  }
 
   /// @brief Returns a const span of the actual data.
-  Span<const ByteT> Span() const {
-    return internal::MakeLiteRtConstSpan(Data(), Size());
+  absl::Span<const ByteT> Span() const {
+    return absl::MakeConstSpan(Data(), Size());
   }
 
   /// @brief Copies the buffer data to a vector.
@@ -169,7 +166,8 @@ class BufferRef {
 
   /// @brief Prints information about this buffer.
   void Dump(std::ostream& out) const {
-    out << TypeName() << "[" << start_offset_ << ":" << end_offset_ << "]\n";
+    out << absl::StreamFormat("%s[%lu:%lu]\n", TypeName(), start_offset_,
+                              end_offset_);
   }
 
   BufferRef(const BufferRef& other) = default;
@@ -186,7 +184,7 @@ class BufferRef {
   ByteT* data_ = nullptr;
 
   /// @brief Returns the debug name of the class.
-  virtual StringView TypeName() const { return "BufferRef"; }
+  virtual absl::string_view TypeName() const { return "BufferRef"; }
 };
 template <typename ByteT = uint8_t>
 BufferRef(const ByteT*, size_t, size_t) -> BufferRef<ByteT>;
@@ -211,15 +209,13 @@ class MutableBufferRef : public BufferRef<ByteT> {
       : BufferRef<ByteT>(data, size, offset) {}
   MutableBufferRef(void* data, size_t size, size_t offset = 0)
       : BufferRef<ByteT>(data, size, offset) {}
-  explicit MutableBufferRef(Span<ByteT> data) : BufferRef<ByteT>(data) {}
-  explicit MutableBufferRef(Span<const ByteT> data) = delete;
+  explicit MutableBufferRef(absl::Span<ByteT> data) : BufferRef<ByteT>(data) {}
+  explicit MutableBufferRef(absl::Span<const ByteT> data) = delete;
   MutableBufferRef(const ByteT*, size_t, size_t) = delete;
   MutableBufferRef(const void*, size_t, size_t) = delete;
 
   /// @brief Returns a mutable pointer to the start of the actual data.
-  ByteT* Data() {
-    return this->HasValidRange() ? this->data_ + this->start_offset_ : nullptr;
-  }
+  ByteT* Data() { return this->data_ + this->start_offset_; }
 
   /// @brief Returns a mutable char pointer to the start of the actual data.
   char* StrData() { return reinterpret_cast<char*>(Data()); }
@@ -230,26 +226,18 @@ class MutableBufferRef : public BufferRef<ByteT> {
   }
 
   /// @brief Returns a mutable span of the actual data.
-  Span<ByteT> Span() { return internal::MakeLiteRtSpan(Data(), this->Size()); }
+  absl::Span<ByteT> Span() { return absl::MakeSpan(Data(), this->Size()); }
 
   /// @brief Writes a string into the buffer at a specified offset.
   /// @param str The string to write.
   /// @param offset The offset at which to start writing.
   /// @return `true` if the entire string fits and is written, `false`
   /// otherwise.
-  bool WriteInto(StringView str, size_t offset = 0) {
-    const size_t size = this->Size();
-    if (offset > size || str.size() > size - offset) {
+  bool WriteInto(absl::string_view str, size_t offset = 0) {
+    if (str.size() > this->Size() - offset) {
       return false;
     }
-    if (str.empty()) {
-      return true;
-    }
-    ByteT* data = Data();
-    if (data == nullptr) {
-      return false;
-    }
-    std::memcpy(data + offset, str.data(), str.size());
+    std::memcpy(Data() + offset, str.data(), str.size());
     return true;
   }
 
@@ -258,7 +246,7 @@ class MutableBufferRef : public BufferRef<ByteT> {
 
  protected:
   /// @brief Returns the debug name of the class.
-  StringView TypeName() const override { return "MutableBufferRef"; }
+  absl::string_view TypeName() const override { return "MutableBufferRef"; }
 };
 template <typename ByteT>
 MutableBufferRef(ByteT*, size_t, size_t) -> MutableBufferRef<ByteT>;
@@ -296,7 +284,8 @@ class OwningBufferRef : public MutableBufferRef<ByteT> {
       : MutableBufferRef<ByteT>(data, size, offset) {}
   OwningBufferRef(void* data, size_t size, size_t offset = 0)
       : MutableBufferRef<ByteT>(data, size, offset) {}
-  explicit OwningBufferRef(Span<ByteT> data) : MutableBufferRef<ByteT>(data) {}
+  explicit OwningBufferRef(absl::Span<ByteT> data)
+      : MutableBufferRef<ByteT>(data) {}
 
   /// @brief Copies the given buffer.
   OwningBufferRef(const ByteT* data, size_t size)
@@ -305,17 +294,17 @@ class OwningBufferRef : public MutableBufferRef<ByteT> {
     this->data_ = (ByteT*)Allocator()(size);
     std::memcpy(this->data_, data, size);
   }
-  explicit OwningBufferRef(Span<const ByteT> data)
+  explicit OwningBufferRef(absl::Span<const ByteT> data)
       : OwningBufferRef<ByteT, Allocator>(data.data(), data.size()) {}
 
   /// @brief Copies data from a given string.
-  explicit OwningBufferRef(StringView data)
+  explicit OwningBufferRef(absl::string_view data)
       : OwningBufferRef<ByteT, Allocator>(
             reinterpret_cast<const ByteT*>(data.data()), data.size()) {}
 
   /// @brief Copies data from a given C-style string.
   explicit OwningBufferRef(const char* data)
-      : OwningBufferRef<ByteT, Allocator>(StringView(data)) {}
+      : OwningBufferRef<ByteT, Allocator>(absl::string_view(data)) {}
 
   /// @brief Drops the reference to any owned memory.
   void Drop() {
@@ -386,7 +375,7 @@ class OwningBufferRef : public MutableBufferRef<ByteT> {
 
  protected:
   /// @brief Returns the debug name of the class.
-  StringView TypeName() const override { return "OwningBufferRef"; }
+  absl::string_view TypeName() const override { return "OwningBufferRef"; }
 };
 
 template <typename ByteT = uint8_t, class Allocator = Newlocator<ByteT>>

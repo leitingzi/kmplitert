@@ -17,10 +17,12 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"  // from @com_google_absl
 #include "litert/c/litert_layout.h"
 #include "litert/c/litert_model_types.h"
 #include "litert/cc/litert_common.h"
@@ -38,12 +40,10 @@ namespace litert {
 /// tensors with known dimensions.
 class RankedTensorType {
  public:
-  RankedTensorType(::litert::ElementType element_type,
-                   ::litert::Layout&& layout)
+  RankedTensorType(::litert::ElementType element_type, ::litert::Layout&& layout)
       : element_type_(element_type), layout_(std::move(layout)) {}
   explicit RankedTensorType(const LiteRtRankedTensorType& type)
-      : element_type_(
-            static_cast<enum ::litert::ElementType>(type.element_type)),
+      : element_type_(static_cast<enum ::litert::ElementType>(type.element_type)),
         layout_(type.layout) {}
 
   explicit operator LiteRtRankedTensorType() const {

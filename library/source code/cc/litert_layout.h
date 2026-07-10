@@ -22,9 +22,10 @@
 #include <optional>
 #include <utility>
 
+#include "absl/container/inlined_vector.h"  // from @com_google_absl
+#include "absl/types/span.h"  // from @com_google_absl
 #include "litert/c/litert_layout.h"
 #include "litert/cc/internal/litert_consts.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_expected.h"
 #include "litert/cc/litert_macros.h"
 
@@ -33,8 +34,8 @@
 
 namespace litert {
 
-using Dimensions = SmallVector<int32_t, kExpectedMaxTensorRank>;
-using Strides = SmallVector<uint32_t, kExpectedMaxTensorRank>;
+using Dimensions = absl::InlinedVector<int32_t, kExpectedMaxTensorRank>;
+using Strides = absl::InlinedVector<uint32_t, kExpectedMaxTensorRank>;
 
 /// @brief Small standalone helper functions for working with the C layout API.
 
@@ -76,15 +77,16 @@ inline constexpr LiteRtLayout BuildLayout(std::initializer_list<int32_t> dims,
 }
 
 /// @brief Gets the dimensions as a span.
-inline constexpr Span<const int32_t> DimsSpan(const LiteRtLayout& layout) {
-  return internal::MakeLiteRtConstSpan(layout.dimensions, layout.rank);
+inline constexpr absl::Span<const int32_t> DimsSpan(
+    const LiteRtLayout& layout) {
+  return absl::MakeConstSpan(layout.dimensions, layout.rank);
 }
 
 /// @brief Gets the strides as a span if they exist.
-inline constexpr std::optional<Span<const uint32_t>> StridesSpan(
+inline constexpr std::optional<absl::Span<const uint32_t>> StridesSpan(
     const LiteRtLayout& layout) {
   if (layout.has_strides) {
-    return internal::MakeLiteRtConstSpan(layout.strides, layout.rank);
+    return absl::MakeConstSpan(layout.strides, layout.rank);
   }
   return {};
 }
@@ -117,13 +119,13 @@ class Layout {
 
   uint32_t Rank() const { return lrt_layout_.rank; }
 
-  Span<const Dim> Dimensions() const {
-    return internal::MakeLiteRtSpan(lrt_layout_.dimensions, Rank());
+  absl::Span<const Dim> Dimensions() const {
+    return absl::MakeSpan(lrt_layout_.dimensions, Rank());
   }
 
   bool HasStrides() const { return lrt_layout_.has_strides; }
 
-  Span<const uint32_t> Strides() const {
+  absl::Span<const uint32_t> Strides() const {
     if (HasStrides()) {
       return {lrt_layout_.strides, Rank()};
     } else {

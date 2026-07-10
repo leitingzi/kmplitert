@@ -24,13 +24,10 @@
 #include <type_traits>
 #include <utility>
 
-#ifndef LITERT_NO_ABSL
 #include "absl/log/absl_check.h"  // from @com_google_absl
 #include "absl/strings/str_cat.h"  // from @com_google_absl
 #include "absl/strings/str_format.h"  // from @com_google_absl
-#endif  // LITERT_NO_ABSL
 #include "litert/c/litert_common.h"
-#include "litert/cc/litert_api_types.h"
 #include "litert/cc/litert_common.h"
 
 /// @file
@@ -52,13 +49,13 @@ class Error {
   explicit Error(::litert::Status status, std::string message = "")
       : status_(static_cast<LiteRtStatus>(status)),
         message_(std::move(message)) {
-    LITERT_INTERNAL_DCHECK(status != ::litert::Status::kOk);
+    ABSL_DCHECK(status != ::litert::Status::kOk);
   }
 
   [[deprecated("Use the constructor that takes ::litert::Status instead.")]]
   explicit Error(LiteRtStatus status, std::string message = "")
       : status_(status), message_(std::move(message)) {
-    LITERT_INTERNAL_DCHECK(status != kLiteRtStatusOk);
+    ABSL_DCHECK(status != kLiteRtStatusOk);
   }
 
   /// @brief Gets the status.
@@ -84,7 +81,6 @@ class Error {
     return stream;
   }
 
-#ifndef LITERT_NO_ABSL
   template <class Sink>
   friend void AbslStringify(Sink& sink, const Error& error) {
     absl::Format(&sink, "%s", LiteRtGetStatusString(error.status_));
@@ -92,7 +88,6 @@ class Error {
       absl::Format(&sink, ": %v", error.Message());
     }
   }
-#endif  // LITERT_NO_ABSL
 
  private:
   LiteRtStatus status_;
@@ -132,12 +127,10 @@ class Unexpected {
   }
   constexpr class Error&& Error() && noexcept { return std::move(error_); }
 
-#ifndef LITERT_NO_ABSL
   template <class Sink>
   friend void AbslStringify(Sink& sink, const Unexpected& unexpected) {
     AbslStringify(sink, unexpected.Error());
   }
-#endif  // LITERT_NO_ABSL
 
  private:
   class Error error_;
@@ -162,35 +155,6 @@ class Unexpected {
 ///   }
 ///   return Foo();
 /// }
-/// @endcode
-///
-/// Suggested Usage:
-/// Do not manually inspect `Expected` objects (e.g., via `if (!var_or)`, `if
-/// (!var_or.HasValue())`) if you intend to propagate a possible error to the
-/// caller. Instead, use the early-exit LiteRT macros defined in
-/// `litert_macros.h`:
-/// @code
-/// // For functions returning Expected<Foo>:
-/// LITERT_ASSIGN_OR_RETURN(Foo foo, Bar());
-///
-/// // For functions returning Expected<void>:
-/// LITERT_RETURN_IF_ERROR(Baz());
-///
-/// // To append a custom error message to the failure:
-/// LITERT_ASSIGN_OR_RETURN(Foo foo, Bar(), _ << "Failed to get Foo");
-/// LITERT_RETURN_IF_ERROR(Baz()) << "Failed during Baz";
-/// @endcode
-///
-/// In unit tests, use the test macros defined in `litert/test/matchers.h`:
-/// @code
-/// // To assert success and unpack a value:
-/// LITERT_ASSERT_OK_AND_ASSIGN(Foo foo, Bar());
-///
-/// // To assert success for Expected<void>:
-/// LITERT_ASSERT_OK(Baz());
-///
-/// // To expect or assert failure:
-/// LITERT_EXPECT_ERROR(Baz());
 /// @endcode
 template <class T>
 class Expected {
@@ -413,8 +377,8 @@ class Expected {
     StorageType value_;
     Unexpected unexpected_;
   };
-  void CheckNoVal() const { LITERT_INTERNAL_CHECK(!HasValue()); }
-  void CheckVal() const { LITERT_INTERNAL_CHECK(HasValue()); }
+  void CheckNoVal() const { ABSL_CHECK(!HasValue()); }
+  void CheckVal() const { ABSL_CHECK(HasValue()); }
 };
 
 template <class T>
@@ -423,7 +387,6 @@ Expected(const T&) -> Expected<T>;
 template <class T>
 Expected(T&&) -> Expected<T>;
 
-#ifndef LITERT_NO_ABSL
 namespace internal {
 template <class T>
 struct CanBeAbslFormated {
@@ -456,7 +419,6 @@ void AbslStringify(Sink& sink, const Expected<T>& expected) {
     }
   }
 }
-#endif  // LITERT_NO_ABSL
 
 /// @brief A specialization of `Expected` for `void`.
 ///
@@ -512,8 +474,8 @@ class Expected<void> {
 
  private:
   std::optional<Unexpected> unexpected_;
-  void CheckNoVal() const { LITERT_INTERNAL_CHECK(!HasValue()); }
-  void CheckVal() const { LITERT_INTERNAL_CHECK(HasValue()); }
+  void CheckNoVal() const { ABSL_CHECK(!HasValue()); }
+  void CheckVal() const { ABSL_CHECK(HasValue()); }
 };
 
 }  // namespace litert

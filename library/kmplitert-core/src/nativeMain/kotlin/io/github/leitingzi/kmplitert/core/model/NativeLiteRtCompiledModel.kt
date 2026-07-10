@@ -384,7 +384,7 @@ class NativeLiteRtCompiledModel(
                 val env = envRef.value!!
 
                 val modelRef = alloc<LiteRtModelVar>()
-                val statusModel = LiteRtCreateModelFromFile(env, filePath, modelRef.ptr)
+                val statusModel = LiteRtCreateModelFromFile(filePath, modelRef.ptr)
                 check(statusModel == kLiteRtStatusOk) { "Failed to create model: $statusModel" }
                 val model = modelRef.value!!
 
