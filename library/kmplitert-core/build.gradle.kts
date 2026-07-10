@@ -101,6 +101,15 @@ kotlin {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
+                    val libDir = project.nativeLibDir(konan)
+                    if (libDir != null) {
+                        val libPath = libDir.absolutePath.replace("\\", "/")
+                        extraOpts("-linker-option", "-L$libPath", "-linker-option", "-lLiteRt")
+                        if (konan.isAppleTarget) {
+                            extraOpts("-linker-option", "-lLiteRtMetalAccelerator")
+                            extraOpts("-linker-option", "-rpath", "-linker-option", libPath)
+                        }
+                    }
                 }
             }
         }
