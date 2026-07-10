@@ -1,18 +1,16 @@
-name: Publish
+name: CI (Tests)
 
 on:
   push:
     branches:
       - master
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
 
   pull_request:
     branches:
       - master
-
-  release:
-    types:
-      - released
-      - prereleased
 
 jobs:
   test-jvm:
@@ -122,37 +120,3 @@ jobs:
 
       - name: Run Wasm Tests
         run: ./gradlew wasmJsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
-
-  publish:
-    name: Publish to Maven Central
-
-    if: github.event_name == 'release'
-
-    needs:
-      - test-jvm
-      - test-android
-      - test-native
-      - test-js
-      - test-wasm
-
-    runs-on: macos-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 21
-          cache: gradle
-
-      - run: chmod +x gradlew
-
-      - name: Publish
-        run: ./gradlew publishToMavenCentral --no-configuration-cache --stacktrace --info --no-daemon
-        env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
