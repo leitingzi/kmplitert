@@ -18,9 +18,20 @@
 
 - 🏗️ **Unified API**: Write your inference logic once in `commonMain` and run it everywhere.
 - ⚡ **Coroutine Support**: First-class support for asynchronous initialization and inference.
-- 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers.
+- 📊 **Metadata Inspection**: Query tensor types, shapes (layout), and buffer requirements at runtime.
 - 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU where available on the platform.
+- 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers via `TFBuffer`.
 - 🖼️ **Image Preprocessing**: Built-in utilities for image resizing and format conversion.
+
+---
+
+## 🏛️ Architecture: `kmplitert-core`
+
+`kmplitert-core` is the foundational module of the project. It abstracts the native LiteRT runtimes into a clean, idiomatic Kotlin API.
+
+- **Platform Abstraction**: Uses Kotlin `expect/actual` to wrap JNI (Android), C-API via JNA (JVM), C-Interop (Native), and JS/Wasm JS wrappers.
+- **Efficient Buffers**: The `TFBuffer` API manages memory efficiently across the Kotlin/Native boundary, minimizing copies.
+- **Consistent Lifecycle**: Provides a predictable `init()` -> `run()` -> `close()` lifecycle across all platforms.
 
 ---
 
@@ -31,24 +42,8 @@
 | **Android** | ⚠️ Alpha | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NNAPI |
 | **JVM (Desktop)** | ⚠️ Alpha | LiteRT C API via JNA | CPU |
 | **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU |
-| **Native (Windows)** | 🚧 Untested | LiteRT C API | CPU / WebGPU Accelerator |
-| **Native (Linux)** | 🚧 Untested | LiteRT C API | CPU / WebGPU Accelerator |
-| **Native (macOS)** | 🚧 Untested | LiteRT C API | CPU / Metal Accelerator |
-| **iOS** | ❌ Unsupported | Placeholder only | Metal Accelerator (Planned) |
-
----
-
-## 🛠️ Supported Data Types
-
-KMPLiteRT currently supports the following tensor types:
-
-| Kotlin Type | LiteRT Type |
-|-------------|-------------|
-| `FloatArray` | Float32 |
-| `IntArray` | Int32 |
-| `LongArray` | Int64 |
-| `ByteArray` | Int8 / UInt8 |
-| `BooleanArray` | Bool |
+| **Native (Win/Linux/Mac)** | ⚠️ Alpha | LiteRT C API | CPU / GPU |
+| **iOS** | 🚧 Placeholder | - | Metal (Planned) |
 
 ---
 
@@ -70,38 +65,43 @@ kotlin {
 
 ## 💡 Usage Examples
 
-### 1. Basic Vector Inference
+### 1. Basic Vector Inference with Metadata Inspection
 Suitable for regression, classification, or any model processing simple numerical vectors.
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
 
-suspend fun runBasicInference(modelPath: String) {
-    // 1. Initialize the compiler
-    val compiler = LiteRTCompiler(
-        filePath = modelPath, 
-        accelerator = LiteRTAccelerator.CPU
-    )
+suspend fun runInference(modelPath: String) {
+    // 1. Instantiate the compiler
+    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
     
     try {
+        // 2. Initialize (load model and prepare environment)
         compiler.init()
 
-        // 2. Get typed input and output buffers
+        // 3. Inspect Model Metadata (Optional but helpful)
+        val inputType = compiler.getInputTensorType("input_0")
+        println("Input Type: ${inputType.elementType}, Shape: ${inputType.layout?.dimensions}")
+        
+        val reqs = compiler.getInputBufferRequirements("input_0")
+        println("Required Buffer Size: ${reqs.bufferSize} bytes")
+
+        // 4. Get managed buffers
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
 
-        // 3. Write input data (e.g., Float array)
+        // 5. Fill input data
         inputs[0].writeFloat(floatArrayOf(1.0f, 2.0f, 3.0f))
 
-        // 4. Execute inference
+        // 6. Execute
         compiler.run(inputs, outputs)
 
-        // 5. Read the result
+        // 7. Extract results
         val result = outputs[0].readFloat()
         println("Inference result: ${result.contentToString()}")
         
     } finally {
-        // 6. Release resources
+        // 8. Always close to release native resources
         compiler.close()
     }
 }
@@ -121,19 +121,15 @@ suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
 
-        // 1. Image preprocessing: Load -> Resize -> Convert to model format (Int8/Float)
+        // 1. Preprocessing: Load -> Resize -> Convert to model format
         val inputData = LiteRtImage.fromBytes(rawImageBytes)
             .resize(224, 224)
-            .toInt8Array() // Use toFloatArray() if required by the model
+            .toFloatArray() 
 
-        // 2. Load data into input buffer
-        inputs[0].writeInt8(inputData)
-
-        // 3. Execute inference
+        inputs[0].writeFloat(inputData)
         compiler.run(inputs, outputs)
 
-        // 4. Read and process output (e.g., finding the max probability)
-        val result = outputs[0].readInt8()
+        val result = outputs[0].readFloat()
         val maxIndex = result.indices.maxByOrNull { result[it] }
         println("Identified class index: $maxIndex")
         
@@ -145,59 +141,14 @@ suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
 
 ---
 
-## ⚠️ Current Limitations & Known Issues
-
-- **General Status**: This library is in its early stages. Most platforms have not undergone full validation.
-- **Web (JS/WasmJS)**:
-    - **Adaptive Models**: No support for models with dynamic/adaptive shapes yet.
-    - **Environment**: Requires a browser environment with WebGL/WebGPU support for the LiteRT JS runtime.
-- **Native Platforms**:
-    - Includes support for **Windows (mingwX64)**, **Linux (linuxX64)**, and **macOS (macosArm64)**.
-    - **Status**: These platforms are currently **NOT TESTED**.
-- **iOS**: Implementation is currently a placeholder.
-- **JVM**: Primarily tested on Windows; Linux and macOS versions are less stable.
-
----
-
 ## 📐 Model Input / Output Metadata
 
-Unlike some inference libraries, **KMPLiteRT does not provide APIs to query model input/output shapes or data types at runtime**.
+KMPLiteRT provides explicit APIs to query your model's structure. This is essential for dynamic buffer allocation or validating that the model matches your expectations.
 
-This is an intentional design decision.
+- **`getInputTensorType(name)`**: Returns `LiteRTTensorType` containing the `LiteRTElementType` (FLOAT, INT, etc.) and `LiteRTLayout` (dimensions and rank).
+- **`getInputBufferRequirements(name)`**: Returns `LiteRTBufferRequirements`, describing the exact memory `bufferSize` and `strides` needed for a custom buffer.
 
-### Why?
-
-LiteRT models contain **fixed input/output tensor metadata** (shape and data type) that is determined when the model is created. These values are part of the model itself and are expected to be known by the application developer.
-
-For example:
-
-- Image classification models commonly use `1 × 224 × 224 × 3` (`Float32` or `Int8`)
-- Object detection models define their own fixed tensor layouts
-- Custom models exported by users also have predefined input/output specifications
-
-Since the application must already know how to prepare data for its own model, exposing runtime APIs such as:
-
-- `getInputShape()`
-- `getOutputShape()`
-- `getInputDataType()`
-- `getOutputDataType()`
-
-would provide little practical value while increasing API complexity and implementation differences across platforms.
-
-### Recommended Practice
-
-Treat the model definition as part of your application contract.
-
-Document your model's:
-
-- Input shape
-- Output shape
-- Data type
-- Normalization/preprocessing method
-
-alongside the model itself, and write data directly into the corresponding typed buffers.
-
-This keeps the API simple, portable, and consistent across Android, JVM, Native, and Web platforms.
+While the application usually knows the model contract, these APIs enable building more generic tools and safer data pipelines.
 
 ---
 
@@ -206,7 +157,6 @@ This keeps the API simple, portable, and consistent across Android, JVM, Native,
 Contributions are welcome! If you encounter issues or have ideas for improvements, please:
 - Open an **Issue** to report bugs or suggest features.
 - Submit a **Pull Request** with your enhancements.
-- Share your feedback to help us stabilize the library.
 
 ---
 
