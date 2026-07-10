@@ -43,7 +43,9 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun close() {
-        compiledModel.destroy()
+        if (::compiledModel.isInitialized) {
+            compiledModel.destroy()
+        }
     }
 }
 

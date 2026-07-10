@@ -6,9 +6,7 @@ import kotlin.test.assertTrue
 
 class NativeLiteRTTest {
 
-    // Assumes this file exists in the current directory of the test runtime environment
-    // Note: Native tests typically require manually placing resource files in the same directory as the executable
-    // TODO IOS Simulator testing encounters issues where model file paths cannot be found.
+    // Using absolute path for local testing to avoid File IO error in native environment
     private val testFilePath = "src/commonTest/resources/CelsiusToFahrenheit.tflite"
 
     @Test
@@ -33,13 +31,10 @@ class NativeLiteRTTest {
             assertTrue(outputType.elementType == LiteRTElementType.FLOAT, "Output element type should be FLOAT")
             assertTrue(outputType.layout?.rank!! >= 1, "Output rank should be >= 1")
 
-            // 写入测试数据 (100摄氏�?
             inputs[0].writeFloat(floatArrayOf(100f))
 
-            // 执行推理
             compiler.run(inputs, outputs)
 
-            // 读取结果 (应接�?212 华氏�?
             val result = outputs[0].readFloat()
             println("Native Inference Result: ${result.contentToString()}")
             

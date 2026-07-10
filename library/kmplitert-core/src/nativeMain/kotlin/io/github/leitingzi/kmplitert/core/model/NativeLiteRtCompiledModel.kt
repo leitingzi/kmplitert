@@ -384,10 +384,6 @@ class NativeLiteRtCompiledModel(
                 val env = envRef.value!!
 
                 val modelRef = alloc<LiteRtModelVar>()
-
-                // TODO
-                //  ERROR: Could not open ' '.
-                //  Native test failed: Failed to create model: 500
                 val statusModel = LiteRtCreateModelFromFile(env, filePath, modelRef.ptr)
                 check(statusModel == kLiteRtStatusOk) { "Failed to create model: $statusModel" }
                 val model = modelRef.value!!

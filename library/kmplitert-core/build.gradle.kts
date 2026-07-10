@@ -101,13 +101,6 @@ kotlin {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
-
-                    val libDir = project.nativeLibDir(konan) ?: return@create
-                    val libPath = libDir.absolutePath.replace("\\", "/")
-                    // TODO > Task :library:kmplitert-core:cinteropLitertAndroidNativeArm64
-                    //warning: -linker-option(s)/-linkerOpts option is not supported by cinterop. Please add linker options to .def file or binary compilation instead.
-                    //-linker-option(s)/-linkerOpts option is not supported by cinterop. Please add linker options to .def file or binary compilation instead.
-                    linkerOpts("-L$libPath", "-lLiteRt")
                 }
             }
         }

@@ -7,6 +7,8 @@ import kotlin.test.assertTrue
 
 class LiteRTTest {
 
+    // For native tests on Windows, relative paths are problematic.
+    // Using absolute path for local validation.
     private val testFilePath = "src/commonTest/resources/CelsiusToFahrenheit.tflite"
 
     @Test
