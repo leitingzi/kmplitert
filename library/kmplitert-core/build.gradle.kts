@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "io.github.leitingzi"
-version = "0.1.1"
+version = "0.1.2"
 
 base {
     archivesName.set("kmplitert-core")
@@ -101,6 +101,7 @@ kotlin {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
+
                     val libDir = project.nativeLibDir(konan)
                     if (libDir != null) {
                         val libPath = libDir.absolutePath.replace("\\", "/")

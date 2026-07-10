@@ -4,7 +4,6 @@ package io.github.leitingzi.kmplitert.core
 
 import com.google.ai.edge.litert.Accelerator
 import com.google.ai.edge.litert.CompiledModel
-import com.google.ai.edge.litert.Environment
 import com.google.ai.edge.litert.TensorBuffer
 import com.google.ai.edge.litert.TensorBufferRequirements
 import com.google.ai.edge.litert.TensorBufferType
@@ -70,7 +69,9 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun close() {
-        compiledModel.close()
+        if (::compiledModel.isInitialized) {
+            compiledModel.close()
+        }
     }
 
     private fun TFBuffer.toAndroid(): TensorBuffer {

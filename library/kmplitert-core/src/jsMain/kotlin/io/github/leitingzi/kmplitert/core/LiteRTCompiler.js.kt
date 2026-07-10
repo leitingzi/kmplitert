@@ -153,7 +153,9 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun close() {
-        compiledModel.delete()
+        if (::compiledModel.isInitialized) {
+            compiledModel.delete()
+        }
     }
 
     private fun getCompileOptions(accelerator: LiteRTAccelerator): JsAny {
