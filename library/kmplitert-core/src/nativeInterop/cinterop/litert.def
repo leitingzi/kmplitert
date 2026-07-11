@@ -2,6 +2,8 @@ headers = litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_
 headerFilter = litert/c/*
 compilerOpts = -Isrc/nativeInterop/c
 
+linkerOpts = -lLiteRt
+
 ---
 
 #include "litert/c/litert_layout.h"

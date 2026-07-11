@@ -101,16 +101,6 @@ kotlin {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
-
-                    val libDir = project.nativeLibDir(konan)
-                    if (libDir != null) {
-                        val libPath = libDir.absolutePath.replace("\\", "/")
-                        extraOpts("-linker-option", "-L$libPath", "-linker-option", "-lLiteRt")
-                        if (konan.isAppleTarget) {
-                            extraOpts("-linker-option", "-lLiteRtMetalAccelerator")
-                            extraOpts("-linker-option", "-rpath", "-linker-option", libPath)
-                        }
-                    }
                 }
             }
         }
@@ -169,10 +159,6 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.java.jna)
             implementation(libs.java.jna.platform)
-        }
-
-        nativeMain.dependencies {
-
         }
 
         webMain.dependencies {
@@ -252,7 +238,7 @@ val KonanTarget.resourceDirName: String?
 
 fun Project.nativeLibDir(target: KonanTarget): File? {
     return target.resourceDirName
-        ?.let { file("src/jvmMain/resources/$it") }
+        ?.let { file("src/nativeInterop/libs/litert/$it") }
         ?.takeIf(File::exists)
 }
 
