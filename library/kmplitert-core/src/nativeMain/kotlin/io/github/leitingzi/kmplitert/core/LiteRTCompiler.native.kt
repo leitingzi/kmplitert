@@ -31,15 +31,15 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> {
-        return compiledModel.getInputBuffers(signatureIndex.toLong())
+        return compiledModel.getInputBuffers(signatureIndex)
     }
 
     actual suspend fun getOutputBuffers(signatureIndex: Int): List<TFBuffer> {
-        return compiledModel.getOutputBuffers(signatureIndex.toLong())
+        return compiledModel.getOutputBuffers(signatureIndex)
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int) {
-        compiledModel.run(signatureIndex.toLong(), inputs, outputs)
+        compiledModel.run(signatureIndex, inputs, outputs)
     }
 
     actual suspend fun close() {

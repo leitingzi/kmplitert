@@ -67,7 +67,7 @@ class NativeTFBuffer(
 
     private fun getBufferSize(): Long {
         return memScoped {
-            val sizeRef = alloc<UIntVar>()
+            val sizeRef = alloc<ULongVar>()
             val status = LiteRtGetTensorBufferPackedSize(buffer, sizeRef.ptr)
             check(status == kLiteRtStatusOk) { "Failed to get buffer size: $status" }
             sizeRef.value.toLong()
