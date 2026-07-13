@@ -31,6 +31,7 @@ jobs:
       - name: Prepare Artifacts
         run: |
           DEST_PATH="library/kmplitert-core/generated/litert/linux/x64"
+          rm -rf "$DEST_PATH"
           mkdir -p "$DEST_PATH/lib"
           mkdir -p "$DEST_PATH/include"
           
@@ -85,6 +86,7 @@ jobs:
       - name: Prepare Artifacts
         run: |
           DEST_PATH="library/kmplitert-core/generated/litert/linux/arm64"
+          rm -rf "$DEST_PATH"
           mkdir -p "$DEST_PATH/lib"
           mkdir -p "$DEST_PATH/include"
           
@@ -138,6 +140,7 @@ jobs:
       - name: Prepare Artifacts
         run: |
           DEST_PATH="library/kmplitert-core/generated/litert/mac/arm64"
+          rm -rf "$DEST_PATH"
           mkdir -p "$DEST_PATH/lib"
           mkdir -p "$DEST_PATH/include"
           
@@ -191,6 +194,7 @@ jobs:
       - name: Prepare Artifacts
         run: |
           $DEST_PATH="library/kmplitert-core/generated/litert/win/x64"
+          Remove-Item -Recurse -Force $DEST_PATH
           New-Item -ItemType Directory -Force "$DEST_PATH/lib"
           New-Item -ItemType Directory -Force "$DEST_PATH/include"
           
