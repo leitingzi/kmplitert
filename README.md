@@ -66,15 +66,36 @@ kotlin {
 
 ## 💡 Usage Examples
 
-### 1. Basic Vector Inference with Metadata Inspection
+### 1. Platform Initialization (Android Only)
+Before using `LiteRTFileUtils` on Android (e.g., to load models from assets), you must initialize it with a `Context`.
+
+```kotlin
+// In your Android Activity or Application
+LiteRTFileUtils.init(applicationContext)
+```
+
+### 2. Loading Model from ByteArray
+Useful for loading models from KMP resources or remote downloads.
+
+```kotlin
+val modelBytes: ByteArray = Res.readBytes("files/model.tflite")// ... load model bytes
+val modelPath = LiteRTFileUtils.createFileFromByteArray(modelBytes, "model.tflite")
+
+// Now use modelPath with LiteRTCompiler
+```
+
+### 3. Basic Vector Inference with Metadata Inspection
 Suitable for regression, classification, or any model processing simple numerical vectors.
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
 
 suspend fun runInference(modelPath: String) {
-    // 1. Instantiate the compiler
-    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
+    // 1. Instantiate the compiler with a specific accelerator
+    val compiler = LiteRTCompiler(
+        filePath = modelPath, 
+        accelerator = LiteRTAccelerator.CPU
+    )
     
     try {
         // 2. Initialize (load model and prepare environment)
@@ -82,6 +103,7 @@ suspend fun runInference(modelPath: String) {
 
         // 3. Inspect Model Metadata (Optional but helpful)
         val inputType = compiler.getInputTensorType("input_0")
+        // inputType.elementType can be FLOAT, INT, INT8, BOOLEAN, or INT64
         println("Input Type: ${inputType.elementType}, Shape: ${inputType.layout?.dimensions}")
         
         val reqs = compiler.getInputBufferRequirements("input_0")
@@ -91,13 +113,14 @@ suspend fun runInference(modelPath: String) {
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
 
-        // 5. Fill input data
+        // 5. Fill input data using typed write operations
+        // Supports writeFloat, writeInt, writeInt8, writeBoolean, writeLong
         inputs[0].writeFloat(floatArrayOf(1.0f, 2.0f, 3.0f))
 
-        // 6. Execute
+        // 6. Execute inference
         compiler.run(inputs, outputs)
 
-        // 7. Extract results
+        // 7. Extract results using typed read operations
         val result = outputs[0].readFloat()
         println("Inference result: ${result.contentToString()}")
         
@@ -108,14 +131,15 @@ suspend fun runInference(modelPath: String) {
 }
 ```
 
-### 2. Image Classification
+### 4. Image Classification
 For computer vision models, use `LiteRtImage` for seamless preprocessing (resizing and format conversion).
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
 
 suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
-    val compiler = LiteRTCompiler(filePath = modelPath)
+    // Specify the accelerator (CPU, GPU, or NPU)
+    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.GPU)
     
     try {
         compiler.init()
@@ -123,9 +147,10 @@ suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
         val outputs = compiler.getOutputBuffers()
 
         // 1. Preprocessing: Load -> Resize -> Convert to model format
+        // LiteRtImage supports: toFloatArray, toInt8Array, toIntArray, toBooleanArray, toLongArray
         val inputData = LiteRtImage.fromBytes(rawImageBytes)
             .resize(224, 224)
-            .toFloatArray() 
+            .toFloatArray(mean = 127.5f, std = 127.5f)
 
         inputs[0].writeFloat(inputData)
         compiler.run(inputs, outputs)
