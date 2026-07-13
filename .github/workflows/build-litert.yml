@@ -40,7 +40,11 @@ jobs:
           # Verify that we have real files, not LFS pointers
           for f in "$DEST_PATH/lib"/*; do
             if [ -f "$f" ]; then
-              size=$(stat -c%s "$f")
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
               if [ "$size" -lt 1000 ]; then
                 echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
                 cat "$f"
@@ -94,7 +98,11 @@ jobs:
           # Verify that we have real files, not LFS pointers
           for f in "$DEST_PATH/lib"/*; do
             if [ -f "$f" ]; then
-              size=$(stat -c%s "$f")
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
               if [ "$size" -lt 1000 ]; then
                 echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
                 cat "$f"
@@ -148,7 +156,11 @@ jobs:
           # Verify that we have real files, not LFS pointers
           for f in "$DEST_PATH/lib"/*; do
             if [ -f "$f" ]; then
-              size=$(stat -c%s "$f")
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
               if [ "$size" -lt 1000 ]; then
                 echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
                 cat "$f"
@@ -202,7 +214,11 @@ jobs:
           # Verify that we have real files, not LFS pointers
           for f in "$DEST_PATH/lib"/*; do
             if [ -f "$f" ]; then
-              size=$(stat -c%s "$f")
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
               if [ "$size" -lt 1000 ]; then
                 echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
                 cat "$f"
