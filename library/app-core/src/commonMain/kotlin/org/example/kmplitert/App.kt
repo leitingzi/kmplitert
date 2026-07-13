@@ -4,12 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
+import io.github.leitingzi.kmplitert.core.LiteRTFileUtils
 import io.github.leitingzi.kmplitert.core.LiteRtImage
 import kmplitert.library.app_core.generated.resources.Res
 
 suspend fun testMobilenet() {
-    val modelPath = ComposeResourceUtils.getFilePath("mobilenet_v1.tflite")
-    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
+    val modelData = Res.readBytes("files/mobilenet_v1.tflite")
+    val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, "mobilenet_v1.tflite")
+    println("filePath = $filePath")
+
+    val compiler = LiteRTCompiler(filePath = filePath, accelerator = LiteRTAccelerator.CPU)
     compiler.init()
 
     // TODO Android Bug [litert_compiled_model_jni.cc:619] Unsupported element type in Kotlin: 3
@@ -60,8 +64,11 @@ suspend fun testMobilenet() {
 }
 
 suspend fun testCelsiusToFahrenheit() {
-    val modelPath = ComposeResourceUtils.getFilePath("CelsiusToFahrenheit.tflite")
-    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.CPU)
+    val modelData = Res.readBytes("files/CelsiusToFahrenheit.tflite")
+    val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, "CelsiusToFahrenheit.tflite")
+    println("filePath = $filePath")
+
+    val compiler = LiteRTCompiler(filePath = filePath, accelerator = LiteRTAccelerator.CPU)
     compiler.init()
 
     val inputTensorType = compiler.getInputTensorType("input_c")
@@ -90,7 +97,7 @@ suspend fun testCelsiusToFahrenheit() {
 @Composable
 fun App() {
     LaunchedEffect(Unit) {
-        testMobilenet()
+        testCelsiusToFahrenheit()
     }
 }
 

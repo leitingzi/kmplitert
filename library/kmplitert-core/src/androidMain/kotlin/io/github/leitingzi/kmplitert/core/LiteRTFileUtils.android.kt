@@ -1,14 +1,13 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package org.example.kmplitert
+package io.github.leitingzi.kmplitert.core
 
 import android.annotation.SuppressLint
 import android.content.Context
-import kmplitert.library.app_core.generated.resources.Res
 import java.io.File
 
 @SuppressLint("StaticFieldLeak")
-actual object ComposeResourceUtils {
+actual object LiteRTFileUtils {
 
     internal lateinit var context: Context
 
@@ -21,21 +20,22 @@ actual object ComposeResourceUtils {
 
     fun getContext(): Context {
         if (!::context.isInitialized) {
-            throw Exception("[ResourceUtils] Context not initialized")
+            throw Exception("[LiteRTFileUtils] Context not initialized")
         }
 
         return this.context.applicationContext
     }
 
-    actual suspend fun getFilePath(resourcePath: String): String {
+    actual fun createFileFromByteArray(data: ByteArray, fileName: String): String {
         val cacheDir = getContext().cacheDir
-        val file = File(cacheDir, resourcePath)
+        val file = File(cacheDir, fileName)
+
         if (file.exists()) {
-            return file.absolutePath
+            file.delete()
         }
-        val bytes = Res.readBytes("files/$resourcePath")
+
         file.parentFile?.mkdirs()
-        file.writeBytes(bytes)
+        file.writeBytes(data)
         return file.absolutePath
     }
 }

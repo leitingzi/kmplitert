@@ -4,13 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import io.github.leitingzi.kmplitert.core.LiteRTFileUtils
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        ComposeResourceUtils.init(applicationContext)
+        LiteRTFileUtils.init(applicationContext)
 
         setContent {
             App()
