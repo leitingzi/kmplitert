@@ -85,19 +85,17 @@ kotlin {
         }
     }
 
-    val nativeTargets = buildList {
-        add(linuxX64())
-        add(mingwX64())
-
-        if (!dokkaBuild) {
-            add(iosArm64())
-            add(iosSimulatorArm64())
-            add(macosArm64())
-            add(androidNativeArm64())
-            add(androidNativeArm32())
-            add(androidNativeX64())
-        }
-    }
+    val nativeTargets = listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+        macosArm64(),
+        linuxX64(),
+        linuxArm64(),
+        mingwX64(),
+//        androidNativeArm64(),
+//        androidNativeArm32(),
+//        androidNativeX64()
+    )
 
     nativeTargets.forEach { target ->
         val konan = target.konanTarget
@@ -187,6 +185,16 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
         }
+    }
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+        suppress.set(true)
+    }
+
+    dokkaSourceSets.named("commonMain") {
+        suppress.set(false)
     }
 }
 
