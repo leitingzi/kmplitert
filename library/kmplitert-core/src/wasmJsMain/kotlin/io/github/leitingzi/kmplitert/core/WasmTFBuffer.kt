@@ -8,7 +8,11 @@ import org.khronos.webgl.*
 
 class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) : TFBuffer {
 
-    lateinit var tensor: Tensor
+    var tensor: Tensor? = null
+
+    private fun checkTensor(): Tensor {
+        return tensor ?: throw IllegalStateException("Tensor is not initialized. Call write*() or run model first.")
+    }
 
     override fun writeInt(data: IntArray) {
         val int32Array = Int32Array(data.size)
@@ -23,10 +27,9 @@ class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) :
     }
 
     override fun writeInt8(data: ByteArray) {
-        // If the model expects uint8 or int8, try using Uint8Array.
         val uint8Array = Uint8Array(data.size)
         for (i in data.indices) {
-            uint8Array[i] = data[i].toByte()
+            uint8Array[i] = data[i]
         }
         tensor = Tensor(uint8Array, jsShape)
     }
@@ -49,7 +52,7 @@ class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) :
 
 
     override suspend fun readInt(): IntArray {
-        val data = tensor.data().await()
+        val data = checkTensor().data().await()
         val int32Array = data as Int32Array
         val result = IntArray(int32Array.length)
         for (i in 0 until int32Array.length) {
@@ -59,22 +62,14 @@ class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) :
     }
 
     override suspend fun readFloat(): FloatArray {
-        val data = tensor.data().await()
+        val data = checkTensor().data().await()
         val float32Array = data as Float32Array
         return float32Array.toFloatArray()
     }
 
     override suspend fun readInt8(): ByteArray {
-        val data = tensor.data().await()
-        if (data is Uint8Array) {
-            val result = ByteArray(data.length)
-            for (i in 0 until data.length) {
-                result[i] = data[i]
-            }
-            return result
-        }
-        // Fallback
-        val array = data as Uint8Array // Assume uint8 if not int32
+        val data = checkTensor().data().await()
+        val array = data as Uint8Array
         val result = ByteArray(array.length)
         for (i in 0 until array.length) {
             result[i] = array[i]
@@ -83,14 +78,7 @@ class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) :
     }
 
     override suspend fun readBoolean(): BooleanArray {
-        val data = tensor.data().await()
-        if (data is Uint8Array) {
-            val result = BooleanArray(data.length)
-            for (i in 0 until data.length) {
-                result[i] = data[i] != 0.toByte()
-            }
-            return result
-        }
+        val data = checkTensor().data().await()
         val array = data as Uint8Array
         val result = BooleanArray(array.length)
         for (i in 0 until array.length) {
@@ -101,7 +89,7 @@ class WasmTFBuffer(private val jsShape: Int32Array, private val dtype: String) :
 
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     override suspend fun readLong(): LongArray {
-        val data = tensor.data().await()
+        val data = checkTensor().data().await()
         val bigInt64Array = data as JsAny
         val length = getBigInt64ArrayLength(bigInt64Array)
         val result = LongArray(length)

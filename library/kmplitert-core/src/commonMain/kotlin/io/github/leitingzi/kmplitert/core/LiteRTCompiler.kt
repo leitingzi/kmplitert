@@ -42,9 +42,10 @@ expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
     /**
      * Returns all input buffers allocated for the model.
      *
+     * @param signatureIndex Index of the signature to get buffers for.
      * @return A list of input buffers.
      */
-    suspend fun getInputBuffers(): List<TFBuffer>
+    suspend fun getInputBuffers(signatureIndex: Int = 0): List<TFBuffer>
 
     /**
      * Returns the tensor type information for the specified output tensor.
@@ -58,7 +59,7 @@ expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
      * Returns the buffer requirements for the specified output tensor.
      *
      * The returned requirements describe the memory layout and size needed
-     * to create a compatible output buffer.
+     * to create a compatible input buffer.
      *
      * @param outputName Name of the output tensor.
      * @return Buffer requirements for the output tensor.
@@ -68,9 +69,10 @@ expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
     /**
      * Returns all output buffers allocated for the model.
      *
+     * @param signatureIndex Index of the signature to get buffers for.
      * @return A list of output buffers.
      */
-    suspend fun getOutputBuffers(): List<TFBuffer>
+    suspend fun getOutputBuffers(signatureIndex: Int = 0): List<TFBuffer>
 
     /**
      * Executes inference using the provided input and output buffers.
@@ -80,8 +82,9 @@ expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
      *
      * @param inputs Input buffers containing the inference data.
      * @param outputs Output buffers that will receive the inference results.
+     * @param signatureIndex Index of the signature to run.
      */
-    suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>)
+    suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int = 0)
 
     /**
      * Releases all native resources associated with this compiler.

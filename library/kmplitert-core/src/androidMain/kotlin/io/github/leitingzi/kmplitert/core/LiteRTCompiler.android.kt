@@ -34,8 +34,8 @@ actual class LiteRTCompiler actual constructor(
         return requirements
     }
 
-    actual suspend fun getInputBuffers(): List<TFBuffer> {
-        val inputBuffers = compiledModel.createInputBuffers()
+    actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> {
+        val inputBuffers = compiledModel.createInputBuffers(signatureIndex)
         return inputBuffers.map { buffer ->
             AndroidTFBuffer(buffer)
         }
@@ -55,17 +55,17 @@ actual class LiteRTCompiler actual constructor(
         return requirements
     }
 
-    actual suspend fun getOutputBuffers(): List<TFBuffer> {
-        val outputBuffers = compiledModel.createOutputBuffers()
+    actual suspend fun getOutputBuffers(signatureIndex: Int): List<TFBuffer> {
+        val outputBuffers = compiledModel.createOutputBuffers(signatureIndex)
         return outputBuffers.map { buffer ->
             AndroidTFBuffer(buffer)
         }
     }
 
-    actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
-        val inputs = inputs.toAndroid()
-        val outputs = outputs.toAndroid()
-        compiledModel.run(inputs, outputs)
+    actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int) {
+        val androidInputs = inputs.toAndroid()
+        val androidOutputs = outputs.toAndroid()
+        compiledModel.run(androidInputs, androidOutputs, signatureIndex)
     }
 
     actual suspend fun close() {

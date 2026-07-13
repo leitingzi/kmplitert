@@ -16,6 +16,7 @@ class LiteRtCompiledModel : PointerType() {
     fun destroy() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyCompiledModel(this)
         model?.destroy()
+        env.destroy()
     }
 
     fun getInputBufferRequirements(signature_index: Long, input_index: Long): LiteRtTensorBufferRequirements {

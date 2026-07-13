@@ -25,27 +25,24 @@ class NativeTFBuffer(
 
     override fun writeInt(data: IntArray) {
         withLockedBuffer(kLiteRtTensorBufferLockModeWrite) { addr ->
-            val hostAddr = addr.reinterpret<IntVar>()
-            for (i in data.indices) {
-                hostAddr[i] = data[i]
+            data.usePinned { pinned ->
+                platform.posix.memcpy(addr, pinned.addressOf(0), (data.size * 4).convert())
             }
         }
     }
 
     override fun writeFloat(data: FloatArray) {
         withLockedBuffer(kLiteRtTensorBufferLockModeWrite) { addr ->
-            val hostAddr = addr.reinterpret<FloatVar>()
-            for (i in data.indices) {
-                hostAddr[i] = data[i]
+            data.usePinned { pinned ->
+                platform.posix.memcpy(addr, pinned.addressOf(0), (data.size * 4).convert())
             }
         }
     }
 
     override fun writeInt8(data: ByteArray) {
         withLockedBuffer(kLiteRtTensorBufferLockModeWrite) { addr ->
-            val hostAddr = addr.reinterpret<ByteVar>()
-            for (i in data.indices) {
-                hostAddr[i] = data[i]
+            data.usePinned { pinned ->
+                platform.posix.memcpy(addr, pinned.addressOf(0), data.size.convert())
             }
         }
     }
@@ -61,9 +58,8 @@ class NativeTFBuffer(
 
     override fun writeLong(data: LongArray) {
         withLockedBuffer(kLiteRtTensorBufferLockModeWrite) { addr ->
-            val hostAddr = addr.reinterpret<LongVar>()
-            for (i in data.indices) {
-                hostAddr[i] = data[i]
+            data.usePinned { pinned ->
+                platform.posix.memcpy(addr, pinned.addressOf(0), (data.size * 8).convert())
             }
         }
     }
@@ -81,8 +77,9 @@ class NativeTFBuffer(
         val size = (getBufferSize() / 4).toInt()
         val data = IntArray(size)
         withLockedBuffer(kLiteRtTensorBufferLockModeRead) { addr ->
-            val hostAddr = addr.reinterpret<IntVar>()
-            for (i in 0 until size) { data[i] = hostAddr[i] }
+            data.usePinned { pinned ->
+                platform.posix.memcpy(pinned.addressOf(0), addr, (size * 4).convert())
+            }
         }
         return data
     }
@@ -91,8 +88,9 @@ class NativeTFBuffer(
         val size = (getBufferSize() / 4).toInt()
         val data = FloatArray(size)
         withLockedBuffer(kLiteRtTensorBufferLockModeRead) { addr ->
-            val hostAddr = addr.reinterpret<FloatVar>()
-            for (i in 0 until size) { data[i] = hostAddr[i] }
+            data.usePinned { pinned ->
+                platform.posix.memcpy(pinned.addressOf(0), addr, (size * 4).convert())
+            }
         }
         return data
     }
@@ -101,8 +99,9 @@ class NativeTFBuffer(
         val size = getBufferSize().toInt()
         val data = ByteArray(size)
         withLockedBuffer(kLiteRtTensorBufferLockModeRead) { addr ->
-            val hostAddr = addr.reinterpret<ByteVar>()
-            for (i in 0 until size) { data[i] = hostAddr[i] }
+            data.usePinned { pinned ->
+                platform.posix.memcpy(pinned.addressOf(0), addr, size.convert())
+            }
         }
         return data
     }
@@ -121,8 +120,9 @@ class NativeTFBuffer(
         val size = (getBufferSize() / 8).toInt()
         val data = LongArray(size)
         withLockedBuffer(kLiteRtTensorBufferLockModeRead) { addr ->
-            val hostAddr = addr.reinterpret<LongVar>()
-            for (i in 0 until size) { data[i] = hostAddr[i] }
+            data.usePinned { pinned ->
+                platform.posix.memcpy(pinned.addressOf(0), addr, (size * 8).convert())
+            }
         }
         return data
     }

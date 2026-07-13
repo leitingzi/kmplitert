@@ -91,6 +91,7 @@ kotlin {
         linuxArm64(),
         mingwX64(),
         androidNativeArm64(),
+        androidNativeArm32(),
         androidNativeX64()
     )
 
@@ -101,6 +102,12 @@ kotlin {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
+
+                    // Add this to help cinterop find the library during its own validation/linking if needed
+                    val libDir = project.nativeLibDir(konan)
+                    if (libDir != null) {
+                        includeDirs("src/nativeInterop/c")
+                    }
                 }
             }
         }
@@ -114,6 +121,8 @@ kotlin {
             target.binaries.withType<Framework>().all {
                 baseName = "KmpLiteRT"
                 isStatic = true
+                // Export the symbols to the framework consumers
+                export(project.file("src/nativeInterop/libs/litert/${konan.resourceDirName}/libLiteRt.dylib"))
             }
         }
     }
@@ -221,6 +230,7 @@ val KonanTarget.isAppleTarget: Boolean
 val KonanTarget.resourceDirName: String?
     get() = when (this) {
         KonanTarget.ANDROID_ARM64 -> "android_arm64"
+        KonanTarget.ANDROID_ARM32 -> "android_arm32"
         KonanTarget.ANDROID_X64 -> "android_x86_64"
 
         KonanTarget.IOS_ARM64 -> "ios_arm64"
@@ -250,6 +260,7 @@ fun String.toKonanTarget(): KonanTarget? = when (this) {
     "iosArm64" -> KonanTarget.IOS_ARM64
     "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
     "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
+    "androidNativeArm32" -> KonanTarget.ANDROID_ARM32
     "androidNativeX64" -> KonanTarget.ANDROID_X64
     else -> null
 }
@@ -259,8 +270,14 @@ fun NativeBinary.configureLiteRt(target: KonanTarget, libDir: File) {
 
     linkerOpts("-L$libPath", "-lLiteRt")
 
+    // For iOS/Mac, if using dylib, we might need to be explicit about the full path
+    // or ensure it's bundled.
+    if (target.isAppleTarget) {
+        linkerOpts("-force_load", "$libPath/libLiteRt.dylib")
+    }
+
     when (target) {
-        KonanTarget.ANDROID_ARM64, KonanTarget.ANDROID_X64 -> {
+        KonanTarget.ANDROID_ARM64, KonanTarget.ANDROID_ARM32, KonanTarget.ANDROID_X64 -> {
             linkerOpts("-lLiteRtClGlAccelerator")
         }
         KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {

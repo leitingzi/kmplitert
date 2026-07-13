@@ -118,7 +118,7 @@ actual class LiteRTCompiler actual constructor(
         )
     }
 
-    actual suspend fun getInputBuffers(): List<TFBuffer> {
+    actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> {
         val inputs = compiledModel.getInputDetails()
         val list = mutableListOf<TFBuffer>()
         for (i in 0 until inputs.length) {
@@ -128,7 +128,7 @@ actual class LiteRTCompiler actual constructor(
         return list
     }
 
-    actual suspend fun getOutputBuffers(): List<TFBuffer> {
+    actual suspend fun getOutputBuffers(signatureIndex: Int): List<TFBuffer> {
         val outputs = compiledModel.getOutputDetails()
         val list = mutableListOf<TFBuffer>()
         for (i in 0 until outputs.length) {
@@ -138,9 +138,9 @@ actual class LiteRTCompiler actual constructor(
         return list
     }
 
-    actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
+    actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int) {
         val inputTensors = inputs.map {
-            (it as JsTFBuffer).tensor
+            (it as JsTFBuffer).tensor ?: throw IllegalStateException("Input buffer not initialized. Call write*() first.")
         }.toJsArray()
 
         val promise = compiledModel.run(inputTensors)

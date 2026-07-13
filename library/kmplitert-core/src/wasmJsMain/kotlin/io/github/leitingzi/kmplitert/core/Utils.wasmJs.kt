@@ -24,4 +24,6 @@ internal fun getBigInt64Array(array: JsAny, index: Int): Long = js("array[index]
 
 internal fun getBigInt64ArrayLength(array: JsAny): Int = js("array.length")
 
+internal fun getUint8ArrayElement(array: JsAny, index: Int): Int = js("array[index]")
+
 

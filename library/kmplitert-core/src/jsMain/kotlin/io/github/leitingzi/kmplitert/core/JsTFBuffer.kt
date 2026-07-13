@@ -7,13 +7,15 @@ import org.khronos.webgl.get
 
 class JsTFBuffer(private val jsShape: Int32Array, private val dtype: String) : TFBuffer {
 
-    lateinit var tensor: Tensor
+    var tensor: Tensor? = null
+
+    private fun checkTensor(): Tensor {
+        return tensor ?: throw IllegalStateException("Tensor is not initialized. Call write*() or run model first.")
+    }
 
     override fun writeInt(data: IntArray) {
         val int32Array = Int32Array(data.size)
-        for (i in data.indices) {
-            int32Array[i] = data[i]
-        }
+        int32Array.asDynamic().set(data)
         tensor = Tensor(int32Array, jsShape)
     }
 
@@ -22,12 +24,8 @@ class JsTFBuffer(private val jsShape: Int32Array, private val dtype: String) : T
     }
 
     override fun writeInt8(data: ByteArray) {
-        // If the model expects uint8 or int8, try using Uint8Array.
-        // Some runtimes (like @litertjs/core) might not support Int8Array specifically.
         val uint8Array = Uint8Array(data.size)
-        for (i in data.indices) {
-            uint8Array[i] = data[i]
-        }
+        uint8Array.asDynamic().set(data)
         tensor = Tensor(uint8Array, jsShape)
     }
 
@@ -41,69 +39,50 @@ class JsTFBuffer(private val jsShape: Int32Array, private val dtype: String) : T
 
     override fun writeLong(data: LongArray) {
         val bigInt64Array = js("new BigInt64Array(data.length)")
-        for (i in data.indices) {
-            bigInt64Array[i] = data[i]
-        }
+        bigInt64Array.set(data)
         tensor = Tensor(bigInt64Array.unsafeCast<ArrayBufferView>(), jsShape)
     }
 
 
     override suspend fun readInt(): IntArray {
-        val data = tensor.data().await()
+        val data = checkTensor().data().await()
         val int32Array = data as Int32Array
         val result = IntArray(int32Array.length)
-        for (i in 0 until int32Array.length) {
-            result[i] = int32Array[i]
-        }
+        result.asDynamic().set(int32Array)
         return result
     }
 
     override suspend fun readFloat(): FloatArray {
-        val data = tensor.data().await()
+        val data = checkTensor().data().await()
         val float32Array = data as Float32Array
         return float32Array.toFloatArray()
     }
 
     override suspend fun readInt8(): ByteArray {
-        val data = tensor.data().await()
-        if (data is Uint8Array) {
-            val result = ByteArray(data.length)
-            for (i in 0 until data.length) {
-                result[i] = data[i]
-            }
-            return result
-        }
-        // Fallback or dynamic handling
-        val array = data.asDynamic()
-        val result = ByteArray(array.length.unsafeCast<Int>())
-        for (i in 0 until result.size) {
-            result[i] = array[i].unsafeCast<Byte>()
-        }
+        val data = checkTensor().data().await()
+        val uint8Array = data as Uint8Array
+        val result = ByteArray(uint8Array.length)
+        result.asDynamic().set(uint8Array)
         return result
     }
 
     override suspend fun readBoolean(): BooleanArray {
-        val data = tensor.data().await()
-        if (data is Uint8Array) {
-            val result = BooleanArray(data.length)
-            for (i in 0 until data.length) {
-                result[i] = data[i] != 0.toByte()
-            }
-            return result
-        }
+        val data = checkTensor().data().await()
         val array = data.asDynamic()
-        val result = BooleanArray(array.length.unsafeCast<Int>())
-        for (i in 0 until result.size) {
+        val length = array.length.unsafeCast<Int>()
+        val result = BooleanArray(length)
+        for (i in 0 until length) {
             result[i] = array[i].unsafeCast<Int>() != 0
         }
         return result
     }
 
     override suspend fun readLong(): LongArray {
-        val data = tensor.data().await()
+        val data = checkTensor().data().await()
         val bigInt64Array = data.asDynamic()
-        val result = LongArray(bigInt64Array.length.unsafeCast<Int>())
-        for (i in result.indices) {
+        val length = bigInt64Array.length.unsafeCast<Int>()
+        val result = LongArray(length)
+        for (i in 0 until length) {
             result[i] = bigInt64Array[i].unsafeCast<Long>()
         }
         return result

@@ -30,7 +30,7 @@ class LiteRTTest {
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
         inputs[0].writeFloat(floatArrayOf(100f))
-        compiler.run(inputs, outputs)
+        compiler.run(inputs, outputs, signatureIndex = 0)
         println(outputs[0].readFloat().contentToString())
 
         // Test Buffer Requirements
@@ -57,7 +57,7 @@ class LiteRTTest {
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
         inputs[0].writeFloat(floatArrayOf(100f))
-        compiler.run(inputs, outputs)
+        compiler.run(inputs, outputs, signatureIndex = 0)
         println(outputs[0].readFloat().contentToString())
 
         // Test Buffer Requirements
@@ -84,7 +84,7 @@ class LiteRTTest {
         val inputs = compiler.getInputBuffers()
         val outputs = compiler.getOutputBuffers()
         inputs[0].writeFloat(floatArrayOf(100f))
-        compiler.run(inputs, outputs)
+        compiler.run(inputs, outputs, signatureIndex = 0)
         println(outputs[0].readFloat().contentToString())
 
         // Test Buffer Requirements

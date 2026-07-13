@@ -7,10 +7,9 @@
 
 **KMPLiteRT** brings the power of [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the Kotlin Multiplatform ecosystem. It provides a unified, type-safe API to run machine learning inference across mobile, desktop, and web platforms.
 
-> [!CAUTION]
-> **UNDER ACTIVE DEVELOPMENT**
-> This project is currently in early development (Alpha). APIs are unstable and subject to change.
-> Many platforms are not yet tested or validated. **NOT RECOMMENDED FOR PRODUCTION USE.**
+> [!IMPORTANT]
+> **Beta Release Candidate**
+> This project has addressed key resource leaks and stability issues. While API refinement continues, it is now more robust across all supported platforms.
 
 ---
 
@@ -19,8 +18,10 @@
 - 🏗️ **Unified API**: Write your inference logic once in `commonMain` and run it everywhere.
 - ⚡ **Coroutine Support**: First-class support for asynchronous initialization and inference.
 - 📊 **Metadata Inspection**: Query tensor types, shapes (layout), and buffer requirements at runtime.
-- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU where available on the platform.
+- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU (including WebGPU and WebNN).
 - 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers via `TFBuffer`.
+- 🔄 **Multi-Signature Support**: Seamlessly work with models containing multiple computation graphs.
+- 🏎️ **Optimized Data Transfer**: Platform-specific optimizations (`memcpy`, `TypedArray.set`) for high-performance inference.
 - 🖼️ **Image Preprocessing**: Built-in utilities for image resizing and format conversion.
 
 ---
@@ -30,8 +31,8 @@
 `kmplitert-core` is the foundational module of the project. It abstracts the native LiteRT runtimes into a clean, idiomatic Kotlin API.
 
 - **Platform Abstraction**: Uses Kotlin `expect/actual` to wrap JNI (Android), C-API via JNA (JVM), C-Interop (Native), and JS/Wasm JS wrappers.
-- **Efficient Buffers**: The `TFBuffer` API manages memory efficiently across the Kotlin/Native boundary, minimizing copies.
-- **Consistent Lifecycle**: Provides a predictable `init()` -> `run()` -> `close()` lifecycle across all platforms.
+- **Efficient Buffers**: The `TFBuffer` API manages memory efficiently, utilizing `memcpy` on Native and `TypedArray` optimizations on Web to minimize overhead.
+- **Consistent Lifecycle**: Provides a predictable `init()` -> `run()` -> `close()` lifecycle with guaranteed resource cleanup.
 
 ---
 
@@ -39,11 +40,11 @@
 
 | Platform | Status | Implementation | Hardware Acceleration |
 | :--- | :---: | :--- | :--- |
-| **Android** | ⚠️ Alpha | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NNAPI |
-| **JVM (Desktop)** | ⚠️ Alpha | LiteRT C API via JNA | CPU |
-| **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU |
+| **Android** | ✅ Beta | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NPU |
+| **JVM (Desktop)** | ✅ Beta | LiteRT C API via JNA | CPU / GPU (WebGPU) |
+| **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU / WebNN |
 | **Native (Win/Linux/Mac)** | ⚠️ Alpha | LiteRT C API | CPU / GPU |
-| **iOS** | 🚧 Placeholder | - | Metal (Planned) |
+| **iOS** | 🚧 Planned | - | Metal |
 
 ---
 
