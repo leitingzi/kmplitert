@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   dokka:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
