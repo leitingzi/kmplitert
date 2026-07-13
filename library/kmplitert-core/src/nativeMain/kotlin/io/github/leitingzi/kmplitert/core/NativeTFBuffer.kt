@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalForeignApi::class)
+@file:Suppress("DIFFERENT_BIT_WIDTHS")
 
 package io.github.leitingzi.kmplitert.core
 
@@ -66,7 +67,7 @@ class NativeTFBuffer(
 
     private fun getBufferSize(): Long {
         return memScoped {
-            val sizeRef = alloc<ULongVar>()
+            val sizeRef = alloc<UIntVar>()
             val status = LiteRtGetTensorBufferPackedSize(buffer, sizeRef.ptr)
             check(status == kLiteRtStatusOk) { "Failed to get buffer size: $status" }
             sizeRef.value.toLong()

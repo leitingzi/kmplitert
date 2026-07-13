@@ -1,4 +1,5 @@
 @file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:Suppress("DIFFERENT_BIT_WIDTHS")
 
 package io.github.leitingzi.kmplitert.core.model
 
@@ -24,7 +25,7 @@ class NativeLiteRtCompiledModel(
         LiteRtDestroyEnvironment(environment)
     }
 
-    fun run(signatureIndex: Long, inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
+    fun run(signatureIndex: Int, inputs: List<TFBuffer>, outputs: List<TFBuffer>) {
         memScoped {
             val inputBuffers = allocArray<LiteRtTensorBufferVar>(inputs.size)
             inputs.forEachIndexed { i, buffer ->
@@ -37,44 +38,44 @@ class NativeLiteRtCompiledModel(
 
             val status = LiteRtRunCompiledModel(
                 compiledModel,
-                signatureIndex.toULong(),
-                inputs.size.toULong(),
+                signatureIndex.toUInt(),
+                inputs.size.toUInt(),
                 inputBuffers,
-                outputs.size.toULong(),
+                outputs.size.toUInt(),
                 outputBuffers
             )
             check(status == kLiteRtStatusOk) { "Failed to run compiled model: $status" }
         }
     }
 
-    fun getInputBuffers(signatureIndex: Long = 0): List<TFBuffer> {
+    fun getInputBuffers(signatureIndex: Int = 0): List<TFBuffer> {
         return getBuffers(signatureIndex, true)
     }
 
-    fun getOutputBuffers(signatureIndex: Long = 0): List<TFBuffer> {
+    fun getOutputBuffers(signatureIndex: Int = 0): List<TFBuffer> {
         return getBuffers(signatureIndex, false)
     }
 
-    fun getInputTensorType(signatureIndex: Long, name: String): LiteRTTensorType {
+    fun getInputTensorType(signatureIndex: Int, name: String): LiteRTTensorType {
         return getTensorType(signatureIndex, name, true)
     }
 
-    fun getOutputTensorType(signatureIndex: Long, name: String): LiteRTTensorType {
+    fun getOutputTensorType(signatureIndex: Int, name: String): LiteRTTensorType {
         return getTensorType(signatureIndex, name, false)
     }
 
-    fun getInputBufferRequirements(signatureIndex: Long, name: String): LiteRTBufferRequirements {
+    fun getInputBufferRequirements(signatureIndex: Int, name: String): LiteRTBufferRequirements {
         return getBufferRequirements(signatureIndex, name, true)
     }
 
-    fun getOutputBufferRequirements(signatureIndex: Long, name: String): LiteRTBufferRequirements {
+    fun getOutputBufferRequirements(signatureIndex: Int, name: String): LiteRTBufferRequirements {
         return getBufferRequirements(signatureIndex, name, false)
     }
 
-    private fun getBufferRequirements(signatureIndex: Long, name: String, isInput: Boolean): LiteRTBufferRequirements {
+    private fun getBufferRequirements(signatureIndex: Int, name: String, isInput: Boolean): LiteRTBufferRequirements {
         return memScoped {
             val signatureRef = alloc<LiteRtSignatureVar>()
-            var status = LiteRtGetModelSignature(model, signatureIndex.toULong(), signatureRef.ptr)
+            var status = LiteRtGetModelSignature(model, signatureIndex.toUInt(), signatureRef.ptr)
             check(status == kLiteRtStatusOk) { "Failed to get signature: $status" }
             val signature = signatureRef.value!!
 
@@ -103,9 +104,9 @@ class NativeLiteRtCompiledModel(
                 for (i in 0 until numTensors) {
                     val tensorRef = alloc<LiteRtTensorVar>()
                     status = if (isInput) {
-                        LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                        LiteRtGetSignatureInputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                     } else {
-                        LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                        LiteRtGetSignatureOutputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                     }
                     if (status == kLiteRtStatusOk) {
                         val cName = LiteRtGetTensorNameSafe(tensorRef.value!!)
@@ -120,18 +121,18 @@ class NativeLiteRtCompiledModel(
             if (tensorIndex != null) {
                 val bufferRequirementsRef = alloc<LiteRtTensorBufferRequirementsVar>()
                 status = if (isInput) {
-                    LiteRtGetCompiledModelInputBufferRequirements(compiledModel, signatureIndex.toULong(), tensorIndex.toULong(), bufferRequirementsRef.ptr)
+                    LiteRtGetCompiledModelInputBufferRequirements(compiledModel, signatureIndex.toUInt(), tensorIndex.toUInt(), bufferRequirementsRef.ptr)
                 } else {
-                    LiteRtGetCompiledModelOutputBufferRequirements(compiledModel, signatureIndex.toULong(), tensorIndex.toULong(), bufferRequirementsRef.ptr)
+                    LiteRtGetCompiledModelOutputBufferRequirements(compiledModel, signatureIndex.toUInt(), tensorIndex.toUInt(), bufferRequirementsRef.ptr)
                 }
                 check(status == kLiteRtStatusOk) { "Failed to get buffer requirements: $status" }
                 val requirements: LiteRTBufferRequirements = bufferRequirementsRef.value!!.toPlatform()
                 if (requirements.strides.isEmpty()) {
                     val tensorRef = alloc<LiteRtTensorVar>()
                     status = if (isInput) {
-                        LiteRtGetSignatureInputTensorByIndex(signature, tensorIndex.toULong(), tensorRef.ptr)
+                        LiteRtGetSignatureInputTensorByIndex(signature, tensorIndex.toUInt(), tensorRef.ptr)
                     } else {
-                        LiteRtGetSignatureOutputTensorByIndex(signature, tensorIndex.toULong(), tensorRef.ptr)
+                        LiteRtGetSignatureOutputTensorByIndex(signature, tensorIndex.toUInt(), tensorRef.ptr)
                     }
                     if (status == kLiteRtStatusOk) {
                         val rankedType = alloc<LiteRtRankedTensorType>()
@@ -213,16 +214,16 @@ class NativeLiteRtCompiledModel(
         }
     }
 
-    private fun getTensorType(signatureIndex: Long, name: String, isInput: Boolean): LiteRTTensorType {
+    private fun getTensorType(signatureIndex: Int, name: String, isInput: Boolean): LiteRTTensorType {
         return memScoped {
             val numSignaturesRef = alloc<LiteRtParamIndexVar>()
             var status = LiteRtGetNumModelSignatures(model, numSignaturesRef.ptr)
             check(status == kLiteRtStatusOk) { "Failed to get num signatures: $status" }
-            val numSignatures = numSignaturesRef.value.toLong()
+            val numSignatures = numSignaturesRef.value.toInt()
 
             for (s in 0 until numSignatures) {
                 val signatureRef = alloc<LiteRtSignatureVar>()
-                status = LiteRtGetModelSignature(model, s.toULong(), signatureRef.ptr)
+                status = LiteRtGetModelSignature(model, s.toUInt(), signatureRef.ptr)
                 if (status != kLiteRtStatusOk) continue
                 val signature = signatureRef.value!!
 
@@ -241,9 +242,9 @@ class NativeLiteRtCompiledModel(
                     if (cName?.toKString() == name) {
                         val tensorRef = alloc<LiteRtTensorVar>()
                         status = if (isInput) {
-                            LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                            LiteRtGetSignatureInputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                         } else {
-                            LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                            LiteRtGetSignatureOutputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                         }
                         if (status == kLiteRtStatusOk) {
                             val rankedType = alloc<LiteRtRankedTensorType>()
@@ -257,9 +258,9 @@ class NativeLiteRtCompiledModel(
                 for (i in 0 until numTensors) {
                     val tensorRef = alloc<LiteRtTensorVar>()
                     status = if (isInput) {
-                        LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                        LiteRtGetSignatureInputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                     } else {
-                        LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                        LiteRtGetSignatureOutputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                     }
                     if (status == kLiteRtStatusOk) {
                         val cName = LiteRtGetTensorNameSafe(tensorRef.value!!)
@@ -327,10 +328,10 @@ class NativeLiteRtCompiledModel(
         return LiteRTLayout(dimensions = dims, strides = strides)
     }
 
-    private fun getBuffers(signatureIndex: Long, isInput: Boolean): List<TFBuffer> {
+    private fun getBuffers(signatureIndex: Int, isInput: Boolean): List<TFBuffer> {
         return memScoped {
             val signatureRef = alloc<LiteRtSignatureVar>()
-            var status = LiteRtGetModelSignature(model, signatureIndex.toULong(), signatureRef.ptr)
+            var status = LiteRtGetModelSignature(model, signatureIndex.toUInt(), signatureRef.ptr)
             check(status == kLiteRtStatusOk) { "Failed to get signature: $status" }
             val signature = signatureRef.value!!
 
@@ -341,23 +342,23 @@ class NativeLiteRtCompiledModel(
                 LiteRtGetNumSignatureOutputs(signature, numTensorsRef.ptr)
             }
             check(status == kLiteRtStatusOk) { "Failed to get num tensors: $status" }
-            val numTensors = numTensorsRef.value.toLong()
+            val numTensors = numTensorsRef.value.toInt()
 
             val buffers = mutableListOf<TFBuffer>()
             for (i in 0 until numTensors) {
                 val bufferRequirementsRef = alloc<LiteRtTensorBufferRequirementsVar>()
                 status = if (isInput) {
-                    LiteRtGetCompiledModelInputBufferRequirements(compiledModel, signatureIndex.toULong(), i.toULong(), bufferRequirementsRef.ptr)
+                    LiteRtGetCompiledModelInputBufferRequirements(compiledModel, signatureIndex.toUInt(), i.toUInt(), bufferRequirementsRef.ptr)
                 } else {
-                    LiteRtGetCompiledModelOutputBufferRequirements(compiledModel, signatureIndex.toULong(), i.toULong(), bufferRequirementsRef.ptr)
+                    LiteRtGetCompiledModelOutputBufferRequirements(compiledModel, signatureIndex.toUInt(), i.toUInt(), bufferRequirementsRef.ptr)
                 }
                 check(status == kLiteRtStatusOk) { "Failed to get buffer requirements: $status" }
 
                 val tensorRef = alloc<LiteRtTensorVar>()
                 status = if (isInput) {
-                    LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                    LiteRtGetSignatureInputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                 } else {
-                    LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
+                    LiteRtGetSignatureOutputTensorByIndex(signature, i.toUInt(), tensorRef.ptr)
                 }
                 check(status == kLiteRtStatusOk) { "Failed to get tensor: $status" }
 
