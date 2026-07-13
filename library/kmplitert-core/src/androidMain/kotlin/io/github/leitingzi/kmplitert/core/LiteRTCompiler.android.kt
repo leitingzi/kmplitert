@@ -26,18 +26,25 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements {
-        val requirements = compiledModel.getInputBufferRequirements(inputName = inputName).toPlatform()
+        val requirements = compiledModel.getInputBufferRequirements(
+            inputName = inputName
+        ).toPlatform()
+
         if (requirements.strides.isEmpty()) {
             val tensorType = compiledModel.getInputTensorType(inputName = inputName)
-            return requirements.copy(strides = LiteRTLayout.calculateDefaultStrides(tensorType.layout?.dimensions ?: emptyList()))
+            return requirements.copy(strides = LiteRTLayout.calculateDefaultStrides(
+                dimensions = tensorType.layout?.dimensions ?: emptyList())
+            )
         }
         return requirements
     }
 
     actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> {
-        val inputBuffers = compiledModel.createInputBuffers(signatureIndex)
+        val inputBuffers = compiledModel.createInputBuffers(
+            signatureIndex = signatureIndex
+        )
         return inputBuffers.map { buffer ->
-            AndroidTFBuffer(buffer)
+            AndroidTFBuffer(buffer = buffer)
         }
     }
 
@@ -47,25 +54,34 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements {
-        val requirements = compiledModel.getOutputBufferRequirements(outputName = outputName).toPlatform()
+        val requirements = compiledModel.getOutputBufferRequirements(
+            outputName = outputName
+        ).toPlatform()
+
         if (requirements.strides.isEmpty()) {
             val tensorType = compiledModel.getOutputTensorType(outputName = outputName)
-            return requirements.copy(strides = LiteRTLayout.calculateDefaultStrides(tensorType.layout?.dimensions ?: emptyList()))
+            return requirements.copy(strides = LiteRTLayout.calculateDefaultStrides(
+                dimensions = tensorType.layout?.dimensions ?: emptyList())
+            )
         }
         return requirements
     }
 
     actual suspend fun getOutputBuffers(signatureIndex: Int): List<TFBuffer> {
-        val outputBuffers = compiledModel.createOutputBuffers(signatureIndex)
+        val outputBuffers = compiledModel.createOutputBuffers(
+            signatureIndex = signatureIndex
+        )
         return outputBuffers.map { buffer ->
             AndroidTFBuffer(buffer)
         }
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int) {
-        val androidInputs = inputs.toAndroid()
-        val androidOutputs = outputs.toAndroid()
-        compiledModel.run(androidInputs, androidOutputs, signatureIndex)
+        compiledModel.run(
+            inputs = inputs.toAndroid(),
+            outputs = outputs.toAndroid(),
+            signatureIndex = signatureIndex
+        )
     }
 
     actual suspend fun close() {
@@ -108,12 +124,10 @@ actual class LiteRTCompiler actual constructor(
     }
 
     private fun TensorType.Layout.toPlatform(): LiteRTLayout {
-        val platformStrides = if (this.strides.isEmpty()) {
-            LiteRTLayout.calculateDefaultStrides(this.dimensions)
-        } else {
-            this.strides
+        val platformStrides = this.strides.ifEmpty {
+            LiteRTLayout.calculateDefaultStrides(dimensions = this.dimensions)
         }
-        return LiteRTLayout(this.dimensions, platformStrides)
+        return LiteRTLayout(dimensions = this.dimensions, strides = platformStrides)
     }
 
     private fun TensorBufferType.toPlatform(): LiteRTTensorBufferType {

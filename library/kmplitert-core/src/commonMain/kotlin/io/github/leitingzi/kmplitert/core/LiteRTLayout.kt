@@ -10,7 +10,7 @@ package io.github.leitingzi.kmplitert.core
 data class LiteRTLayout(val dimensions: List<Int> , val strides: List<Int>) {
 
     init {
-        require(strides.isEmpty() || strides.size == dimensions.size) {
+        require(value = strides.isEmpty() || strides.size == dimensions.size) {
             "strides.size must equal dimensions.size or be empty."
         }
     }
@@ -30,7 +30,10 @@ data class LiteRTLayout(val dimensions: List<Int> , val strides: List<Int>) {
          * Calculates default row-major strides for the given dimensions.
          */
         fun calculateDefaultStrides(dimensions: List<Int>): List<Int> {
-            if (dimensions.isEmpty()) return emptyList()
+            if (dimensions.isEmpty()) {
+                return emptyList()
+            }
+
             val strides = mutableListOf<Int>()
             var currentStride = 1
             for (i in dimensions.size - 1 downTo 0) {

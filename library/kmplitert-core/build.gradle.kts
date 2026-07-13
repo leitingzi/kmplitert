@@ -188,16 +188,6 @@ kotlin {
     }
 }
 
-dokka {
-    dokkaSourceSets.configureEach {
-        suppress.set(true)
-    }
-
-    dokkaSourceSets.named("commonMain") {
-        suppress.set(false)
-    }
-}
-
 tasks.withType<KotlinNativeTest>().configureEach {
 
     val target = targetName?.toKonanTarget() ?: return@configureEach

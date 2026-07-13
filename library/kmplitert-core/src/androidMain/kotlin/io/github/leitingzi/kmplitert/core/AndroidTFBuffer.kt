@@ -7,19 +7,19 @@ internal class AndroidTFBuffer(
 ): TFBuffer {
 
     override fun writeInt(data: IntArray) {
-        buffer.writeInt(data)
+        buffer.writeInt(data = data)
     }
     override fun writeFloat(data: FloatArray) {
-        buffer.writeFloat(data)
+        buffer.writeFloat(data = data)
     }
     override fun writeInt8(data: ByteArray) {
-        buffer.writeInt8(data)
+        buffer.writeInt8(data = data)
     }
     override fun writeBoolean(data: BooleanArray) {
-        buffer.writeBoolean(data)
+        buffer.writeBoolean(data = data)
     }
     override fun writeLong(data: LongArray) {
-        buffer.writeLong(data)
+        buffer.writeLong(data = data)
     }
 
     override suspend fun readInt(): IntArray {

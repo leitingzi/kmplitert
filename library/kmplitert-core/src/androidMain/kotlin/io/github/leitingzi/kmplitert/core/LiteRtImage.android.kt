@@ -8,16 +8,16 @@ import android.graphics.BitmapFactory
 actual class LiteRtImage(private val bitmap: Bitmap) {
     actual fun resize(width: Int, height: Int): LiteRtImage {
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true)
-        return LiteRtImage(scaledBitmap)
+        return LiteRtImage(bitmap = scaledBitmap)
     }
 
     actual fun toFloatArray(mean: Float, std: Float): FloatArray {
         val width = bitmap.width
         val height = bitmap.height
-        val pixels = IntArray(width * height)
+        val pixels = IntArray(size = width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
-        val floatArray = FloatArray(width * height * 3)
+        val floatArray = FloatArray(size = width * height * 3)
         for (i in pixels.indices) {
             val pixel = pixels[i]
             val r = ((pixel shr 16 and 0xFF) - mean) / std
@@ -33,10 +33,10 @@ actual class LiteRtImage(private val bitmap: Bitmap) {
     actual fun toInt8Array(): ByteArray {
         val width = bitmap.width
         val height = bitmap.height
-        val pixels = IntArray(width * height)
+        val pixels = IntArray(size = width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
-        val byteArray = ByteArray(width * height * 3)
+        val byteArray = ByteArray(size = width * height * 3)
         for (i in pixels.indices) {
             val pixel = pixels[i]
             byteArray[i * 3] = (pixel shr 16 and 0xFF).toByte()
@@ -49,10 +49,10 @@ actual class LiteRtImage(private val bitmap: Bitmap) {
     actual fun toIntArray(): IntArray {
         val width = bitmap.width
         val height = bitmap.height
-        val pixels = IntArray(width * height)
+        val pixels = IntArray(size = width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
-        val intArray = IntArray(width * height * 3)
+        val intArray = IntArray(size = width * height * 3)
         for (i in pixels.indices) {
             val pixel = pixels[i]
             intArray[i * 3] = (pixel shr 16 and 0xFF)
@@ -65,10 +65,10 @@ actual class LiteRtImage(private val bitmap: Bitmap) {
     actual fun toBooleanArray(): BooleanArray {
         val width = bitmap.width
         val height = bitmap.height
-        val pixels = IntArray(width * height)
+        val pixels = IntArray(size = width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
-        val booleanArray = BooleanArray(width * height * 3)
+        val booleanArray = BooleanArray(size = width * height * 3)
         for (i in pixels.indices) {
             val pixel = pixels[i]
             booleanArray[i * 3] = (pixel shr 16 and 0xFF) > 127
@@ -81,10 +81,10 @@ actual class LiteRtImage(private val bitmap: Bitmap) {
     actual fun toLongArray(): LongArray {
         val width = bitmap.width
         val height = bitmap.height
-        val pixels = IntArray(width * height)
+        val pixels = IntArray(size = width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
-        val longArray = LongArray(width * height * 3)
+        val longArray = LongArray(size = width * height * 3)
         for (i in pixels.indices) {
             val pixel = pixels[i]
             longArray[i * 3] = (pixel shr 16 and 0xFF).toLong()
@@ -97,13 +97,13 @@ actual class LiteRtImage(private val bitmap: Bitmap) {
     actual companion object {
         actual fun fromBytes(bytes: ByteArray): LiteRtImage {
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                ?: throw IllegalArgumentException("Failed to decode bitmap from bytes")
-            return LiteRtImage(bitmap)
+                ?: throw Exception("Failed to decode bitmap from bytes")
+            return LiteRtImage(bitmap = bitmap)
         }
 
         actual fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage {
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val pixels = IntArray(width * height)
+            val pixels = IntArray(size = width * height)
             for (i in 0 until width * height) {
                 val r = data[i * 3].toInt() and 0xFF
                 val g = data[i * 3 + 1].toInt() and 0xFF
@@ -111,7 +111,7 @@ actual class LiteRtImage(private val bitmap: Bitmap) {
                 pixels[i] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
             }
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
-            return LiteRtImage(bitmap)
+            return LiteRtImage(bitmap = bitmap)
         }
     }
 }

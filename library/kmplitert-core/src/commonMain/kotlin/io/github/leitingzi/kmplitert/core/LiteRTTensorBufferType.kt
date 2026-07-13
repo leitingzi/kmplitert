@@ -10,66 +10,66 @@ package io.github.leitingzi.kmplitert.core
 enum class LiteRTTensorBufferType(val type: Int) {
 
     /** Unknown or unspecified buffer type. */
-    Unknown(0),
+    Unknown(type = 0),
 
     /** CPU host memory. */
-    HostMemory(1),
+    HostMemory(type = 1),
 
     /** Android Hardware Buffer (AHardwareBuffer). */
-    Ahwb(2),
+    Ahwb(type = 2),
 
     /** Android ION memory buffer. */
-    Ion(3),
+    Ion(type = 3),
 
     /** Linux DMA-BUF buffer. */
-    DmaBuf(4),
+    DmaBuf(type = 4),
 
     /** Qualcomm FastRPC shared buffer. */
-    FastRpc(5),
+    FastRpc(type = 5),
 
     /** OpenGL buffer object. */
-    GlBuffer(6),
+    GlBuffer(type = 6),
 
     /** OpenGL texture. */
-    GlTexture(7),
+    GlTexture(type = 7),
 
     // ------------------------------------------------------------------------
     // OpenCL (10-19)
     // ------------------------------------------------------------------------
 
     /** OpenCL buffer. */
-    OpenClBuffer(10),
+    OpenClBuffer(type = 10),
 
     /** OpenCL FP16 buffer. */
-    OpenClBufferFp16(11),
+    OpenClBufferFp16(type = 11),
 
     /** OpenCL texture. */
-    OpenClTexture(12),
+    OpenClTexture(type = 12),
 
     /** OpenCL FP16 texture. */
-    OpenClTextureFp16(13),
+    OpenClTextureFp16(type = 13),
 
     /** Packed OpenCL buffer. */
-    OpenClBufferPacked(14),
+    OpenClBufferPacked(type = 14),
 
     /** OpenCL image buffer. */
-    OpenClImageBuffer(15),
+    OpenClImageBuffer(type = 15),
 
     /** OpenCL FP16 image buffer. */
-    OpenClImageBufferFp16(16),
+    OpenClImageBufferFp16(type = 16),
 
     // ------------------------------------------------------------------------
     // WebGPU (20-29)
     // ------------------------------------------------------------------------
 
     /** WebGPU buffer. */
-    WebGpuBuffer(20),
+    WebGpuBuffer(type = 20),
 
     /** WebGPU FP16 buffer. */
-    WebGpuBufferFp16(21),
+    WebGpuBufferFp16(type = 21),
 
     /** WebGPU texture. */
-    WebGpuTexture(22),
+    WebGpuTexture(type = 22),
 
     /** WebGPU FP16 texture. */
     WebGpuTextureFp16(23),
@@ -78,54 +78,54 @@ enum class LiteRTTensorBufferType(val type: Int) {
     WebGpuImageBuffer(24),
 
     /** WebGPU FP16 image buffer. */
-    WebGpuImageBufferFp16(25),
+    WebGpuImageBufferFp16(type = 25),
 
     /** Packed WebGPU buffer. */
-    WebGpuBufferPacked(26),
+    WebGpuBufferPacked(type = 26),
 
     // ------------------------------------------------------------------------
     // Metal (30-39)
     // ------------------------------------------------------------------------
 
     /** Metal buffer. */
-    MetalBuffer(30),
+    MetalBuffer(type = 30),
 
     /** Metal FP16 buffer. */
-    MetalBufferFp16(31),
+    MetalBufferFp16(type = 31),
 
     /** Metal texture. */
-    MetalTexture(32),
+    MetalTexture(type = 32),
 
     /** Metal FP16 texture. */
-    MetalTextureFp16(33),
+    MetalTextureFp16(type = 33),
 
     /** Packed Metal buffer. */
-    MetalBufferPacked(34),
+    MetalBufferPacked(type = 34),
 
     // ------------------------------------------------------------------------
     // Vulkan (40-49)
     // ------------------------------------------------------------------------
 
     /** Vulkan buffer. */
-    VulkanBuffer(40),
+    VulkanBuffer(type = 40),
 
     /** Vulkan FP16 buffer. */
-    VulkanBufferFp16(41),
+    VulkanBufferFp16(type = 41),
 
     /** Vulkan texture. */
-    VulkanTexture(42),
+    VulkanTexture(type = 42),
 
     /** Vulkan FP16 texture. */
-    VulkanTextureFp16(43),
+    VulkanTextureFp16(type = 43),
 
     /** Vulkan image buffer. */
-    VulkanImageBuffer(44),
+    VulkanImageBuffer(type = 44),
 
     /** Vulkan FP16 image buffer. */
-    VulkanImageBufferFp16(45),
+    VulkanImageBufferFp16(type = 45),
 
     /** Packed Vulkan buffer. */
-    VulkanBufferPacked(46),
+    VulkanBufferPacked(type = 46),
 
     // ------------------------------------------------------------------------
     // User-defined (100-199)
@@ -137,7 +137,7 @@ enum class LiteRTTensorBufferType(val type: Int) {
      * Custom buffer implementations must provide CPU access through
      * lock() and unlock().
      */
-    UserCustomBuffer(100),
+    UserCustomBuffer(type = 100),
 
     /**
      * OpenVINO tensor buffer.
@@ -145,16 +145,16 @@ enum class LiteRTTensorBufferType(val type: Int) {
      * This value is an alias of [UserCustomBuffer] and shares the same
      * native value (100).
      */
-    OpenVINOTensorBuffer(100),
+    OpenVINOTensorBuffer(type = 100),
 
     /**
      * End of the reserved range for user-defined tensor buffers.
      */
-    UserCustomBufferEnd(199);
+    UserCustomBufferEnd(type = 199);
 
     companion object {
 
-        private val TYPE_MAP = entries.associateBy(LiteRTTensorBufferType::type)
+        private val TYPE_MAP = entries.associateBy(keySelector = LiteRTTensorBufferType::type)
 
         /**
          * Returns the corresponding buffer type for the given native value.
@@ -162,6 +162,8 @@ enum class LiteRTTensorBufferType(val type: Int) {
          * @param type Native LiteRT tensor buffer type value.
          * @return Matching [LiteRTTensorBufferType], or [Unknown] if the value is not recognized.
          */
-        fun from(type: Int): LiteRTTensorBufferType = TYPE_MAP[type] ?: Unknown
+        fun from(type: Int): LiteRTTensorBufferType {
+            return TYPE_MAP[type] ?: Unknown
+        }
     }
 }

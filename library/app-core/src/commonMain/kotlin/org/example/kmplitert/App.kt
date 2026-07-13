@@ -17,11 +17,11 @@ suspend fun testMobilenet() {
     compiler.init()
 
     // TODO Android Bug [litert_compiled_model_jni.cc:619] Unsupported element type in Kotlin: 3
-    val inputTensorType = compiler.getInputTensorType("input")
-    println("inputTensorType = $inputTensorType")
-
-    val outputTensorType = compiler.getOutputTensorType("MobilenetV1/Predictions/Reshape_1")
-    println("outputTensorType = $outputTensorType")
+//    val inputTensorType = compiler.getInputTensorType("input")
+//    println("inputTensorType = $inputTensorType")
+//
+//    val outputTensorType = compiler.getOutputTensorType("MobilenetV1/Predictions/Reshape_1")
+//    println("outputTensorType = $outputTensorType")
 
     val inputRequirements = compiler.getInputBufferRequirements("input")
     println("inputRequirements = $inputRequirements")
@@ -97,7 +97,7 @@ suspend fun testCelsiusToFahrenheit() {
 @Composable
 fun App() {
     LaunchedEffect(Unit) {
-        testCelsiusToFahrenheit()
+        testMobilenet()
     }
 }
 
