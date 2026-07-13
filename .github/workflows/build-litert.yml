@@ -1,0 +1,82 @@
+name: Build LiteRT Native Libraries
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-prebuilts:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            arch: x64
+            src: linux_x86_64
+            dest: linux/x64
+          - platform: linux
+            arch: arm64
+            src: linux_arm64
+            dest: linux/arm64
+          - platform: mac
+            arch: arm64
+            src: macos_arm64
+            dest: mac/arm64
+          - platform: win
+            arch: x64
+            src: windows_x86_64
+            dest: win/x64
+
+    name: LiteRT (${{ matrix.platform }}-${{ matrix.arch }})
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Checkout LiteRT
+        uses: actions/checkout@v4
+        with:
+          repository: google-ai-edge/LiteRT
+          path: LiteRT-repo
+          lfs: true
+          sparse-checkout: |
+            litert/c
+            litert/prebuilt
+          sparse-checkout-cone-mode: false
+
+      - name: Prepare Artifacts
+        run: |
+          DEST_PATH="library/kmplitert-core/generated/litert/${{ matrix.dest }}"
+          mkdir -p "$DEST_PATH/lib"
+          mkdir -p "$DEST_PATH/include"
+          
+          echo "Copying libraries from ${{ matrix.src }}..."
+          cp -vL LiteRT-repo/litert/prebuilt/${{ matrix.src }}/* "$DEST_PATH/lib/"
+          
+          # Verify that we have real files, not LFS pointers
+          for f in "$DEST_PATH/lib"/*; do
+            if [ -f "$f" ]; then
+              size=$(stat -c%s "$f")
+              if [ "$size" -lt 1000 ]; then
+                echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
+                cat "$f"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "Copying headers..."
+          cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/include/"
+          
+          # Remove the source repo to avoid git confusion (it's an untracked repo inside a repo)
+          rm -rf LiteRT-repo
+
+      - name: Commit and push
+        uses: ./.github/actions/commit-and-push
+        with:
+          message: "Update LiteRT prebuilt: ${{ matrix.platform }} ${{ matrix.arch }}"
+          add: "library/kmplitert-core/generated/litert/${{ matrix.dest }}"
