@@ -1,0 +1,63 @@
+name: Commit and push
+
+inputs:
+  message:
+    description: Commit message
+    required: true
+
+  add:
+    description: Files to add
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Commit and push
+      shell: bash
+      env:
+        INPUT_MESSAGE: ${{ inputs.message }}
+        INPUT_ADD: ${{ inputs.add }}
+
+      run: |
+        git lfs install
+        git config lfs.allowincompletepush true
+        git config user.name "GitHub"
+        git config user.email "noreply@github.com"
+
+        echo "$INPUT_ADD" | sed 's/^- //' | while read file; do
+          if [ -n "$file" ]; then
+            git add -f "$file"
+          fi
+        done
+
+        git lfs status
+
+        if git diff --cached --quiet; then
+          echo "⏭️ No changes to commit"
+          exit 0
+        fi
+
+        git commit -m "$INPUT_MESSAGE"
+
+        for attempt in 1 2 3; do
+          if [ "$attempt" -gt 1 ]; then
+            sleep 10
+          fi
+        
+          echo "🚀 Pushing LFS objects..."
+          git lfs push --all origin
+
+          if ! git pull --rebase --autostash; then
+            echo "❌ Rebase failed. Current status:"
+            git status
+            exit 1
+          fi
+          if git push; then
+            echo "✅ Push succeeded"
+            exit 0
+          fi
+          echo "⚠️ Push attempt $attempt failed"
+        done
+
+        echo "❌ Push failed after 3 attempts"
+        exit 1
