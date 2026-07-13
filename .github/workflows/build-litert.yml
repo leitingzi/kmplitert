@@ -7,35 +7,15 @@ permissions:
   contents: write
 
 jobs:
-  update-prebuilts:
+  build-linux-x64:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux
-            arch: x64
-            src: linux_x86_64
-            dest: linux/x64
-          - platform: linux
-            arch: arm64
-            src: linux_arm64
-            dest: linux/arm64
-          - platform: mac
-            arch: arm64
-            src: macos_arm64
-            dest: mac/arm64
-          - platform: win
-            arch: x64
-            src: windows_x86_64
-            dest: win/x64
-
-    name: LiteRT (${{ matrix.platform }}-${{ matrix.arch }})
+    name: LiteRT (linux-x64)
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
         with:
           lfs: true
+          fetch-depth: 0
 
       - name: Checkout LiteRT
         uses: actions/checkout@v4
@@ -50,17 +30,21 @@ jobs:
 
       - name: Prepare Artifacts
         run: |
-          DEST_PATH="library/kmplitert-core/generated/litert/${{ matrix.dest }}"
+          DEST_PATH="library/kmplitert-core/generated/litert/linux/x64"
           mkdir -p "$DEST_PATH/lib"
           mkdir -p "$DEST_PATH/include"
           
-          echo "Copying libraries from ${{ matrix.src }}..."
-          cp -vL LiteRT-repo/litert/prebuilt/${{ matrix.src }}/* "$DEST_PATH/lib/"
+          echo "Copying libraries from linux_x86_64..."
+          cp -vL LiteRT-repo/litert/prebuilt/linux_x86_64/* "$DEST_PATH/lib/"
           
           # Verify that we have real files, not LFS pointers
           for f in "$DEST_PATH/lib"/*; do
             if [ -f "$f" ]; then
-              size=$(stat -c%s "$f")
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
               if [ "$size" -lt 1000 ]; then
                 echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
                 cat "$f"
@@ -72,11 +56,184 @@ jobs:
           echo "Copying headers..."
           cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/include/"
           
-          # Remove the source repo to avoid git confusion (it's an untracked repo inside a repo)
           rm -rf LiteRT-repo
 
       - name: Commit and push
         uses: ./.github/actions/commit-and-push
         with:
-          message: "Update LiteRT prebuilt: ${{ matrix.platform }} ${{ matrix.arch }}"
-          add: "library/kmplitert-core/generated/litert/${{ matrix.dest }}"
+          message: "Update LiteRT prebuilt: linux x64"
+          add: library/kmplitert-core/generated/litert/linux/x64
+
+  build-linux-arm64:
+    runs-on: ubuntu-latest
+    name: LiteRT (linux-arm64)
+    needs: build-linux-x64
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Checkout LiteRT
+        uses: actions/checkout@v4
+        with:
+          repository: google-ai-edge/LiteRT
+          path: LiteRT-repo
+          lfs: true
+          sparse-checkout: |
+            litert/c
+            litert/prebuilt
+          sparse-checkout-cone-mode: false
+
+      - name: Prepare Artifacts
+        run: |
+          DEST_PATH="library/kmplitert-core/generated/litert/linux/arm64"
+          mkdir -p "$DEST_PATH/lib"
+          mkdir -p "$DEST_PATH/include"
+          
+          echo "Copying libraries from linux_arm64..."
+          cp -vL LiteRT-repo/litert/prebuilt/linux_arm64/* "$DEST_PATH/lib/"
+          
+          # Verify that we have real files, not LFS pointers
+          for f in "$DEST_PATH/lib"/*; do
+            if [ -f "$f" ]; then
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
+              if [ "$size" -lt 1000 ]; then
+                echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
+                cat "$f"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "Copying headers..."
+          cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/include/"
+          
+          rm -rf LiteRT-repo
+
+      - name: Commit and push
+        uses: ./.github/actions/commit-and-push
+        with:
+          message: "Update LiteRT prebuilt: linux arm64"
+          add: library/kmplitert-core/generated/litert/linux/arm64
+
+  build-mac-arm64:
+    runs-on: macos-latest
+    name: LiteRT (mac-arm64)
+    needs: build-linux-arm64
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Checkout LiteRT
+        uses: actions/checkout@v4
+        with:
+          repository: google-ai-edge/LiteRT
+          path: LiteRT-repo
+          lfs: true
+          sparse-checkout: |
+            litert/c
+            litert/prebuilt
+          sparse-checkout-cone-mode: false
+
+      - name: Prepare Artifacts
+        run: |
+          DEST_PATH="library/kmplitert-core/generated/litert/mac/arm64"
+          mkdir -p "$DEST_PATH/lib"
+          mkdir -p "$DEST_PATH/include"
+
+          echo "Copying libraries from macos_arm64..."
+          cp -vL LiteRT-repo/litert/prebuilt/macos_arm64/* "$DEST_PATH/lib/"
+
+          # Verify that we have real files, not LFS pointers
+          for f in "$DEST_PATH/lib"/*; do
+            if [ -f "$f" ]; then
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
+              if [ "$size" -lt 1000 ]; then
+                echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
+                cat "$f"
+                exit 1
+              fi
+            fi
+          done
+
+          echo "Copying headers..."
+          cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/include/"
+
+          rm -rf LiteRT-repo
+
+      - name: Commit and push
+        uses: ./.github/actions/commit-and-push
+        with:
+          message: "Update LiteRT prebuilt: mac arm64"
+          add: library/kmplitert-core/generated/litert/mac/arm64
+
+  build-win-x64:
+    runs-on: windows-latest
+    name: LiteRT (win-x64)
+    needs: build-mac-arm64
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Checkout LiteRT
+        uses: actions/checkout@v4
+        with:
+          repository: google-ai-edge/LiteRT
+          path: LiteRT-repo
+          lfs: true
+          sparse-checkout: |
+            litert/c
+            litert/prebuilt
+          sparse-checkout-cone-mode: false
+
+      - name: Prepare Artifacts
+        run: |
+          $DEST_PATH="library/kmplitert-core/generated/litert/win/x64"
+          New-Item -ItemType Directory -Force "$DEST_PATH/lib"
+          New-Item -ItemType Directory -Force "$DEST_PATH/include"
+          
+          echo "Copying libraries from windows_x86_64..."
+          Copy-Item -Path "LiteRT-repo/litert/prebuilt/windows_x86_64/*" -Destination "$DEST_PATH/lib/" -Force
+          
+          # Verify that we have real files, not LFS pointers
+          for f in "$DEST_PATH/lib"/*; do
+            if [ -f "$f" ]; then
+              if [[ "$RUNNER_OS" == "Linux" ]]; then
+                size=$(stat -c%s "$f")
+              else
+                size=$(stat -f%z "$f")
+              fi
+              if [ "$size" -lt 1000 ]; then
+                echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
+                cat "$f"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "Copying headers..."
+          Copy-Item -Path "LiteRT-repo/litert/c/*.h" -Destination "$DEST_PATH/include/" -Force
+          
+          Remove-Item -Recurse -Force LiteRT-repo
+
+      - name: Commit and push
+        uses: ./.github/actions/commit-and-push
+        with:
+          message: "Update LiteRT prebuilt: win x64"
+          add: library/kmplitert-core/generated/litert/win/x64
