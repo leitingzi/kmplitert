@@ -212,20 +212,18 @@ jobs:
           Copy-Item -Path "LiteRT-repo/litert/prebuilt/windows_x86_64/*" -Destination "$DEST_PATH/lib/" -Force
           
           # Verify that we have real files, not LFS pointers
-          for f in "$DEST_PATH/lib"/*; do
-            if [ -f "$f" ]; then
-              if [[ "$RUNNER_OS" == "Linux" ]]; then
-                size=$(stat -c%s "$f")
-              else
-                size=$(stat -f%z "$f")
-              fi
-              if [ "$size" -lt 1000 ]; then
-                echo "❌ Error: $f looks like a Git LFS pointer (size: $size bytes)"
-                cat "$f"
-                exit 1
-              fi
-            fi
-          done
+          Get-ChildItem "$DEST_PATH/lib" | ForEach-Object {
+            $file = $_
+            if ($file.Name.EndsWith(".h")) {
+              return
+            }
+            $size = $file.Length
+            if ($size -lt 1000) {
+              echo "❌ Error: $($file.FullName) looks like a Git LFS pointer (size: $size bytes)"
+              Get-Content $file.FullName
+              exit 1
+            }
+          }
           
           echo "Copying headers..."
           Copy-Item -Path "LiteRT-repo/litert/c/*.h" -Destination "$DEST_PATH/include/" -Force
