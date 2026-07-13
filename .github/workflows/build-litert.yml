@@ -15,24 +15,24 @@ jobs:
       matrix:
         include:
           - platform: linux
-            arch: x64
+            arch: x86_64
             src: linux_x86_64
-            dest: linux/x64
+            dest: linux/x86-64
 
           - platform: linux
             arch: arm64
             src: linux_arm64
             dest: linux/arm64
 
-          - platform: mac
+          - platform: macos
             arch: arm64
             src: macos_arm64
-            dest: mac/arm64
+            dest: macos/arm64
 
-          - platform: win
-            arch: x64
+          - platform: windows
+            arch: x86_64
             src: windows_x86_64
-            dest: win/x64
+            dest: windows/x86-64
 
           - platform: ios
             arch: arm64

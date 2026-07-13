@@ -1,8 +1,6 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
@@ -92,9 +90,9 @@ kotlin {
         linuxX64(),
         linuxArm64(),
         mingwX64(),
-//        androidNativeArm64(),
-//        androidNativeArm32(),
-//        androidNativeX64()
+        androidNativeArm64(),
+        androidNativeArm32(),
+        androidNativeX64()
     )
 
     nativeTargets.forEach { target ->
@@ -104,28 +102,14 @@ kotlin {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/litert.def"))
-
-                    // Add this to help cinterop find the library during its own validation/linking if needed
-                    val libDir = project.nativeLibDir(konan)
-                    if (libDir != null) {
-                        includeDirs("src/nativeInterop/c")
-                    }
+                    includeDirs(project.file("generated/litert/${konan.cinteropLibDir}/include"))
                 }
             }
         }
 
         target.binaries.all {
-            val libDir = project.nativeLibDir(konan) ?: return@all
-            configureLiteRt(target = konan, libDir = libDir)
-        }
-
-        if (HostManager.hostIsMac && konan.isAppleTarget) {
-            target.binaries.withType<Framework>().all {
-                baseName = "KmpLiteRT"
-                isStatic = true
-                // Export the symbols to the framework consumers
-                export(project.file("src/nativeInterop/libs/litert/${konan.resourceDirName}/libLiteRt.dylib"))
-            }
+            val path = project.file("generated/litert/${konan.cinteropLibDir}/lib").absolutePath
+            linkerOpts("-L$path", "-llitert")
         }
     }
 
@@ -192,8 +176,7 @@ tasks.withType<KotlinNativeTest>().configureEach {
 
     val target = targetName?.toKonanTarget() ?: return@configureEach
 
-    val libDir = project.nativeLibDir(target) ?: return@configureEach
-    val libPath = libDir.absolutePath
+    val libPath = project.file("generated/litert/${target.cinteropLibDir}/lib").absolutePath
 
     when(target) {
         KonanTarget.MINGW_X64 -> {
@@ -229,30 +212,24 @@ val KonanTarget.isAppleTarget: Boolean
         else -> false
     }
 
-val KonanTarget.resourceDirName: String?
+val KonanTarget.cinteropLibDir: String?
     get() = when (this) {
-        KonanTarget.ANDROID_ARM64 -> "android_arm64"
-        KonanTarget.ANDROID_ARM32 -> "android_arm32"
-        KonanTarget.ANDROID_X64 -> "android_x86_64"
+        KonanTarget.ANDROID_ARM64 -> "android/arm64"
+        KonanTarget.ANDROID_ARM32 -> "android/arm32"
+        KonanTarget.ANDROID_X64 -> "android/x86-64"
 
-        KonanTarget.IOS_ARM64 -> "ios_arm64"
-        KonanTarget.IOS_SIMULATOR_ARM64 -> "ios_sim_arm64"
+        KonanTarget.IOS_ARM64 -> "ios/arm64"
+        KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
 
-        KonanTarget.MINGW_X64 -> "win32-x86-64"
+        KonanTarget.MINGW_X64 -> "windows/x86-64"
 
-        KonanTarget.LINUX_ARM64 -> "linux-aarch64"
-        KonanTarget.LINUX_X64 -> "linux-x86-64"
+        KonanTarget.LINUX_ARM64 -> "linux/arm64"
+        KonanTarget.LINUX_X64 -> "linux/x86-64"
 
-        KonanTarget.MACOS_ARM64 -> "darwin-aarch64"
+        KonanTarget.MACOS_ARM64 -> "macos/arm64"
 
         else -> null
     }
-
-fun Project.nativeLibDir(target: KonanTarget): File? {
-    return target.resourceDirName
-        ?.let { file("src/nativeInterop/libs/litert/$it") }
-        ?.takeIf(File::exists)
-}
 
 fun String.toKonanTarget(): KonanTarget? = when (this) {
     "mingwX64" -> KonanTarget.MINGW_X64
@@ -265,36 +242,4 @@ fun String.toKonanTarget(): KonanTarget? = when (this) {
     "androidNativeArm32" -> KonanTarget.ANDROID_ARM32
     "androidNativeX64" -> KonanTarget.ANDROID_X64
     else -> null
-}
-
-fun NativeBinary.configureLiteRt(target: KonanTarget, libDir: File) {
-    val libPath = libDir.absolutePath.replace("\\", "/")
-
-    linkerOpts("-L$libPath", "-lLiteRt")
-
-    // For iOS/Mac, if using dylib, we might need to be explicit about the full path
-    // or ensure it's bundled.
-    if (target.isAppleTarget) {
-        linkerOpts("-force_load", "$libPath/libLiteRt.dylib")
-    }
-
-    when (target) {
-        KonanTarget.ANDROID_ARM64, KonanTarget.ANDROID_ARM32, KonanTarget.ANDROID_X64 -> {
-            linkerOpts("-lLiteRtClGlAccelerator")
-        }
-        KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> {
-            linkerOpts("-lLiteRtMetalAccelerator")
-        }
-        KonanTarget.MINGW_X64 -> {
-            linkerOpts("-lLiteRtWebGpuAccelerator")
-        }
-        KonanTarget.LINUX_ARM64, KonanTarget.LINUX_X64 -> {
-            linkerOpts("-lLiteRtWebGpuAccelerator", "-Wl,--allow-shlib-undefined")
-        }
-        else -> {}
-    }
-
-    if (target.isAppleTarget) {
-        linkerOpts("-rpath", libPath)
-    }
 }
