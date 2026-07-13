@@ -33,6 +33,7 @@
 - **Platform Abstraction**: Uses Kotlin `expect/actual` to wrap JNI (Android), C-API via JNA (JVM), C-Interop (Native), and JS/Wasm JS wrappers.
 - **Efficient Buffers**: The `TFBuffer` API manages memory efficiently, utilizing `memcpy` on Native and `TypedArray` optimizations on Web to minimize overhead.
 - **Consistent Lifecycle**: Provides a predictable `init()` -> `run()` -> `close()` lifecycle with guaranteed resource cleanup.
+- **API documentation**: [dokka documentation](https://leitingzi.github.io/kmplitert/)
 
 ---
 
