@@ -33,10 +33,10 @@ jobs:
           rm -rf "$DEST_PATH"
           mkdir -p "$(dirname "$DEST_PATH")"
           
-          cd LiteRT-repo/litert/c
-          find . -type f -name "*.h" | while read file; do
-            mkdir -p "$DEST_PATH/$(dirname "$file")"
-            cp "$file" "$DEST_PATH/$file"
+          find LiteRT-repo/litert/c -type f -name "*.h" | while read -r file; do
+            relative="${file#LiteRT-repo/litert/c/}"
+            mkdir -p "$DEST_PATH/$(dirname "$relative")"
+            cp "$file" "$DEST_PATH/$relative"
           done
 
       - name: Commit and push
