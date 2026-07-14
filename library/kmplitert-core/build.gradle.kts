@@ -135,6 +135,12 @@ kotlin {
         binaries.all {
             val pathDir = project.file("$basePath/lib/litert/${konanTarget.libDir}")
             linkerOpts("-L${pathDir.absolutePath}", "-lLiteRt")
+            if (konanTarget.isAppleTarget || konanTarget.isLinuxTarget) {
+                linkerOpts("-rpath", pathDir.absolutePath)
+            }
+            if (konanTarget.isLinuxTarget) {
+                linkerOpts("--allow-shlib-undefined")
+            }
         }
     }
 
@@ -207,6 +213,11 @@ tasks.withType<KotlinNativeTest>().configureEach {
             val list = listOfNotNull(libDir.absolutePath, env)
             environment(name = "LD_LIBRARY_PATH", value = list.joinToString(":"))
         }
+        KonanTarget.MACOS_ARM64, KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64 -> {
+            val env = System.getenv("DYLD_LIBRARY_PATH")
+            val list = listOfNotNull(libDir.absolutePath, env)
+            environment(name = "DYLD_LIBRARY_PATH", value = list.joinToString(":"))
+        }
         else -> {}
     }
 }
@@ -219,6 +230,11 @@ tasks.withType<Test>().configureEach {
 
 val KonanTarget.isAppleTarget: Boolean get() = when (this) {
     KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> true
+    else -> false
+}
+
+val KonanTarget.isLinuxTarget: Boolean get() = when (this) {
+    KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> true
     else -> false
 }
 
