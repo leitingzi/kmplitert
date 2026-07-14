@@ -19,7 +19,6 @@ import org.jetbrains.compose.resources.preloadFont
 @Composable
 internal fun WithFontResourcesLoaded(content: @Composable () -> Unit) {
     val font by preloadFont(Res.font.NotoSansSC)
-
     var fontFallbackInitialized by remember { mutableStateOf(false) }
     val fontFamilyResolver = LocalFontFamilyResolver.current
 

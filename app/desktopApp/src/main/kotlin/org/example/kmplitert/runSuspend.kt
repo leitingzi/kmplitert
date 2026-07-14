@@ -7,7 +7,6 @@ import kotlin.coroutines.startCoroutine
 fun runSuspend(block: suspend () -> Unit) {
     val continuation = object : Continuation<Unit> {
         override val context = EmptyCoroutineContext
-
         override fun resumeWith(result: Result<Unit>) {
             result.getOrThrow()
         }

@@ -1,11 +1,12 @@
-@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalWasmDsl::class)
 
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
-import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -42,11 +43,7 @@ mavenPublishing {
         signAllPublications()
     }
 
-    coordinates(
-        groupId = group.toString(),
-        artifactId = "kmplitert-core",
-        version = version.toString()
-    )
+    coordinates(groupId = group.toString(), artifactId = "kmplitert-core", version = version.toString())
 
     pom {
         name = "KMP LiteRT"
@@ -82,18 +79,19 @@ publishing {
     }
 }
 
-kotlin {
-    val isMac = HostManager.hostIsMac
-    val isWindows = HostManager.hostIsMingw
-    val isLinux = HostManager.hostIsLinux
+val isMac = HostManager.hostIsMac
+val isWindows = HostManager.hostIsMingw
+val isLinux = HostManager.hostIsLinux
+val cInteropPath = "src/nativeInterop"
 
+kotlin {
     android {
         namespace = "io.github.leitingzi.kmplitert.core"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+            jvmTarget = JvmTarget.JVM_11
         }
         androidResources {
             enable = true
@@ -124,22 +122,19 @@ kotlin {
     // androidNativeX64()
 
     targets.withType<KotlinNativeTarget>().configureEach {
-        val basePath = "src/nativeInterop"
         compilations.getByName("main").cinterops {
             create("litert") {
-                definitionFile.set(project.file("$basePath/cinterop/litert.def"))
-                includeDirs(project.file("$basePath/include"))
+                definitionFile.set(project.file("$cInteropPath/cinterop/litert.def"))
+                includeDirs(project.file("$cInteropPath/include"))
             }
         }
 
         binaries.all {
-            val pathDir = project.file("$basePath/lib/litert/${konanTarget.libDir}")
-            linkerOpts("-L${pathDir.absolutePath}", "-lLiteRt")
-            if (konanTarget.isAppleTarget || konanTarget.isLinuxTarget) {
-                linkerOpts("-rpath", pathDir.absolutePath)
-            }
-            if (konanTarget.isLinuxTarget) {
-                linkerOpts("--allow-shlib-undefined")
+            val path = project.file("$cInteropPath/lib/litert/${konanTarget.libDir}").absolutePath
+            linkerOpts("-L$path", "-lLiteRt")
+            when {
+                konanTarget.isAppleTarget || konanTarget.isLinuxTarget -> linkerOpts("-rpath", path)
+                konanTarget.isLinuxTarget -> linkerOpts("--allow-shlib-undefined")
             }
         }
     }
@@ -161,7 +156,6 @@ kotlin {
         }
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         compilations.named("main") {
             packageJson {
@@ -200,23 +194,24 @@ kotlin {
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
+    this
     val target = targetName?.toKonanTarget() ?: return@configureEach
-    val libDir = project.file("src/nativeInterop/lib/litert/${target.libDir}")
+    val libPath = project.file("$cInteropPath/lib/litert/${target.libDir}").absolutePath
+
+    fun setEnvironment(path: String, sep: String) {
+        val value = listOfNotNull(libPath, System.getenv(path))
+        environment(name = path, value = value.joinToString(separator = sep))
+    }
+
     when(target) {
         KonanTarget.MINGW_X64 -> {
-            val env = System.getenv("PATH")
-            val list = listOfNotNull(libDir.absolutePath, env)
-            environment(name = "PATH", value = list.joinToString(";"))
+            setEnvironment(path = "PATH", sep = ";")
         }
         KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> {
-            val env = System.getenv("LD_LIBRARY_PATH")
-            val list = listOfNotNull(libDir.absolutePath, env)
-            environment(name = "LD_LIBRARY_PATH", value = list.joinToString(":"))
+            setEnvironment(path = "LD_LIBRARY_PATH", sep = ":")
         }
         KonanTarget.MACOS_ARM64, KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64 -> {
-            val env = System.getenv("DYLD_LIBRARY_PATH")
-            val list = listOfNotNull(libDir.absolutePath, env)
-            environment(name = "DYLD_LIBRARY_PATH", value = list.joinToString(":"))
+            setEnvironment(path = "DYLD_LIBRARY_PATH", sep = ":")
         }
         else -> {}
     }
@@ -276,7 +271,7 @@ tasks.register<Copy>("copyNativeLitertToJvm") {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     copyList.forEach { (source, target) ->
-        from("src/nativeInterop/lib/litert/$source") {
+        from("$cInteropPath/lib/litert/$source") {
             into(target)
         }
     }

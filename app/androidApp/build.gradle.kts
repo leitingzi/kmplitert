@@ -12,14 +12,6 @@ kotlin {
     }
 }
 
-dependencies {
-    implementation(projects.library.appCore)
-
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.compose.uiToolingPreview)
-    debugImplementation(libs.compose.uiTooling)
-}
-
 android {
     namespace = "org.example.kmplitert"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -37,12 +29,25 @@ android {
         }
     }
     buildTypes {
-        getByName("release") {
+        debug {
             isMinifyEnabled = false
+        }
+
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+dependencies {
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.uiToolingPreview)
+    debugImplementation(libs.compose.uiTooling)
+
+    implementation(projects.library.appCore)
 }

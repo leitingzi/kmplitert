@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,9 +13,23 @@ plugins {
 }
 
 kotlin {
-    val isMac = HostManager.hostIsMac
+    android {
+        namespace = "org.example.kmplitert.appcore"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
 
-    if (isMac) {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
+        androidResources {
+            enable = true
+        }
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
+    }
+
+    if (HostManager.hostIsMac) {
         listOf(
             iosArm64(),
             iosSimulatorArm64()
@@ -30,25 +47,8 @@ kotlin {
         browser()
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
-    }
-
-    android {
-        namespace = "org.example.kmplitert.appcore"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
-        androidResources {
-            enable = true
-        }
-        withHostTest {
-            isIncludeAndroidResources = true
-        }
     }
 
     sourceSets {
@@ -69,9 +69,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             api(projects.library.kmplitertCore)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }

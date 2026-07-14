@@ -4,15 +4,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import java.io.PrintStream
 
-fun main() {
+fun main() = application {
     fixPrint()
-
-    application {
-        Window(
-            onCloseRequest = { exitApplication() },
-        ) {
-            App()
-        }
+    Window(onCloseRequest = ::exitApplication) {
+        App()
     }
 }
 

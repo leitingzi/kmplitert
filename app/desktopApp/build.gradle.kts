@@ -7,11 +7,10 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.library.appCore)
-
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.uiToolingPreview)
     implementation(libs.kotlinx.coroutinesSwing)
+    implementation(projects.library.appCore)
 }
 
 compose.desktop {
