@@ -73,7 +73,7 @@ class NativeLiteRtCompiledModel(
     }
 
     private fun getBufferRequirements(signatureIndex: Int, name: String, isInput: Boolean): LiteRTBufferRequirements {
-        return memScoped {
+        memScoped {
             val signatureRef = alloc<LiteRtSignatureVar>()
             var status = LiteRtGetModelSignature(model, signatureIndex.toULong(), signatureRef.ptr)
             check(status == kLiteRtStatusOk) { "Failed to get signature: $status" }
@@ -215,47 +215,30 @@ class NativeLiteRtCompiledModel(
     }
 
     private fun getTensorType(signatureIndex: Int, name: String, isInput: Boolean): LiteRTTensorType {
-        return memScoped {
-            val numSignaturesRef = alloc<LiteRtParamIndexVar>()
-            var status = LiteRtGetNumModelSignatures(model, numSignaturesRef.ptr)
-            check(status == kLiteRtStatusOk) { "Failed to get num signatures: $status" }
-            val numSignatures = numSignaturesRef.value.toInt()
+        memScoped {
+            val signatureRef = alloc<LiteRtSignatureVar>()
+            var status = LiteRtGetModelSignature(model, signatureIndex.toULong(), signatureRef.ptr)
+            check(status == kLiteRtStatusOk) { "Failed to get signature at index $signatureIndex: $status" }
+            val signature = signatureRef.value!!
 
-            for (s in 0 until numSignatures) {
-                val signatureRef = alloc<LiteRtSignatureVar>()
-                status = LiteRtGetModelSignature(model, s.toULong(), signatureRef.ptr)
-                if (status != kLiteRtStatusOk) continue
-                val signature = signatureRef.value!!
+            val numTensorsRef = alloc<LiteRtParamIndexVar>()
+            status = if (isInput) {
+                LiteRtGetNumSignatureInputs(signature, numTensorsRef.ptr)
+            } else {
+                LiteRtGetNumSignatureOutputs(signature, numTensorsRef.ptr)
+            }
+            check(status == kLiteRtStatusOk) { "Failed to get num tensors: $status" }
+            val numTensors = numTensorsRef.value.toInt()
 
-                val numTensorsRef = alloc<LiteRtParamIndexVar>()
-                status = if (isInput) {
-                    LiteRtGetNumSignatureInputs(signature, numTensorsRef.ptr)
+            // 1. Try to find by signature name
+            for (i in 0 until numTensors) {
+                val cName = if (isInput) {
+                    LiteRtGetSignatureInputNameSafe(signature, i)
                 } else {
-                    LiteRtGetNumSignatureOutputs(signature, numTensorsRef.ptr)
-                }
-                if (status != kLiteRtStatusOk) continue
-                val numTensors = numTensorsRef.value.toInt()
-
-                // 1. Try to find by signature name
-                for (i in 0 until numTensors) {
-                    val cName = if (isInput) LiteRtGetSignatureInputNameSafe(signature, i) else LiteRtGetSignatureOutputNameSafe(signature, i)
-                    if (cName?.toKString() == name) {
-                        val tensorRef = alloc<LiteRtTensorVar>()
-                        status = if (isInput) {
-                            LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
-                        } else {
-                            LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
-                        }
-                        if (status == kLiteRtStatusOk) {
-                            val rankedType = alloc<LiteRtRankedTensorType>()
-                            status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
-                            if (status == kLiteRtStatusOk) return rankedType.toPlatform()
-                        }
-                    }
+                    LiteRtGetSignatureOutputNameSafe(signature, i)
                 }
 
-                // 2. Try to find by tensor name
-                for (i in 0 until numTensors) {
+                if (cName?.toKString() == name) {
                     val tensorRef = alloc<LiteRtTensorVar>()
                     status = if (isInput) {
                         LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
@@ -263,31 +246,46 @@ class NativeLiteRtCompiledModel(
                         LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
                     }
                     if (status == kLiteRtStatusOk) {
-                        val cName = LiteRtGetTensorNameSafe(tensorRef.value!!)
-                        if (cName?.toKString() == name) {
-                            val rankedType = alloc<LiteRtRankedTensorType>()
-                            status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
-                            if (status == kLiteRtStatusOk) return rankedType.toPlatform()
-                        }
+                        val rankedType = alloc<LiteRtRankedTensorType>()
+                        status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
+                        if (status == kLiteRtStatusOk) return rankedType.toPlatform()
                     }
                 }
+            }
 
-                // 3. Try C-API lookup in this signature
+            // 2. Try to find by tensor name
+            for (i in 0 until numTensors) {
                 val tensorRef = alloc<LiteRtTensorVar>()
                 status = if (isInput) {
-                    LiteRtGetSignatureInputTensor(signature, name, tensorRef.ptr)
+                    LiteRtGetSignatureInputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
                 } else {
-                    LiteRtGetSignatureOutputTensor(signature, name, tensorRef.ptr)
+                    LiteRtGetSignatureOutputTensorByIndex(signature, i.toULong(), tensorRef.ptr)
                 }
-
                 if (status == kLiteRtStatusOk) {
-                    val rankedType = alloc<LiteRtRankedTensorType>()
-                    status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
-                    if (status == kLiteRtStatusOk) return rankedType.toPlatform()
+                    val cName = LiteRtGetTensorNameSafe(tensorRef.value!!)
+                    if (cName?.toKString() == name) {
+                        val rankedType = alloc<LiteRtRankedTensorType>()
+                        status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
+                        if (status == kLiteRtStatusOk) return rankedType.toPlatform()
+                    }
                 }
             }
+
+            // 3. Try C-API direct lookup in this signature
+            val tensorRef = alloc<LiteRtTensorVar>()
+            status = if (isInput) {
+                LiteRtGetSignatureInputTensor(signature, name, tensorRef.ptr)
+            } else {
+                LiteRtGetSignatureOutputTensor(signature, name, tensorRef.ptr)
+            }
+
+            if (status == kLiteRtStatusOk) {
+                val rankedType = alloc<LiteRtRankedTensorType>()
+                status = LiteRtGetRankedTensorType(tensorRef.value!!, rankedType.ptr)
+                if (status == kLiteRtStatusOk) return rankedType.toPlatform()
+            }
             
-            throw IllegalArgumentException("${if (isInput) "Input" else "Output"} tensor $name not found in any of the $numSignatures signatures.")
+            throw IllegalArgumentException("${if (isInput) "Input" else "Output"} tensor $name not found in signature $signatureIndex.")
         }
     }
 
@@ -385,7 +383,7 @@ class NativeLiteRtCompiledModel(
                 val env = envRef.value!!
 
                 val modelRef = alloc<LiteRtModelVar>()
-                val statusModel = LiteRtCreateModelFromFile(filePath, modelRef.ptr)
+                val statusModel = LiteRtCreateModelFromFile(env, filePath, modelRef.ptr)
                 check(statusModel == kLiteRtStatusOk) { "Failed to create model: $statusModel" }
                 val model = modelRef.value!!
 

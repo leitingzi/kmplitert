@@ -1,7 +1,23 @@
-headers = litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_compiled_model.h litert/c/litert_tensor_buffer.h litert/c/litert_options.h litert/c/litert_layout.h litert/c/litert_tensor_buffer_requirements.h
-headerFilter = litert_*
+package = litert
+headers = litert/c/litert_common.h litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_compiled_model.h litert/c/litert_tensor_buffer.h litert/c/litert_options.h litert/c/litert_layout.h litert/c/litert_tensor_buffer_requirements.h
 
 ---
+
+struct LiteRtTensorBufferT {};
+struct LiteRtCompiledModelT {};
+struct LiteRtEnvironmentT {};
+struct LiteRtModelT {};
+struct LiteRtSignatureT {};
+struct LiteRtTensorT {};
+struct LiteRtTensorBufferRequirementsT {};
+struct LiteRtOptionsT {};
+struct LiteRtWeightsT {};
+struct LiteRtOpT {};
+struct LiteRtSubgraphT {};
+struct LiteRtOpListT {};
+struct LiteRtBuilderT {};
+struct LiteRtOpaqueOptionsT {};
+struct LiteRtProfilerT {};
 
 #include "litert/c/litert_layout.h"
 #include "litert/c/litert_tensor_buffer_requirements.h"

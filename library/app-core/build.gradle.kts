@@ -9,13 +9,15 @@ plugins {
 }
 
 kotlin {
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "AppCore"
-            isStatic = true
+    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMac) {
+        listOf(
+            iosArm64(),
+            iosSimulatorArm64()
+        ).forEach { iosTarget ->
+            iosTarget.binaries.framework {
+                baseName = "AppCore"
+                isStatic = true
+            }
         }
     }
 

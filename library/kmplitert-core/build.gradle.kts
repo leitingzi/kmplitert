@@ -1,6 +1,7 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
@@ -83,34 +84,45 @@ kotlin {
         }
     }
 
-    val nativeTargets = listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-        macosArm64(),
-        linuxX64(),
-        linuxArm64(),
-        mingwX64(),
-        androidNativeArm64(),
-        androidNativeArm32(),
-        androidNativeX64()
-    )
+    val isMac = HostManager.hostIsMac
+    val isWindows = HostManager.hostIsMingw
+    val isLinux = HostManager.hostIsLinux
 
-    nativeTargets.forEach { target ->
+    if (isMac) {
+        iosArm64()
+        iosSimulatorArm64()
+        macosArm64()
+    }
+
+    if (isWindows) {
+        mingwX64()
+    }
+
+    if (isLinux) {
+        linuxX64()
+        linuxArm64()
+    }
+
+    // android
+    // androidNativeArm64()
+    // androidNativeArm32()
+    // androidNativeX64()
+
+    targets.withType<KotlinNativeTarget>().configureEach {
+        val target = this
         val konan = target.konanTarget
         val basePath = "src/nativeInterop"
 
-        if (HostManager.hostIsMac || !konan.isAppleTarget) {
-            target.compilations.getByName("main").cinterops {
-                create("litert") {
-                    definitionFile.set(project.file("$basePath/cinterop/litert.def"))
-                    includeDirs(project.file("$basePath/include"))
-                }
+        target.compilations.getByName("main").cinterops {
+            create("litert") {
+                definitionFile.set(project.file("$basePath/cinterop/litert.def"))
+                includeDirs(project.file("$basePath/include"))
             }
         }
 
         target.binaries.all {
             val path = project.file("$basePath/lib/litert/${konan.cinteropLibDir}").absolutePath
-            linkerOpts("-L$path", "-llitert")
+            linkerOpts("-L$path", "-lLiteRt")
         }
     }
 
