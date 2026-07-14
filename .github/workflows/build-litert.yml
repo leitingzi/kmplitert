@@ -24,21 +24,28 @@ jobs:
           path: LiteRT-repo
           lfs: true
           sparse-checkout: |
-            litert/c
-            litert/build_common
+            litert
           sparse-checkout-cone-mode: false
 
       - name: Copy headers
         run: |
-          DEST_PATH="library/kmplitert-core/src/nativeInterop/include/litert/c"
-          rm -rf "$DEST_PATH"
-          mkdir -p "$(dirname "$DEST_PATH")"
+          DEST_ROOT="library/kmplitert-core/src/nativeInterop/include"
+          rm -rf "$DEST_ROOT/litert"
+          mkdir -p "$DEST_ROOT"
           
-          find LiteRT-repo/litert/c -type f -name "*.h" | while read -r file; do
-            relative="${file#LiteRT-repo/litert/c/}"
-            mkdir -p "$DEST_PATH/$(dirname "$relative")"
-            cp "$file" "$DEST_PATH/$relative"
-          done
+          copy_headers() {
+            SRC="$1"
+            DEST="$2"
+          
+            find "$SRC" -type f -name "*.h" | while read -r file; do
+            relative="${file#$SRC/}"
+            mkdir -p "$DEST/$(dirname "$relative")"
+            cp "$file" "$DEST/$relative"
+            done
+          }
+          
+          copy_headers LiteRT-repo/litert/c "$DEST_ROOT/litert/c"
+          copy_headers LiteRT-repo/litert/build_common "$DEST_ROOT/litert/build_common"
 
       - name: Commit and push
         uses: ./.github/actions/commit-and-push
