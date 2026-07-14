@@ -1,13 +1,10 @@
-headers = litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_compiled_model.h litert/c/litert_tensor_buffer.h litert/c/litert_options.h litert/c/litert_layout.h litert/c/litert_tensor_buffer_requirements.h
-headerFilter = litert/c/*
-compilerOpts = -Isrc/nativeInterop/c
-
-linkerOpts = -lLiteRt
+headers = litert_environment.h litert_model.h litert_compiled_model.h litert_tensor_buffer.h litert_options.h litert_layout.h litert_tensor_buffer_requirements.h
+headerFilter = litert_*
 
 ---
 
-#include "litert/c/litert_layout.h"
-#include "litert/c/litert_tensor_buffer_requirements.h"
+#include "litert_layout.h"
+#include "litert_tensor_buffer_requirements.h"
 
 static inline int LiteRtGetLayoutRank(const LiteRtLayout* layout) {
   return layout->rank;

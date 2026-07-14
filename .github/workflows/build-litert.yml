@@ -7,7 +7,40 @@ permissions:
   contents: write
 
 jobs:
-  update-prebuilts:
+  copy-headers:
+    name: Copy LiteRT Headers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Checkout LiteRT
+        uses: actions/checkout@v4
+        with:
+          repository: google-ai-edge/LiteRT
+          path: LiteRT-repo
+          lfs: true
+          sparse-checkout: |
+            litert/c
+          sparse-checkout-cone-mode: false
+
+      - name: Copy headers
+        run: |
+          DEST_PATH="library/kmplitert-core/src/nativeInterop/litert/include"
+          rm -rf "$DEST_PATH"
+          mkdir -p "$DEST_PATH"
+          cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/"
+
+      - name: Commit and push
+        uses: ./.github/actions/commit-and-push
+        with:
+          message: "Update LiteRT headers"
+          add: "library/kmplitert-core/src/nativeInterop/litert/include"
+
+  copy-libraries:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -79,12 +112,12 @@ jobs:
 
       - name: Prepare Artifacts
         run: |
-          DEST_PATH="library/kmplitert-core/generated/litert/${{ matrix.dest }}"
-          mkdir -p "$DEST_PATH/lib"
-          mkdir -p "$DEST_PATH/include"
+          DEST_PATH="library/kmplitert-core/src/nativeInterop/litert/${{ matrix.dest }}"
+          rm -rf DEST_PATH
+          mkdir -p DEST_PATH
           
           echo "Copying libraries from ${{ matrix.src }}..."
-          cp -vL LiteRT-repo/litert/prebuilt/${{ matrix.src }}/* "$DEST_PATH/lib/"
+          cp -vL LiteRT-repo/litert/prebuilt/${{ matrix.src }}/* DEST_PATH
           
           # Verify that we have real files, not LFS pointers
           for f in "$DEST_PATH/lib"/*; do
@@ -98,14 +131,10 @@ jobs:
             fi
           done
           
-          echo "Copying headers..."
-          cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/include/"
-          
-          # Remove the source repo to avoid git confusion (it's an untracked repo inside a repo)
           rm -rf LiteRT-repo
 
       - name: Commit and push
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT prebuilt: ${{ matrix.platform }} ${{ matrix.arch }}"
-          add: "library/kmplitert-core/generated/litert/${{ matrix.dest }}"
+          add: "library/kmplitert-core/src/nativeInterop/litert/${{ matrix.dest }}"
