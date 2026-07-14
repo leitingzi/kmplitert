@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,7 +10,9 @@ plugins {
 }
 
 kotlin {
-    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMac) {
+    val isMac = HostManager.hostIsMac
+
+    if (isMac) {
         listOf(
             iosArm64(),
             iosSimulatorArm64()
