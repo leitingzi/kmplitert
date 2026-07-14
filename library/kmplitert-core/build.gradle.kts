@@ -26,7 +26,7 @@ dokka {
 }
 
 group = "io.github.leitingzi"
-version = "0.1.2"
+version = "0.1.3"
 
 base {
     archivesName.set("kmplitert-core")
