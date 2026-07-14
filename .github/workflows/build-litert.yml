@@ -41,6 +41,7 @@ jobs:
           add: "library/kmplitert-core/src/nativeInterop/litert/include"
 
   copy-libraries:
+    needs: copy-headers
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
