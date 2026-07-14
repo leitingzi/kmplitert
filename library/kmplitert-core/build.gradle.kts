@@ -1,9 +1,11 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,7 +14,15 @@ plugins {
     alias(libs.plugins.vanniktech)
 }
 
-val dokkaBuild = providers.gradleProperty("dokkaBuild").isPresent
+dokka {
+    dokkaSourceSets.configureEach {
+        suppress.set(true)
+    }
+
+    dokkaSourceSets.named("commonMain") {
+        suppress.set(false)
+    }
+}
 
 group = "io.github.leitingzi"
 version = "0.1.2"
@@ -24,13 +34,19 @@ base {
 mavenPublishing {
     publishToMavenCentral()
 
-    if (gradle.startParameter.taskNames.any {
+    val isPublishToMavenCentral = gradle.startParameter.taskNames.any {
         it.contains("publishToMavenCentral", ignoreCase = true)
-    }) {
+    }
+
+    if (isPublishToMavenCentral) {
         signAllPublications()
     }
 
-    coordinates(groupId = group.toString(), artifactId = "kmplitert-core", version = version.toString())
+    coordinates(
+        groupId = group.toString(),
+        artifactId = "kmplitert-core",
+        version = version.toString()
+    )
 
     pom {
         name = "KMP LiteRT"
@@ -67,6 +83,10 @@ publishing {
 }
 
 kotlin {
+    val isMac = HostManager.hostIsMac
+    val isWindows = HostManager.hostIsMingw
+    val isLinux = HostManager.hostIsLinux
+
     android {
         namespace = "io.github.leitingzi.kmplitert.core"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -83,34 +103,38 @@ kotlin {
         }
     }
 
-    val nativeTargets = listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-        macosArm64(),
-        linuxX64(),
-        linuxArm64(),
-        mingwX64(),
-        androidNativeArm64(),
-        androidNativeArm32(),
-        androidNativeX64()
-    )
+    if (isMac) {
+        iosArm64()
+        iosSimulatorArm64()
+        macosArm64()
+    }
 
-    nativeTargets.forEach { target ->
-        val konan = target.konanTarget
+    if (isWindows) {
+        mingwX64()
+    }
+
+    if (isLinux) {
+        linuxX64()
+        linuxArm64()
+    }
+
+    // android
+    // androidNativeArm64()
+    // androidNativeArm32()
+    // androidNativeX64()
+
+    targets.withType<KotlinNativeTarget>().configureEach {
         val basePath = "src/nativeInterop"
-
-        if (HostManager.hostIsMac || !konan.isAppleTarget) {
-            target.compilations.getByName("main").cinterops {
-                create("litert") {
-                    definitionFile.set(project.file("$basePath/cinterop/litert.def"))
-                    includeDirs(project.file("$basePath/include"))
-                }
+        compilations.getByName("main").cinterops {
+            create("litert") {
+                definitionFile.set(project.file("$basePath/cinterop/litert.def"))
+                includeDirs(project.file("$basePath/include"))
             }
         }
 
-        target.binaries.all {
-            val path = project.file("$basePath/lib/litert/${konan.cinteropLibDir}").absolutePath
-            linkerOpts("-L$path", "-llitert")
+        binaries.all {
+            val pathDir = project.file("$basePath/lib/litert/${konanTarget.libDir}")
+            linkerOpts("-L${pathDir.absolutePath}", "-lLiteRt")
         }
     }
 
@@ -151,21 +175,17 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.edge.litert)
         }
-
         jvmMain.dependencies {
             implementation(libs.java.jna)
             implementation(libs.java.jna.platform)
         }
-
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
             implementation(npm("@litertjs/core", "2.5.2"))
         }
-
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
         }
-
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
@@ -174,27 +194,19 @@ kotlin {
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
-
     val target = targetName?.toKonanTarget() ?: return@configureEach
-
-    val libPath = project.file("src/nativeInterop/lib/litert/${target.cinteropLibDir}").absolutePath
-
+    val libDir = project.file("src/nativeInterop/lib/litert/${target.libDir}")
     when(target) {
         KonanTarget.MINGW_X64 -> {
             val env = System.getenv("PATH")
-            environment(
-                name = "PATH",
-                value = listOfNotNull(libPath, env).joinToString(";")
-            )
+            val list = listOfNotNull(libDir.absolutePath, env)
+            environment(name = "PATH", value = list.joinToString(";"))
         }
         KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> {
             val env = System.getenv("LD_LIBRARY_PATH")
-            environment(
-                name = "LD_LIBRARY_PATH",
-                value = listOfNotNull(libPath, env).joinToString(":")
-            )
+            val list = listOfNotNull(libDir.absolutePath, env)
+            environment(name = "LD_LIBRARY_PATH", value = list.joinToString(":"))
         }
-
         else -> {}
     }
 }
@@ -205,32 +217,23 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-val KonanTarget.isAppleTarget: Boolean
-    get() = when (this) {
-        KonanTarget.IOS_ARM64,
-        KonanTarget.IOS_SIMULATOR_ARM64,
-        KonanTarget.MACOS_ARM64 -> true
-        else -> false
-    }
+val KonanTarget.isAppleTarget: Boolean get() = when (this) {
+    KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> true
+    else -> false
+}
 
-val KonanTarget.cinteropLibDir: String?
-    get() = when (this) {
-        KonanTarget.ANDROID_ARM64 -> "android/arm64"
-        KonanTarget.ANDROID_ARM32 -> "android/arm32"
-        KonanTarget.ANDROID_X64 -> "android/x86-64"
-
-        KonanTarget.IOS_ARM64 -> "ios/arm64"
-        KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
-
-        KonanTarget.MINGW_X64 -> "windows/x86-64"
-
-        KonanTarget.LINUX_ARM64 -> "linux/arm64"
-        KonanTarget.LINUX_X64 -> "linux/x86-64"
-
-        KonanTarget.MACOS_ARM64 -> "macos/arm64"
-
-        else -> null
-    }
+val KonanTarget.libDir: String? get() = when (this) {
+    KonanTarget.ANDROID_ARM64 -> "android/arm64"
+    KonanTarget.ANDROID_ARM32 -> "android/arm32"
+    KonanTarget.ANDROID_X64 -> "android/x86-64"
+    KonanTarget.IOS_ARM64 -> "ios/arm64"
+    KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
+    KonanTarget.MINGW_X64 -> "windows/x86-64"
+    KonanTarget.LINUX_ARM64 -> "linux/arm64"
+    KonanTarget.LINUX_X64 -> "linux/x86-64"
+    KonanTarget.MACOS_ARM64 -> "macos/arm64"
+    else -> null
+}
 
 fun String.toKonanTarget(): KonanTarget? = when (this) {
     "mingwX64" -> KonanTarget.MINGW_X64
@@ -243,4 +246,24 @@ fun String.toKonanTarget(): KonanTarget? = when (this) {
     "androidNativeArm32" -> KonanTarget.ANDROID_ARM32
     "androidNativeX64" -> KonanTarget.ANDROID_X64
     else -> null
+}
+
+tasks.register<Copy>("copyNativeLitertToJvm") {
+    group = "custom"
+    description = "Copy native Litert lib to jvm platform resources"
+
+    val copyList = listOf(
+        "windows/x86-64" to "win32-x86-64", "linux/x86-64" to "linux-x86-64",
+        "linux/arm64" to "linux-aarch64", "macos/arm64" to "darwin-aarch64",
+    )
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    copyList.forEach { (source, target) ->
+        from("src/nativeInterop/lib/litert/$source") {
+            into(target)
+        }
+    }
+
+    into("src/jvmMain/resources")
 }

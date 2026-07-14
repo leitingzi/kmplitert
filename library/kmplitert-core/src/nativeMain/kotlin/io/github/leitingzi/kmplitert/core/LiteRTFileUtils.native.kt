@@ -26,10 +26,8 @@ actual object LiteRTFileUtils {
             ?: throw Exception("Failed to open file for writing: $filePath")
         
         try {
-            if (data.isNotEmpty()) {
-                data.usePinned { pinned ->
-                    fwrite(pinned.addressOf(0), 1.convert(), data.size.convert(), file)
-                }
+            data.usePinned { pinned ->
+                fwrite(pinned.addressOf(0), 1.convert(), data.size.convert(), file)
             }
         } finally {
             fclose(file)

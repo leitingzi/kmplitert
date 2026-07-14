@@ -23,15 +23,19 @@ class JvmLiteRTTest {
 
     @Test
     fun testModelLoading() {
-        val model = LiteRtModel.create(modelFilePath)
+        val env = LiteRtEnvironment.create()
+        val model = LiteRtModel.create(env, modelFilePath)
         assertNotNull(model)
         model.destroy()
+        env.destroy()
     }
 
     @Test
     fun testModelLoadingFailure() {
         assertFailsWith<IllegalStateException> {
-            LiteRtModel.create("non_existent_model.tflite")
+            val env = LiteRtEnvironment.create()
+            LiteRtModel.create(env, "non_existent_model.tflite")
+            env.destroy()
         }
     }
 
@@ -51,13 +55,15 @@ class JvmLiteRTTest {
 
     @Test
     fun testModelSignatureMetadata() {
-        val model = LiteRtModel.create(modelFilePath)
+        val env = LiteRtEnvironment.create()
+        val model = LiteRtModel.create(env, modelFilePath)
         val signature = model.getSignature(0)
         
         assertTrue(signature.getNumInputs() > 0, "Model should have at least one input")
         assertTrue(signature.getNumOutputs() > 0, "Model should have at least one output")
         
         model.destroy()
+        env.destroy()
     }
 
     @Test
