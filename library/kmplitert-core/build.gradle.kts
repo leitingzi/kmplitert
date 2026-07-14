@@ -102,17 +102,14 @@ kotlin {
         if (HostManager.hostIsMac || !konan.isAppleTarget) {
             target.compilations.getByName("main").cinterops {
                 create("litert") {
-                    val defFile = project.file("$basePath/cinterop/litert.def")
-                    definitionFile.set(defFile)
-
-                    val includeDir = project.file("$basePath/litert/include")
-                    includeDirs(includeDir)
+                    definitionFile.set(project.file("$basePath/cinterop/litert.def"))
+                    includeDirs(project.file("$basePath/include"))
                 }
             }
         }
 
         target.binaries.all {
-            val path = project.file("$basePath/litert/${konan.cinteropLibDir}").absolutePath
+            val path = project.file("$basePath/lib/litert/${konan.cinteropLibDir}").absolutePath
             linkerOpts("-L$path", "-llitert")
         }
     }
@@ -180,7 +177,7 @@ tasks.withType<KotlinNativeTest>().configureEach {
 
     val target = targetName?.toKonanTarget() ?: return@configureEach
 
-    val libPath = project.file("src/nativeInterop/litert/${target.cinteropLibDir}").absolutePath
+    val libPath = project.file("src/nativeInterop/lib/litert/${target.cinteropLibDir}").absolutePath
 
     when(target) {
         KonanTarget.MINGW_X64 -> {
