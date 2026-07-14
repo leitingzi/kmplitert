@@ -43,7 +43,7 @@ jobs:
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT headers"
-          add: "library/kmplitert-core/src/nativeInterop/litert/include"
+          add: "library/kmplitert-core/src/nativeInterop/include/litert/c"
 
   copy-libraries:
     needs: copy-headers
