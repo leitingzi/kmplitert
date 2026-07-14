@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -237,4 +238,26 @@ fun String.toKonanTarget(): KonanTarget? = when (this) {
     "androidNativeArm32" -> KonanTarget.ANDROID_ARM32
     "androidNativeX64" -> KonanTarget.ANDROID_X64
     else -> null
+}
+
+tasks.register<Copy>("copyNativeLitertToJvm") {
+    group = "custom"
+    description = "Copy native Litert lib to jvm platform resources"
+
+    val copyList = listOf(
+        "windows/x86-64" to "win32-x86-64",
+        "linux/x86-64" to "linux-x86-64",
+        "linux/arm64" to "linux-aarch64",
+        "macos/arm64" to "darwin-aarch64",
+    )
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    copyList.forEach { (source, target) ->
+        from("src/nativeInterop/lib/litert/$source") {
+            into(target)
+        }
+    }
+
+    into("src/jvmMain/resources")
 }

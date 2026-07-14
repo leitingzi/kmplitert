@@ -33,7 +33,11 @@ interface LiteRtLibrary : Library {
     ): LiteRtStatus
     fun LiteRtDestroyEnvironment(environment: LiteRtEnvironment)
 
-    fun LiteRtCreateModelFromFile(fileName: String, model: PointerByReference): LiteRtStatus
+    fun LiteRtCreateModelFromFile(
+        environment: LiteRtEnvironment,
+        fileName: String,
+        model: PointerByReference
+    ): LiteRtStatus
     fun LiteRtDestroyModel(model: LiteRtModel)
 
     fun LiteRtCreateOptions(options: PointerByReference): LiteRtStatus

@@ -181,7 +181,7 @@ class LiteRtCompiledModel : PointerType() {
             } else {
                 LiteRtEnvironment.create()
             }
-            val model = LiteRtModel.create(filePath = filePath)
+            val model = LiteRtModel.create(environment = env, filePath = filePath)
 
             val options = LiteRtOptions.create()
             options.setAccelerators(accelerator)

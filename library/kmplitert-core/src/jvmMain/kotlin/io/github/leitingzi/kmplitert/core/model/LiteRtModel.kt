@@ -31,9 +31,10 @@ class LiteRtModel: PointerType() {
     }
 
     companion object {
-        fun create(filePath: String): LiteRtModel {
+        fun create(environment: LiteRtEnvironment, filePath: String): LiteRtModel {
             val ref = PointerByReference()
             val status = LiteRtLibrary.INSTANCE.LiteRtCreateModelFromFile(
+                environment = environment,
                 fileName = filePath,
                 model = ref
             )
