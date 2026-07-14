@@ -8,8 +8,8 @@
 **KMPLiteRT** brings the power of [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the Kotlin Multiplatform ecosystem. It provides a unified, type-safe API to run machine learning inference across mobile, desktop, and web platforms.
 
 > [!IMPORTANT]
-> **Beta Release Candidate**
-> This project has addressed key resource leaks and stability issues. While API refinement continues, it is now more robust across all supported platforms.
+> **Beta Release**
+> This project has reached a stable milestone with unified support across all platforms. API stability is now a priority, and resource management is robustly handled.
 
 ---
 
@@ -43,9 +43,9 @@
 | :--- | :---: | :--- | :--- |
 | **Android** | ✅ Beta | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NPU |
 | **JVM (Desktop)** | ✅ Beta | LiteRT C API via JNA | CPU / GPU (WebGPU) |
-| **Web (JS/Wasm)** | ⚠️ Alpha | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU / WebNN |
-| **Native (Win/Linux/Mac)** | ⚠️ Alpha | LiteRT C API | CPU / GPU |
-| **iOS** | 🚧 Planned | - | Metal |
+| **Web (JS/Wasm)** | ✅ Beta | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU / WebNN |
+| **Native (Win/Linux/Mac)** | ✅ Beta | LiteRT C API | CPU / GPU |
+| **iOS** | ✅ Beta | LiteRT C API | CPU / GPU (Metal) |
 
 ---
 
@@ -57,7 +57,7 @@ Add the dependency to your `commonMain` source set in `build.gradle.kts`:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.leitingzi:kmplitert-core:0.1.1")
+            implementation("io.github.leitingzi:kmplitert-core:0.1.3")
         }
     }
 }
