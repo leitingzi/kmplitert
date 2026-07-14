@@ -20,33 +20,36 @@ actual class LiteRTCompiler actual constructor(
         val numSignatures = model.getNumSignatures()
         
         for (s in 0 until numSignatures) {
-            val signature = model.getSignature(s)
+            val signature = model.getSignature(index = s)
             
             // Try to get by signature input name first
             val numInputs = signature.getNumInputs()
             for (i in 0 until numInputs) {
-                if (signature.getInputName(i) == inputName) {
-                    return signature.getInputTensor(i).getRankedTensorType().toPlatform()
+                if (signature.getInputName(index = i) == inputName) {
+                    return signature.getInputTensor(index = i)
+                        .getRankedTensorType()
+                        .toPlatform()
                 }
             }
             
             // Try to get by tensor name
             for (i in 0 until numInputs) {
-                val tensor = signature.getInputTensor(i)
+                val tensor = signature.getInputTensor(index = i)
                 if (tensor.getName() == inputName) {
-                    return tensor.getRankedTensorType().toPlatform()
+                    return tensor.getRankedTensorType()
+                        .toPlatform()
                 }
             }
             
             // Try C-API lookup in this signature
             try {
-                val tensor = signature.getInputTensor(inputName)
+                val tensor = signature.getInputTensor(name = inputName)
                 return tensor.getRankedTensorType().toPlatform()
             } catch (_: Exception) {
             }
         }
 
-        throw IllegalArgumentException("Input tensor $inputName not found in any of the $numSignatures signatures.")
+        throw Exception("Input tensor $inputName not found in any of the $numSignatures signatures.")
     }
 
     actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType {
@@ -54,33 +57,36 @@ actual class LiteRTCompiler actual constructor(
         val numSignatures = model.getNumSignatures()
 
         for (s in 0 until numSignatures) {
-            val signature = model.getSignature(s)
+            val signature = model.getSignature(index = s)
 
             // Try to get by signature output name first
             val numOutputs = signature.getNumOutputs()
             for (i in 0 until numOutputs) {
-                if (signature.getOutputName(i) == outputName) {
-                    return signature.getOutputTensor(i).getRankedTensorType().toPlatform()
+                if (signature.getOutputName(index = i) == outputName) {
+                    return signature.getOutputTensor(index = i)
+                        .getRankedTensorType()
+                        .toPlatform()
                 }
             }
 
             // Try to get by tensor name
             for (i in 0 until numOutputs) {
-                val tensor = signature.getOutputTensor(i)
+                val tensor = signature.getOutputTensor(index = i)
                 if (tensor.getName() == outputName) {
-                    return tensor.getRankedTensorType().toPlatform()
+                    return tensor.getRankedTensorType()
+                        .toPlatform()
                 }
             }
 
             // Try C-API lookup in this signature
             try {
-                val tensor = signature.getOutputTensor(outputName)
+                val tensor = signature.getOutputTensor(name = outputName)
                 return tensor.getRankedTensorType().toPlatform()
             } catch (_: Exception) {
             }
         }
         
-        throw IllegalArgumentException("Output tensor $outputName not found in any of the $numSignatures signatures.")
+        throw Exception("Output tensor $outputName not found in any of the $numSignatures signatures.")
     }
 
     actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements {
@@ -91,17 +97,24 @@ actual class LiteRTCompiler actual constructor(
             val signature = model.getSignature(s)
             val numInputs = signature.getNumInputs()
             for (i in 0 until numInputs) {
-                if (signature.getInputName(i) == inputName || signature.getInputTensor(i).getName() == inputName) {
-                    val requirements = compiledModel.getInputBufferRequirements(s, i.toLong()).toPlatform()
+                if (signature.getInputName(index = i) == inputName || signature.getInputTensor(index = i).getName() == inputName) {
+                    val requirements = compiledModel.getInputBufferRequirements(
+                        signature_index = s,
+                        input_index = i
+                    ).toPlatform()
+
                     if (requirements.strides.isEmpty()) {
-                        val tensorType = signature.getInputTensor(i).getRankedTensorType().toPlatform()
+                        val tensorType = signature.getInputTensor(index = i)
+                            .getRankedTensorType()
+                            .toPlatform()
+
                         return requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
                     }
                     return requirements
                 }
             }
         }
-        throw IllegalArgumentException("Input tensor $inputName not found")
+        throw Exception("Input tensor $inputName not found")
     }
 
     actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements {
@@ -112,17 +125,24 @@ actual class LiteRTCompiler actual constructor(
             val signature = model.getSignature(s)
             val numOutputs = signature.getNumOutputs()
             for (i in 0 until numOutputs) {
-                if (signature.getOutputName(i) == outputName || signature.getOutputTensor(i.toLong()).getName() == outputName) {
-                    val requirements = compiledModel.getOutputBufferRequirements(s, i.toLong()).toPlatform()
+                if (signature.getOutputName(index = i) == outputName || signature.getOutputTensor(index = i).getName() == outputName) {
+                    val requirements = compiledModel.getOutputBufferRequirements(
+                        signature_index = s,
+                        output_index = i
+                    ).toPlatform()
+
                     if (requirements.strides.isEmpty()) {
-                        val tensorType = signature.getOutputTensor(i.toLong()).getRankedTensorType().toPlatform()
+                        val tensorType = signature.getOutputTensor(index = i)
+                            .getRankedTensorType()
+                            .toPlatform()
+
                         return requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
                     }
                     return requirements
                 }
             }
         }
-        throw IllegalArgumentException("Output tensor $outputName not found")
+        throw Exception("Output tensor $outputName not found")
     }
 
     actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> {
@@ -134,7 +154,11 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int) {
-        compiledModel.run(signatureIndex.toLong(), inputs, outputs)
+        compiledModel.run(
+            signature_index = signatureIndex.toLong(),
+            input_buffers = inputs,
+            output_buffers = outputs
+        )
     }
 
     actual suspend fun close() {

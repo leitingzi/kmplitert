@@ -22,17 +22,20 @@ actual object LiteRTFileUtils {
             tempDir + separator + fileName
         }
         
-        val file = fopen(filePath, "wb")
+        val file = fopen(_Filename = filePath, _Mode = "wb")
             ?: throw Exception("Failed to open file for writing: $filePath")
         
         try {
-            if (data.isNotEmpty()) {
-                data.usePinned { pinned ->
-                    fwrite(pinned.addressOf(0), 1.convert(), data.size.convert(), file)
-                }
+            data.usePinned { pinned ->
+                fwrite(
+                    _Str = pinned.addressOf(0),
+                    _Size = 1.convert(),
+                    _Count = data.size.convert(),
+                    _File = file
+                )
             }
         } finally {
-            fclose(file)
+            fclose(_File = file)
         }
         
         return filePath

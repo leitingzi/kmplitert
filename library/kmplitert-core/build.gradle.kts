@@ -14,7 +14,15 @@ plugins {
     alias(libs.plugins.vanniktech)
 }
 
-val dokkaBuild = providers.gradleProperty("dokkaBuild").isPresent
+dokka {
+    dokkaSourceSets.configureEach {
+        suppress.set(true)
+    }
+
+    dokkaSourceSets.named("commonMain") {
+        suppress.set(false)
+    }
+}
 
 group = "io.github.leitingzi"
 version = "0.1.2"
@@ -245,10 +253,8 @@ tasks.register<Copy>("copyNativeLitertToJvm") {
     description = "Copy native Litert lib to jvm platform resources"
 
     val copyList = listOf(
-        "windows/x86-64" to "win32-x86-64",
-        "linux/x86-64" to "linux-x86-64",
-        "linux/arm64" to "linux-aarch64",
-        "macos/arm64" to "darwin-aarch64",
+        "windows/x86-64" to "win32-x86-64", "linux/x86-64" to "linux-x86-64",
+        "linux/arm64" to "linux-aarch64", "macos/arm64" to "darwin-aarch64",
     )
 
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
