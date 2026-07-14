@@ -29,10 +29,15 @@ jobs:
 
       - name: Copy headers
         run: |
-          DEST_PATH="library/kmplitert-core/src/nativeInterop/litert/include"
+          DEST_PATH="library/kmplitert-core/src/nativeInterop/include/litert/c"
           rm -rf "$DEST_PATH"
-          mkdir -p "$DEST_PATH"
-          cp -v LiteRT-repo/litert/c/*.h "$DEST_PATH/"
+          mkdir -p "$(dirname "$DEST_PATH")"
+          
+          cd LiteRT-repo/litert/c
+          find . -type f -name "*.h" | while read file; do
+            mkdir -p "$DEST_PATH/$(dirname "$file")"
+            cp "$file" "$DEST_PATH/$file"
+          done
 
       - name: Commit and push
         uses: ./.github/actions/commit-and-push
@@ -113,7 +118,7 @@ jobs:
 
       - name: Prepare Artifacts
         run: |
-          DEST_PATH="library/kmplitert-core/src/nativeInterop/litert/${{ matrix.dest }}"
+          DEST_PATH="library/kmplitert-core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
           rm -rf "$DEST_PATH"
           mkdir -p "$DEST_PATH"
           
@@ -125,4 +130,4 @@ jobs:
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT prebuilt: ${{ matrix.platform }} ${{ matrix.arch }}"
-          add: "library/kmplitert-core/src/nativeInterop/litert/${{ matrix.dest }}"
+          add: "library/kmplitert-core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
