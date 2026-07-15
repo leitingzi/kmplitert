@@ -18,15 +18,16 @@ actual object LiteRTFileUtils {
         this.context = context.applicationContext
     }
 
-    fun getContext(): Context {
+    fun getContext(): Context? {
         if (!::context.isInitialized) {
-            throw Exception("[${this::class.simpleName}] Context not initialized.")
+            return null
         }
         return this.context.applicationContext
     }
 
     actual fun createFileFromByteArray(data: ByteArray, fileName: String): String {
-        val cacheDir: File = getContext().cacheDir
+        val cacheDir: File = getContext()?.cacheDir 
+            ?: File(System.getProperty("java.io.tmpdir") ?: ".")
         val file = File(cacheDir, fileName)
 
         if (file.exists()) {
