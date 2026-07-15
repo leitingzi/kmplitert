@@ -22,7 +22,9 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
     fseek(file, 0, SEEK_END)
     val size = ftell(file)
     fseek(file, 0, SEEK_SET)
-    
+
+    // On Windows (mingwX64), the return type of `ftell` may be implicitly handled or mapped to `Int` by Kotlin/Native.
+    // However, on macOS (macosArm64), `ftell` strictly returns a `Long` (corresponding to the C `long` type), whereas the `ByteArray(size)` constructor accepts only an `Int`.
     val buffer = ByteArray(size.toInt())
     buffer.usePinned { pinned ->
         fread(pinned.addressOf(0), 1.toULong(), size.toULong(), file)

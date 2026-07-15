@@ -4,8 +4,7 @@ expect suspend fun loadResourceAsBytes(name: String): ByteArray
 
 expect fun LiteRTAccelerator.isSupportedOnCurrentPlatform(): Boolean
 
-
-val CELSIUS_TO_FAHRENHEIT_MODEL_BASE64 = 
+const val CELSIUS_TO_FAHRENHEIT_MODEL_BASE64 =
     "HAAAAFRGTDMUACAAHAAYABQAEAAMAAAACAAEABQAAAAcAAAAHAAAAHQAAABMAQAA" +
     "XAEAABQDAAADAAAAAAAAAAIAAAA0AAAABAAAANz///8GAAAABAAAABMAAABDT05W" +
     "RVJTSU9OX01FVEFEQVRBAAgADAAIAAQACAAAAAUAAAAEAAAAEwAAAG1pbl9ydW50" +
@@ -26,7 +25,7 @@ val CELSIUS_TO_FAHRENHEIT_MODEL_BASE64 =
     "BwAAAGlucHV0X2MAAgAAAAEAAAABAAAAAQAAABAAAAAMAAwACwAAAAAABAAMAAAA" +
     "CQAAAAAAAAk="
 
-val CELSIUS_TO_FAHRENHEIT_EX_MODEL_BASE64 = 
+const val CELSIUS_TO_FAHRENHEIT_EX_MODEL_BASE64 =
     "HAAAAFRGTDMUACAAHAAYABQAEAAMAAAACAAEABQAAAAcAAAAHAAAAHQAAAB0AQAA" +
     "hAEAAEADAAADAAAAAAAAAAIAAAA0AAAABAAAANz///8GAAAABAAAABMAAABDT05W" +
     "RVJTSU9OX01FVEFEQVRBAAgADAAIAAQACAAAAAUAAAAEAAAAEwAAAG1pbl9ydW50" +
@@ -51,10 +50,15 @@ val CELSIUS_TO_FAHRENHEIT_EX_MODEL_BASE64 =
 
 fun decodeBase64(base64: String): ByteArray {
     val table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    val clean = base64.replace("\n", "").replace("\r", "").replace(" ", "").replace("=", "")
+    val clean = base64.replace("\n", "")
+        .replace("\r", "")
+        .replace(" ", "")
+        .replace("=", "")
+
     val output = mutableListOf<Byte>()
     var bitBuffer = 0
     var bitCount = 0
+
     for (char in clean) {
         val value = table.indexOf(char)
         if (value == -1) continue
@@ -62,7 +66,9 @@ fun decodeBase64(base64: String): ByteArray {
         bitCount += 6
         if (bitCount >= 8) {
             bitCount -= 8
-            output.add(((bitBuffer shr bitCount) and 0xFF).toByte())
+
+            val byte = ((bitBuffer shr bitCount) and 0xFF).toByte()
+            output.add(byte)
             bitBuffer = bitBuffer and ((1 shl bitCount) - 1)
         }
     }

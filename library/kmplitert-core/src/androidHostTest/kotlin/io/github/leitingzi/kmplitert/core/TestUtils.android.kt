@@ -1,7 +1,10 @@
 package io.github.leitingzi.kmplitert.core
 
 actual suspend fun loadResourceAsBytes(name: String): ByteArray {
-    val inputStream = LiteRTCompiler::class.java.classLoader.getResourceAsStream(name)
+    val classLoader = LiteRTCompiler::class.java.classLoader
+        ?: throw IllegalStateException("Failed to obtain the ClassLoader for LiteRTCompiler.")
+
+    val inputStream = classLoader.getResourceAsStream(name)
         ?: throw IllegalArgumentException("Resource not found: $name")
     return inputStream.readBytes()
 }
