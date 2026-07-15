@@ -131,9 +131,13 @@ kotlin {
         binaries.all {
             val path = project.file("$cInteropPath/lib/litert/${konanTarget.libDir}").absolutePath
             linkerOpts("-L$path", "-lLiteRt")
-            when {
-                konanTarget.isApple || konanTarget.isLinux -> linkerOpts("-rpath", path)
-                konanTarget.isLinux -> linkerOpts("-Wl,--allow-shlib-undefined")
+            
+            if (konanTarget.isApple || konanTarget.isLinux) {
+                linkerOpts("-rpath", path)
+            }
+            
+            if (konanTarget.isLinux) {
+                linkerOpts("-Wl,--allow-shlib-undefined")
             }
         }
     }
@@ -194,7 +198,6 @@ kotlin {
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
-    this
     val target = targetName?.toKonanTarget() ?: return@configureEach
     val libPath = project.file("$cInteropPath/lib/litert/${target.libDir}").absolutePath
 
