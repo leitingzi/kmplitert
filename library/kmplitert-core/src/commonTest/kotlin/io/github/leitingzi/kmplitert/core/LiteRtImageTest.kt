@@ -1,5 +1,6 @@
 package io.github.leitingzi.kmplitert.core
 
+import io.github.leitingzi.kmplitert.tool.LiteRtImage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
