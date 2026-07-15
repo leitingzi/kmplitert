@@ -80,38 +80,38 @@ jobs:
           if [ "${{ runner.os }}" != "Windows" ]; then chmod +x gradlew; fi
           ./gradlew ${{ matrix.target }}Test --no-configuration-cache --stacktrace --info --no-daemon
 
-#  test-js:
-#    name: Test JavaScript
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - uses: actions/setup-java@v4
-#        with:
-#          distribution: zulu
-#          java-version: 21
-#          cache: gradle
-#
-#      - run: chmod +x gradlew
-#
-#      - name: Run JavaScript Tests
-#        run: ./gradlew jsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
+  test-js:
+    name: Test JavaScript
+    runs-on: ubuntu-latest
 
-#  test-wasm:
-#    name: Test Wasm
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - uses: actions/setup-java@v4
-#        with:
-#          distribution: zulu
-#          java-version: 21
-#          cache: gradle
-#
-#      - run: chmod +x gradlew
-#
-#      - name: Run Wasm Tests
-#        run: ./gradlew wasmJsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - run: chmod +x gradlew
+
+      - name: Run JavaScript Tests
+        run: ./gradlew jsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
+
+  test-wasm:
+    name: Test Wasm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - run: chmod +x gradlew
+
+      - name: Run Wasm Tests
+        run: ./gradlew wasmJsBrowserTest --no-configuration-cache --stacktrace --info --no-daemon
