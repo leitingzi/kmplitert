@@ -23,7 +23,7 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
     val size = ftell(file)
     fseek(file, 0, SEEK_SET)
     
-    val buffer = ByteArray(size)
+    val buffer = ByteArray(size.toInt())
     buffer.usePinned { pinned ->
         fread(pinned.addressOf(0), 1.toULong(), size.toULong(), file)
     }
