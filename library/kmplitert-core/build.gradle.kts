@@ -133,7 +133,7 @@ kotlin {
             linkerOpts("-L$path", "-lLiteRt")
             when {
                 konanTarget.isApple || konanTarget.isLinux -> linkerOpts("-rpath", path)
-                konanTarget.isLinux -> linkerOpts("--allow-shlib-undefined")
+                konanTarget.isLinux -> linkerOpts("-Wl,--allow-shlib-undefined")
             }
         }
     }
