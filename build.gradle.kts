@@ -9,7 +9,12 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.dokka)
+}
+
+dependencies {
+    dokka(projects.library.kmplitertCore)
+    dokka(projects.library.kmplitertTool)
 }
 
 rootProject.plugins.withType<YarnPlugin> {

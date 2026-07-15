@@ -3,10 +3,7 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
-import org.jetbrains.kotlin.konan.target.KonanTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -26,7 +23,7 @@ dokka {
 }
 
 group = "io.github.leitingzi"
-version = "0.1.3"
+version = libs.versions.kmplitert.get()
 
 base {
     archivesName.set("kmplitert-tool")
