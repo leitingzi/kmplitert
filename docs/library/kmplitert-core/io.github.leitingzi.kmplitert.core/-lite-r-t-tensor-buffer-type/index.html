@@ -1,0 +1,798 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>LiteRTTensorBufferType</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    kmplitert
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":library:kmplitert-core/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":library:kmplitert-core/commonMain" data-filter=":library:kmplitert-core/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    kmplitert
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="kmplitert-core::io.github.leitingzi.kmplitert.core/LiteRTTensorBufferType///PointingToDeclaration//-705783432">
+  <div class="breadcrumbs"><a href="../../index.html">kmplitert-core</a><span class="delimiter">/</span><a href="../index.html">io.github.leitingzi.kmplitert.core</a><span class="delimiter">/</span><span class="current">LiteRTTensorBufferType</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Lite</span><wbr><span>RTTensor</span><wbr><span>Buffer</span><wbr><span><span>Type</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">enum </span><a href="index.html">LiteRTTensorBufferType</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="index.html">LiteRTTensorBufferType</a><span class="token operator">&gt; </span></div><p class="paragraph">Represents the underlying storage type used by a tensor buffer.</p><p class="paragraph">Different buffer types correspond to different hardware backends or memory representations, allowing LiteRT to perform inference with minimal data copying.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="ENTRY">Entries</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="ENTRY">
+        <h2 class="tableheader">Entries</h2>
+        <div class="table"><a data-name="2064119823%2FClasslikes%2F-705783432" anchor-label="Unknown" id="2064119823%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unknown/index.html">Unknown</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2064119823%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-unknown/index.html">Unknown</a></div></div><div class="brief "><p class="paragraph">Unknown or unspecified buffer type.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="795394892%2FClasslikes%2F-705783432" anchor-label="HostMemory" id="795394892%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-host-memory/index.html">HostMemory</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="795394892%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-host-memory/index.html">HostMemory</a></div></div><div class="brief "><p class="paragraph">CPU host memory.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1696994613%2FClasslikes%2F-705783432" anchor-label="Ahwb" id="1696994613%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ahwb/index.html">Ahwb</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1696994613%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-ahwb/index.html">Ahwb</a></div></div><div class="brief "><p class="paragraph">Android Hardware Buffer (AHardwareBuffer).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1805362227%2FClasslikes%2F-705783432" anchor-label="Ion" id="-1805362227%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ion/index.html">Ion</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1805362227%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-ion/index.html">Ion</a></div></div><div class="brief "><p class="paragraph">Android ION memory buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1816497374%2FClasslikes%2F-705783432" anchor-label="DmaBuf" id="1816497374%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-dma-buf/index.html">DmaBuf</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1816497374%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-dma-buf/index.html">DmaBuf</a></div></div><div class="brief "><p class="paragraph">Linux DMA-BUF buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="457634670%2FClasslikes%2F-705783432" anchor-label="FastRpc" id="457634670%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-fast-rpc/index.html">FastRpc</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="457634670%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-fast-rpc/index.html">FastRpc</a></div></div><div class="brief "><p class="paragraph">Qualcomm FastRPC shared buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-25219384%2FClasslikes%2F-705783432" anchor-label="GlBuffer" id="-25219384%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-gl-buffer/index.html">GlBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-25219384%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-gl-buffer/index.html">GlBuffer</a></div></div><div class="brief "><p class="paragraph">OpenGL buffer object.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2049966843%2FClasslikes%2F-705783432" anchor-label="GlTexture" id="2049966843%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-gl-texture/index.html">GlTexture</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2049966843%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-gl-texture/index.html">GlTexture</a></div></div><div class="brief "><p class="paragraph">OpenGL texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="865783734%2FClasslikes%2F-705783432" anchor-label="OpenClBuffer" id="865783734%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-buffer/index.html">OpenClBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="865783734%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-buffer/index.html">OpenClBuffer</a></div></div><div class="brief "><p class="paragraph">OpenCL buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1635560699%2FClasslikes%2F-705783432" anchor-label="OpenClBufferFp16" id="-1635560699%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-buffer-fp16/index.html">OpenClBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1635560699%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-buffer-fp16/index.html">OpenClBufferFp16</a></div></div><div class="brief "><p class="paragraph">OpenCL FP16 buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-393707571%2FClasslikes%2F-705783432" anchor-label="OpenClTexture" id="-393707571%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-texture/index.html">OpenClTexture</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-393707571%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-texture/index.html">OpenClTexture</a></div></div><div class="brief "><p class="paragraph">OpenCL texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-966975588%2FClasslikes%2F-705783432" anchor-label="OpenClTextureFp16" id="-966975588%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-texture-fp16/index.html">OpenClTextureFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-966975588%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-texture-fp16/index.html">OpenClTextureFp16</a></div></div><div class="brief "><p class="paragraph">OpenCL FP16 texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1137726258%2FClasslikes%2F-705783432" anchor-label="OpenClBufferPacked" id="-1137726258%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-buffer-packed/index.html">OpenClBufferPacked</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1137726258%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-buffer-packed/index.html">OpenClBufferPacked</a></div></div><div class="brief "><p class="paragraph">Packed OpenCL buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2083103443%2FClasslikes%2F-705783432" anchor-label="OpenClImageBuffer" id="-2083103443%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-image-buffer/index.html">OpenClImageBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2083103443%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-image-buffer/index.html">OpenClImageBuffer</a></div></div><div class="brief "><p class="paragraph">OpenCL image buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="582831356%2FClasslikes%2F-705783432" anchor-label="OpenClImageBufferFp16" id="582831356%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-cl-image-buffer-fp16/index.html">OpenClImageBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="582831356%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-cl-image-buffer-fp16/index.html">OpenClImageBufferFp16</a></div></div><div class="brief "><p class="paragraph">OpenCL FP16 image buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="142908827%2FClasslikes%2F-705783432" anchor-label="WebGpuBuffer" id="142908827%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-buffer/index.html">WebGpuBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="142908827%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-buffer/index.html">WebGpuBuffer</a></div></div><div class="brief "><p class="paragraph">WebGPU buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="744072810%2FClasslikes%2F-705783432" anchor-label="WebGpuBufferFp16" id="744072810%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-buffer-fp16/index.html">WebGpuBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="744072810%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-buffer-fp16/index.html">WebGpuBufferFp16</a></div></div><div class="brief "><p class="paragraph">WebGPU FP16 buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1327993208%2FClasslikes%2F-705783432" anchor-label="WebGpuTexture" id="-1327993208%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-texture/index.html">WebGpuTexture</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1327993208%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-texture/index.html">WebGpuTexture</a></div></div><div class="brief "><p class="paragraph">WebGPU texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-212780841%2FClasslikes%2F-705783432" anchor-label="WebGpuTextureFp16" id="-212780841%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-texture-fp16/index.html">WebGpuTextureFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-212780841%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-texture-fp16/index.html">WebGpuTextureFp16</a></div></div><div class="brief "><p class="paragraph">WebGPU FP16 texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1328908696%2FClasslikes%2F-705783432" anchor-label="WebGpuImageBuffer" id="-1328908696%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-image-buffer/index.html">WebGpuImageBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1328908696%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-image-buffer/index.html">WebGpuImageBuffer</a></div></div><div class="brief "><p class="paragraph">WebGPU image buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="423383223%2FClasslikes%2F-705783432" anchor-label="WebGpuImageBufferFp16" id="423383223%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-image-buffer-fp16/index.html">WebGpuImageBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="423383223%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-image-buffer-fp16/index.html">WebGpuImageBufferFp16</a></div></div><div class="brief "><p class="paragraph">WebGPU FP16 image buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="767474419%2FClasslikes%2F-705783432" anchor-label="WebGpuBufferPacked" id="767474419%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-web-gpu-buffer-packed/index.html">WebGpuBufferPacked</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="767474419%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-web-gpu-buffer-packed/index.html">WebGpuBufferPacked</a></div></div><div class="brief "><p class="paragraph">Packed WebGPU buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="974166188%2FClasslikes%2F-705783432" anchor-label="MetalBuffer" id="974166188%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-metal-buffer/index.html">MetalBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="974166188%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-metal-buffer/index.html">MetalBuffer</a></div></div><div class="brief "><p class="paragraph">Metal buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1918873851%2FClasslikes%2F-705783432" anchor-label="MetalBufferFp16" id="1918873851%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-metal-buffer-fp16/index.html">MetalBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1918873851%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-metal-buffer-fp16/index.html">MetalBufferFp16</a></div></div><div class="brief "><p class="paragraph">Metal FP16 buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1328818793%2FClasslikes%2F-705783432" anchor-label="MetalTexture" id="-1328818793%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-metal-texture/index.html">MetalTexture</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1328818793%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-metal-texture/index.html">MetalTexture</a></div></div><div class="brief "><p class="paragraph">Metal texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1846313062%2FClasslikes%2F-705783432" anchor-label="MetalTextureFp16" id="1846313062%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-metal-texture-fp16/index.html">MetalTextureFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1846313062%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-metal-texture-fp16/index.html">MetalTextureFp16</a></div></div><div class="brief "><p class="paragraph">Metal FP16 texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="174875972%2FClasslikes%2F-705783432" anchor-label="MetalBufferPacked" id="174875972%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-metal-buffer-packed/index.html">MetalBufferPacked</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="174875972%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-metal-buffer-packed/index.html">MetalBufferPacked</a></div></div><div class="brief "><p class="paragraph">Packed Metal buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1242606734%2FClasslikes%2F-705783432" anchor-label="VulkanBuffer" id="1242606734%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-buffer/index.html">VulkanBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1242606734%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-buffer/index.html">VulkanBuffer</a></div></div><div class="brief "><p class="paragraph">Vulkan buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1701903395%2FClasslikes%2F-705783432" anchor-label="VulkanBufferFp16" id="-1701903395%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-buffer-fp16/index.html">VulkanBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1701903395%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-buffer-fp16/index.html">VulkanBufferFp16</a></div></div><div class="brief "><p class="paragraph">Vulkan FP16 buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1597096459%2FClasslikes%2F-705783432" anchor-label="VulkanTexture" id="-1597096459%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-texture/index.html">VulkanTexture</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1597096459%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-texture/index.html">VulkanTexture</a></div></div><div class="brief "><p class="paragraph">Vulkan texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1271368132%2FClasslikes%2F-705783432" anchor-label="VulkanTextureFp16" id="1271368132%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-texture-fp16/index.html">VulkanTextureFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1271368132%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-texture-fp16/index.html">VulkanTextureFp16</a></div></div><div class="brief "><p class="paragraph">Vulkan FP16 texture.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="155240277%2FClasslikes%2F-705783432" anchor-label="VulkanImageBuffer" id="155240277%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-image-buffer/index.html">VulkanImageBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="155240277%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-image-buffer/index.html">VulkanImageBuffer</a></div></div><div class="brief "><p class="paragraph">Vulkan image buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1156160732%2FClasslikes%2F-705783432" anchor-label="VulkanImageBufferFp16" id="-1156160732%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-image-buffer-fp16/index.html">VulkanImageBufferFp16</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1156160732%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-image-buffer-fp16/index.html">VulkanImageBufferFp16</a></div></div><div class="brief "><p class="paragraph">Vulkan FP16 image buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-468547674%2FClasslikes%2F-705783432" anchor-label="VulkanBufferPacked" id="-468547674%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vulkan-buffer-packed/index.html">VulkanBufferPacked</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-468547674%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-vulkan-buffer-packed/index.html">VulkanBufferPacked</a></div></div><div class="brief "><p class="paragraph">Packed Vulkan buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1833565823%2FClasslikes%2F-705783432" anchor-label="UserCustomBuffer" id="1833565823%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-user-custom-buffer/index.html">UserCustomBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1833565823%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-user-custom-buffer/index.html">UserCustomBuffer</a></div></div><div class="brief "><p class="paragraph">User-defined tensor buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1989639846%2FClasslikes%2F-705783432" anchor-label="OpenVINOTensorBuffer" id="-1989639846%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-open-v-i-n-o-tensor-buffer/index.html">OpenVINOTensorBuffer</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1989639846%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-open-v-i-n-o-tensor-buffer/index.html">OpenVINOTensorBuffer</a></div></div><div class="brief "><p class="paragraph">OpenVINO tensor buffer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-965089212%2FClasslikes%2F-705783432" anchor-label="UserCustomBufferEnd" id="-965089212%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-user-custom-buffer-end/index.html">UserCustomBufferEnd</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-965089212%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><div class="block"><a href="-user-custom-buffer-end/index.html">UserCustomBufferEnd</a></div></div><div class="brief "><p class="paragraph">End of the reserved range for user-defined tensor buffers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-1067724652%2FClasslikes%2F-705783432" anchor-label="Companion" id="-1067724652%2FClasslikes%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1067724652%2FClasslikes%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-933666627%2FProperties%2F-705783432" anchor-label="entries" id="-933666627%2FProperties%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="entries.html"><span><span>entries</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-933666627%2FProperties%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="entries.html">entries</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.enums/-enum-entries/index.html">EnumEntries</a><span class="token operator">&lt;</span><a href="index.html">LiteRTTensorBufferType</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a representation of an immutable list of all enum entries, in the order they're declared.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-372974862%2FProperties%2F-705783432" anchor-label="name" id="-372974862%2FProperties%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-user-custom-buffer-end/index.html#-372974862%2FProperties%2F-705783432"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-372974862%2FProperties%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">val </span><a href="-user-custom-buffer-end/index.html#-372974862%2FProperties%2F-705783432">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-739389684%2FProperties%2F-705783432" anchor-label="ordinal" id="-739389684%2FProperties%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-user-custom-buffer-end/index.html#-739389684%2FProperties%2F-705783432"><span><span>ordinal</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-739389684%2FProperties%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">val </span><a href="-user-custom-buffer-end/index.html#-739389684%2FProperties%2F-705783432">ordinal</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1319007283%2FProperties%2F-705783432" anchor-label="type" id="1319007283%2FProperties%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="type.html"><span><span>type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1319007283%2FProperties%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="type.html">type</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="980178943%2FFunctions%2F-705783432" anchor-label="valueOf" id="980178943%2FFunctions%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value-of.html"><span>value</span><wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="980178943%2FFunctions%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="value-of.html"><span class="token function">valueOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRTTensorBufferType</a></div><div class="brief "><p class="paragraph">Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. (Extraneous whitespace characters are not permitted.)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="725253963%2FFunctions%2F-705783432" anchor-label="values" id="725253963%2FFunctions%2F-705783432" data-filterable-set=":library:kmplitert-core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-core/commonMain" data-filterable-set=":library:kmplitert-core/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="values.html"><span><span>values</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="725253963%2FFunctions%2F-705783432"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-core/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><a href="values.html"><span class="token function">values</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="index.html">LiteRTTensorBufferType</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns an array containing the constants of this enum type, in the order they're declared.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

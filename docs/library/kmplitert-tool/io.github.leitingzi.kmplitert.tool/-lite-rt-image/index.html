@@ -1,0 +1,374 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>LiteRtImage</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    kmplitert
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector common-like" data-active="" aria-pressed="true" data-filter=":library:kmplitert-tool/commonMain">common</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option common-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":library:kmplitert-tool/commonMain" data-filter=":library:kmplitert-tool/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    kmplitert
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="kmplitert-tool::io.github.leitingzi.kmplitert.tool/LiteRtImage///PointingToDeclaration//-1167982095">
+  <div class="breadcrumbs"><a href="../../index.html">kmplitert-tool</a><span class="delimiter">/</span><a href="../index.html">io.github.leitingzi.kmplitert.tool</a><span class="delimiter">/</span><span class="current">LiteRtImage</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Lite</span><wbr><span>Rt</span><wbr><span><span>Image</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="index.html">LiteRtImage</a></div><p class="paragraph">Represents an image that can be preprocessed before being fed into a LiteRT model.</p><p class="paragraph">This class provides common image operations such as resizing and converting pixel data into a normalized <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float-array/index.html">FloatArray</a>.</p><p class="paragraph">Platform-specific implementations are provided for each supported target.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1295338219%2FClasslikes%2F-1167982095" anchor-label="Companion" id="1295338219%2FClasslikes%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1295338219%2FClasslikes%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1037190362%2FProperties%2F-1167982095" anchor-label="channels" id="-1037190362%2FProperties%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="channels.html"><span><span>channels</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1037190362%2FProperties%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">val </span><a href="channels.html">channels</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The number of color channels in the image (e.g., 3 for RGB, 4 for RGBA, 1 for Grayscale).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-226613265%2FProperties%2F-1167982095" anchor-label="height" id="-226613265%2FProperties%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="height.html"><span><span>height</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-226613265%2FProperties%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">val </span><a href="height.html">height</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The height of the image in pixels.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1214627298%2FProperties%2F-1167982095" anchor-label="width" id="-1214627298%2FProperties%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="width.html"><span><span>width</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1214627298%2FProperties%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">val </span><a href="width.html">width</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The width of the image in pixels.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-22863922%2FFunctions%2F-1167982095" anchor-label="centerCrop" id="-22863922%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="center-crop.html"><span>center</span><wbr><span><span>Crop</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-22863922%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="center-crop.html"><span class="token function">centerCrop</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Returns a center-cropped copy of this image.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="312449785%2FFunctions%2F-1167982095" anchor-label="crop" id="312449785%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="crop.html"><span><span>crop</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="312449785%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="crop.html"><span class="token function">crop</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">x<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Returns a cropped copy of this image.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1753208682%2FFunctions%2F-1167982095" anchor-label="flip" id="-1753208682%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="flip.html"><span><span>flip</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1753208682%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="flip.html"><span class="token function">flip</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">horizontal<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">vertical<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Returns a flipped copy of this image.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1008690493%2FFunctions%2F-1167982095" anchor-label="resize" id="1008690493%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="resize.html"><span><span>resize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1008690493%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="resize.html"><span class="token function">resize</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Returns a resized copy of this image.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1775082316%2FFunctions%2F-1167982095" anchor-label="rotate" id="1775082316%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rotate.html"><span><span>rotate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1775082316%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="rotate.html"><span class="token function">rotate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">degrees<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Returns a rotated copy of this image.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1861165430%2FFunctions%2F-1167982095" anchor-label="toBooleanArray" id="-1861165430%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-boolean-array.html"><span>to</span><wbr><span>Boolean</span><wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1861165430%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-boolean-array.html"><span class="token function">toBooleanArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean-array/index.html">BooleanArray</a></div><div class="brief "><p class="paragraph">Converts the image into a boolean array.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2133758943%2FFunctions%2F-1167982095" anchor-label="toFloatArray" id="-2133758943%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-float-array.html"><span>to</span><wbr><span>Float</span><wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2133758943%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-float-array.html"><span class="token function">toFloatArray</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mean<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">0.0f</span><span class="token punctuation">, </span></span><span class="parameter ">std<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float-array/index.html">FloatArray</a></div><div class="brief "><p class="paragraph">Converts the image into a normalized float array.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1102683944%2FFunctions%2F-1167982095" anchor-label="toGrayscale" id="-1102683944%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-grayscale.html"><span>to</span><wbr><span><span>Grayscale</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1102683944%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-grayscale.html"><span class="token function">toGrayscale</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Converts the image to grayscale.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="66453519%2FFunctions%2F-1167982095" anchor-label="toInt8Array" id="66453519%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-int8-array.html"><span>to</span><wbr><span><span>Int8Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="66453519%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-int8-array.html"><span class="token function">toInt8Array</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Converts the image into a signed 8-bit integer array (ByteArray).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1128692975%2FFunctions%2F-1167982095" anchor-label="toIntArray" id="-1128692975%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-int-array.html"><span>to</span><wbr><span>Int</span><wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1128692975%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-int-array.html"><span class="token function">toIntArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int-array/index.html">IntArray</a></div><div class="brief "><p class="paragraph">Converts the image into an integer array.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-557298398%2FFunctions%2F-1167982095" anchor-label="toLongArray" id="-557298398%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-long-array.html"><span>to</span><wbr><span>Long</span><wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-557298398%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-long-array.html"><span class="token function">toLongArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long-array/index.html">LongArray</a></div><div class="brief "><p class="paragraph">Converts the image into a long array.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-896841454%2FFunctions%2F-1167982095" anchor-label="toRgb" id="-896841454%2FFunctions%2F-1167982095" data-filterable-set=":library:kmplitert-tool/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":library:kmplitert-tool/commonMain" data-filterable-set=":library:kmplitert-tool/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-rgb.html"><span>to</span><wbr><span><span>Rgb</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-896841454%2FFunctions%2F-1167982095"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:kmplitert-tool/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">fun </span><a href="to-rgb.html"><span class="token function">toRgb</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LiteRtImage</a></div><div class="brief "><p class="paragraph">Converts the image to RGB format (discarding alpha if present).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

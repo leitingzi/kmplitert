@@ -1,1 +1,1 @@
-sourceset_dependencies='{":library:kmplitert-core/commonMain":[]}'
+sourceset_dependencies = '{":library:kmplitert-core/commonMain":[],":library:kmplitert-tool/commonMain":[]}'

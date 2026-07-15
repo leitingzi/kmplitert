@@ -1,0 +1,7 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:kmplitert-core
+io.github.leitingzi.kmplitert.core
+module:kmplitert-tool
+io.github.leitingzi.kmplitert.tool
