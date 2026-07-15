@@ -173,7 +173,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.edge.litert)
-            implementation(libs.androidx.core.ktx)
         }
         jvmMain.dependencies {
             implementation(libs.java.jna)
@@ -185,6 +184,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
+            api(projects.library.kmplitertTool)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

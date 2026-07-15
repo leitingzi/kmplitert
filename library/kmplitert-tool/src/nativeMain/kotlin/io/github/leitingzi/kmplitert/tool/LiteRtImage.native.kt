@@ -1,6 +1,6 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.tool
 
 actual class LiteRtImage(
     val data: ByteArray,

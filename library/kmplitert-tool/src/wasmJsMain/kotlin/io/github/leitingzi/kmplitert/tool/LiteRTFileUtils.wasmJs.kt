@@ -1,7 +1,7 @@
 @file:OptIn(kotlin.js.ExperimentalWasmJsInterop::class)
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.tool
 
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
@@ -15,7 +15,10 @@ actual object LiteRTFileUtils {
         for (i in data.indices) {
             uint8Array[i] = data[i]
         }
-        val blob = Blob(arrayOf<JsAny?>(uint8Array).toJsArray(), BlobPropertyBag(type = "application/octet-stream"))
+        val blob = Blob(
+            arrayOf<JsAny?>(uint8Array).toJsArray(),
+            BlobPropertyBag(type = "application/octet-stream")
+        )
         return URL.createObjectURL(blob)
     }
 }

@@ -71,7 +71,7 @@ actual class LiteRTCompiler actual constructor(
 
         val dims = mutableListOf<Int>()
         for (i in 0 until shape.length) {
-            dims.add(shape.get(i))
+            dims.add(shape[i])
         }
 
         val elementSize = when (dtype) {
@@ -117,7 +117,7 @@ actual class LiteRTCompiler actual constructor(
         }
         val dims = mutableListOf<Int>()
         for (i in 0 until shape.length) {
-            dims.add(shape.get(i))
+            dims.add(shape[i])
         }
         return LiteRTTensorType(
             elementType = platformElementType,

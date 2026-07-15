@@ -1,6 +1,6 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.tool
 
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.url.URL

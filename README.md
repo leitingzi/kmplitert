@@ -22,7 +22,7 @@
 - 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers via `TFBuffer`.
 - 🔄 **Multi-Signature Support**: Seamlessly work with models containing multiple computation graphs.
 - 🏎️ **Optimized Data Transfer**: Platform-specific optimizations (`memcpy`, `TypedArray.set`) for high-performance inference.
-- 🖼️ **Image Preprocessing**: Built-in utilities for image resizing and format conversion.
+- 🖼️ **Image Preprocessing**: Built-in utilities for image resizing and format conversion (via `kmplitert-tool`).
 
 ---
 
@@ -51,13 +51,14 @@
 
 ## 📦 Installation
 
-Add the dependency to your `commonMain` source set in `build.gradle.kts`:
+Add the dependencies to your `commonMain` source set in `build.gradle.kts`:
 
 ```kotlin
 kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("io.github.leitingzi:kmplitert-core:0.1.3")
+            implementation("io.github.leitingzi:kmplitert-tool:0.1.3")
         }
     }
 }
@@ -71,6 +72,8 @@ kotlin {
 Before using `LiteRTFileUtils` on Android (e.g., to load models from assets), you must initialize it with a `Context`.
 
 ```kotlin
+import io.github.leitingzi.kmplitert.tool.LiteRTFileUtils
+
 // In your Android Activity or Application
 LiteRTFileUtils.init(applicationContext)
 ```
@@ -79,6 +82,8 @@ LiteRTFileUtils.init(applicationContext)
 Useful for loading models from KMP resources or remote downloads.
 
 ```kotlin
+import io.github.leitingzi.kmplitert.tool.LiteRTFileUtils
+
 val modelBytes: ByteArray = Res.readBytes("files/model.tflite")// ... load model bytes
 val modelPath = LiteRTFileUtils.createFileFromByteArray(modelBytes, "model.tflite")
 
@@ -137,6 +142,7 @@ For computer vision models, use `LiteRtImage` for seamless preprocessing (resizi
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
+import io.github.leitingzi.kmplitert.tool.*
 
 suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
     // Specify the accelerator (CPU, GPU, or NPU)

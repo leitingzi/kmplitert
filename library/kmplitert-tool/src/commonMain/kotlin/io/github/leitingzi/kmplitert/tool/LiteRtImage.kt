@@ -1,6 +1,6 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.tool
 
 /**
  * Represents an image that can be preprocessed before being fed into a LiteRT model.
@@ -170,5 +170,3 @@ expect class LiteRtImage {
         fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage
     }
 }
-
-

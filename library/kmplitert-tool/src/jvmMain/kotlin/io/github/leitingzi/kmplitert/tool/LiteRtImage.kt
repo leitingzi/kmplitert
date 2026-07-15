@@ -1,6 +1,6 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.tool
 
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -8,12 +8,16 @@ import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
+import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.sin
 
-actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
+actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val _channels: Int = -1) {
     actual val width: Int get() = bufferedImage.width
     actual val height: Int get() = bufferedImage.height
-    actual val channels: Int get() = bufferedImage.colorModel.numComponents
+    actual val channels: Int 
+        get() = if (_channels != -1) _channels else bufferedImage.colorModel.numComponents
 
     actual fun resize(width: Int, height: Int): LiteRtImage {
         val resizedImage = BufferedImage(width, height, bufferedImage.type.let { if (it == 0) BufferedImage.TYPE_INT_ARGB else it })
@@ -21,7 +25,7 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
         graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
         graphics2D.drawImage(bufferedImage, 0, 0, width, height, null)
         graphics2D.dispose()
-        return LiteRtImage(resizedImage)
+        return LiteRtImage(resizedImage, _channels)
     }
 
     actual fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage {
@@ -32,7 +36,7 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
         val g = copy.createGraphics()
         g.drawImage(croppedImage, 0, 0, null)
         g.dispose()
-        return LiteRtImage(copy)
+        return LiteRtImage(copy, _channels)
     }
 
     actual fun centerCrop(width: Int, height: Int): LiteRtImage {
@@ -43,8 +47,8 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
 
     actual fun rotate(degrees: Float): LiteRtImage {
         val rads = Math.toRadians(degrees.toDouble())
-        val sin = Math.abs(Math.sin(rads))
-        val cos = Math.abs(Math.cos(rads))
+        val sin = abs(sin(rads))
+        val cos = abs(cos(rads))
         val w = width
         val h = height
         val newWidth = floor(w * cos + h * sin).toInt()
@@ -56,7 +60,7 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
         g.rotate(rads, w / 2.0, h / 2.0)
         g.drawRenderedImage(bufferedImage, null)
         g.dispose()
-        return LiteRtImage(rotatedImage)
+        return LiteRtImage(rotatedImage, _channels)
     }
 
     actual fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage {
@@ -67,7 +71,7 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
         if (vertical) tx.translate(0.0, -height.toDouble())
         g.drawImage(bufferedImage, tx, null)
         g.dispose()
-        return LiteRtImage(flippedImage)
+        return LiteRtImage(flippedImage, _channels)
     }
 
     actual fun toGrayscale(): LiteRtImage {
@@ -75,16 +79,12 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage) {
         val g = grayImage.createGraphics()
         g.drawImage(bufferedImage, 0, 0, null)
         g.dispose()
-        return LiteRtImage(grayImage)
+        return LiteRtImage(grayImage, 1)
     }
 
     actual fun toRgb(): LiteRtImage {
-        if (bufferedImage.type == BufferedImage.TYPE_INT_RGB) return this
-        val rgbImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        val g = rgbImage.createGraphics()
-        g.drawImage(bufferedImage, 0, 0, null)
-        g.dispose()
-        return LiteRtImage(rgbImage)
+        if (channels == 3 && bufferedImage.type == BufferedImage.TYPE_INT_RGB) return this
+        return LiteRtImage(bufferedImage, 3)
     }
 
     actual fun toFloatArray(mean: Float, std: Float): FloatArray {
@@ -240,5 +240,3 @@ fun LiteRtImage.asBufferedImage(): BufferedImage {
 fun BufferedImage.asLiteRtImage(): LiteRtImage {
     return LiteRtImage(this)
 }
-
-

@@ -1,6 +1,6 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package io.github.leitingzi.kmplitert.core
+package io.github.leitingzi.kmplitert.tool
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -12,11 +12,11 @@ import android.graphics.Paint
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
 
-actual class LiteRtImage(internal val bitmap: Bitmap) {
+actual class LiteRtImage(internal val bitmap: Bitmap, private val _channels: Int = -1) {
     actual val width: Int get() = bitmap.width
     actual val height: Int get() = bitmap.height
     actual val channels: Int
-        get() = when (bitmap.config) {
+        get() = if (_channels != -1) _channels else when (bitmap.config) {
             Bitmap.Config.ALPHA_8 -> 1
             Bitmap.Config.RGB_565 -> 3
             Bitmap.Config.ARGB_8888 -> 4
@@ -25,12 +25,12 @@ actual class LiteRtImage(internal val bitmap: Bitmap) {
 
     actual fun resize(width: Int, height: Int): LiteRtImage {
         val scaledBitmap = bitmap.scale(width, height)
-        return LiteRtImage(bitmap = scaledBitmap)
+        return LiteRtImage(bitmap = scaledBitmap, _channels = _channels)
     }
 
     actual fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage {
         val croppedBitmap = Bitmap.createBitmap(bitmap, x, y, width, height)
-        return LiteRtImage(bitmap = croppedBitmap)
+        return LiteRtImage(bitmap = croppedBitmap, _channels = _channels)
     }
 
     actual fun centerCrop(width: Int, height: Int): LiteRtImage {
@@ -45,7 +45,7 @@ actual class LiteRtImage(internal val bitmap: Bitmap) {
         val matrix = Matrix()
         matrix.postRotate(degrees)
         val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)
-        return LiteRtImage(bitmap = rotatedBitmap)
+        return LiteRtImage(bitmap = rotatedBitmap, _channels = _channels)
     }
 
     actual fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage {
@@ -54,7 +54,7 @@ actual class LiteRtImage(internal val bitmap: Bitmap) {
         val sy = if (vertical) -1f else 1f
         matrix.postScale(sx, sy, width / 2f, height / 2f)
         val flippedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)
-        return LiteRtImage(bitmap = flippedBitmap)
+        return LiteRtImage(flippedBitmap, _channels)
     }
 
     actual fun toGrayscale(): LiteRtImage {
@@ -66,15 +66,12 @@ actual class LiteRtImage(internal val bitmap: Bitmap) {
         val filter = ColorMatrixColorFilter(colorMatrix)
         paint.colorFilter = filter
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
-        return LiteRtImage(bmpGrayscale)
+        return LiteRtImage(bmpGrayscale, 1)
     }
 
     actual fun toRgb(): LiteRtImage {
         if (channels == 3 && bitmap.config == Bitmap.Config.RGB_565) return this
-        val rgbBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-        // LiteRT typically wants RGB, but ARGB_8888 is easier to handle in Android.
-        // We handle channel selection in toFloatArray etc.
-        return LiteRtImage(rgbBitmap)
+        return LiteRtImage(bitmap, 3)
     }
 
     actual fun toFloatArray(mean: Float, std: Float): FloatArray {
@@ -223,14 +220,9 @@ actual class LiteRtImage(internal val bitmap: Bitmap) {
 }
 
 fun LiteRtImage.asBitmap(): Bitmap {
-    // We need to access the private bitmap. 
-    // Since this is in the same package and file, we can either make it internal or add a getter.
-    // Let's make it internal in the actual class.
     return this.bitmap
 }
 
 fun Bitmap.asLiteRtImage(): LiteRtImage {
     return LiteRtImage(this)
 }
-
-
