@@ -33,8 +33,6 @@ $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTElementType///PointingT
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTElementType/entries/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-element-type/entries.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTElementType/valueOf/#kotlin.String/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-element-type/value-of.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTElementType/values/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-element-type/values.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRTFileUtils///PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-file-utils/index.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRTFileUtils/createFileFromByteArray/#kotlin.ByteArray#kotlin.String/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-file-utils/create-file-from-byte-array.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTLayout.Companion///PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-layout/-companion/index.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTLayout.Companion/calculateDefaultStrides/#kotlin.collections.List[kotlin.Int]/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-layout/-companion/calculate-default-strides.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTLayout///PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-layout/index.html
@@ -91,16 +89,6 @@ $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTTensorType///PointingTo
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTTensorType/LiteRTTensorType/#io.github.leitingzi.kmplitert.core.LiteRTElementType#io.github.leitingzi.kmplitert.core.LiteRTLayout?/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-tensor-type/-lite-r-t-tensor-type.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTTensorType/elementType/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-tensor-type/element-type.html
 $dokka.location:io.github.leitingzi.kmplitert.core/LiteRTTensorType/layout/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-r-t-tensor-type/layout.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage.Companion///PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/-companion/index.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage.Companion/fromBytes/#kotlin.ByteArray/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/-companion/from-bytes.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage.Companion/fromRawRgb/#kotlin.ByteArray#kotlin.Int#kotlin.Int/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/-companion/from-raw-rgb.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage///PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/index.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage/resize/#kotlin.Int#kotlin.Int/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/resize.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage/toBooleanArray/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/to-boolean-array.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage/toFloatArray/#kotlin.Float#kotlin.Float/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/to-float-array.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage/toInt8Array/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/to-int8-array.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage/toIntArray/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/to-int-array.html
-$dokka.location:io.github.leitingzi.kmplitert.core/LiteRtImage/toLongArray/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-lite-rt-image/to-long-array.html
 $dokka.location:io.github.leitingzi.kmplitert.core/TFBuffer///PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-t-f-buffer/index.html
 $dokka.location:io.github.leitingzi.kmplitert.core/TFBuffer/readBoolean/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-t-f-buffer/read-boolean.html
 $dokka.location:io.github.leitingzi.kmplitert.core/TFBuffer/readFloat/#/PointingToDeclaration/kmplitert-core/io.github.leitingzi.kmplitert.core/-t-f-buffer/read-float.html

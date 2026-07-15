@@ -22,13 +22,13 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Generate Dokka
-        run: ./gradlew :library:kmplitert-core:dokkaGenerateHtml --no-configuration-cache
+        run: ./gradlew :dokkaGenerateHtml --no-configuration-cache
 
       - name: Copy Dokka to docs
         run: |
           rm -rf docs
           mkdir -p docs
-          cp -a library/kmplitert-core/build/dokka/html/. docs/
+          cp -a build/dokka/html/. docs/
 
       - name: Commit documentation
         uses: stefanzweifel/git-auto-commit-action@v5

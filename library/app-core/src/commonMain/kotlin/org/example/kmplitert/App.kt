@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
-import io.github.leitingzi.kmplitert.core.LiteRTFileUtils
-import io.github.leitingzi.kmplitert.core.LiteRtImage
+import io.github.leitingzi.kmplitert.tool.LiteRTFileUtils
+import io.github.leitingzi.kmplitert.tool.LiteRtImage
 import kmplitert.library.app_core.generated.resources.Res
 
 suspend fun testMobilenet() {
@@ -39,6 +39,7 @@ suspend fun testMobilenet() {
 //    println("dogData = ${dogData.contentToString()}")
     val data = LiteRtImage.fromBytes(dogData)
         .resize(224, 224)
+        .toRgb()
         .toInt8Array()
 
 //    println("data = ${data.contentToString()}")
