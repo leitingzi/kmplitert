@@ -119,7 +119,13 @@ kotlin {
                 name = "kmplitert-tool-js"
             }
         }
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
     }
 
     wasmJs {
@@ -128,7 +134,13 @@ kotlin {
                 name = "kmplitert-tool-wasm"
             }
         }
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
     }
 
     sourceSets {
