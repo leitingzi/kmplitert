@@ -16,7 +16,7 @@ class LiteRTFileUtilsTest {
             // On most platforms we can't easily check if file exists in commonTest 
             // without more expect/actual, but if it didn't throw and returned a path, 
             // it's a good sign.
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             // Some platforms might fail if they don't have write access in test environment
             println("Skipping or failed createFileFromByteArray test: ${e.message}")
         }

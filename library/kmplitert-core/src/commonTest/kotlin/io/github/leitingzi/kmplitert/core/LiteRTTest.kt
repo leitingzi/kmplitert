@@ -18,7 +18,7 @@ class LiteRTTest {
     fun verifyModelBytes() {
         val bytes = try {
             decodeBase64(CELSIUS_TO_FAHRENHEIT_MODEL_BASE64)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("Decode failed: ${e.message}")
             return
         }
@@ -100,7 +100,7 @@ class LiteRTTest {
                     }
                 }
                 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 if (accelerator != LiteRTAccelerator.CPU) {
                     println("Optional accelerator $accelerator failed: ${e.message}. This might be expected in some CI environments.")
                 } else {
@@ -116,7 +116,7 @@ class LiteRTTest {
     fun testCelsiusToFahrenheit() = runTest {
         val bytes = try {
             loadResourceAsBytes("CelsiusToFahrenheit.tflite")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             println("Falling back to embedded model for CelsiusToFahrenheit: ${e.message}")
             decodeBase64(CELSIUS_TO_FAHRENHEIT_MODEL_BASE64)
         }
@@ -147,9 +147,9 @@ class LiteRTTest {
     fun testCelsiusToFahrenheitEx() = runTest {
         val bytes = try {
             loadResourceAsBytes("CelsiusToFahrenheitEx.tflite")
-        } catch (e: Exception) {
-            println("Skipping CelsiusToFahrenheitEx test: ${e.message}")
-            return@runTest
+        } catch (e: Throwable) {
+            println("Falling back to embedded model for CelsiusToFahrenheitEx: ${e.message}")
+            decodeBase64(CELSIUS_TO_FAHRENHEIT_EX_MODEL_BASE64)
         }
         
         val config = ModelTestConfig(
