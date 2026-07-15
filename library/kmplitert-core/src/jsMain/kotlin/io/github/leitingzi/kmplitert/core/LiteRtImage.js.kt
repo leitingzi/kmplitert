@@ -13,7 +13,10 @@ import org.w3c.dom.HTMLImageElement
  * Wraps an HTMLCanvasElement for image operations.
  */
 @OptIn(ExperimentalWasmJsInterop::class)
-actual class LiteRtImage (val canvas: HTMLCanvasElement) {
+actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: Int = 4) {
+    actual val width: Int get() = canvas.width
+    actual val height: Int get() = canvas.height
+    actual val channels: Int get() = _channels
 
     actual fun resize(width: Int, height: Int): LiteRtImage {
         val resizedCanvas = document.createElement("canvas") as HTMLCanvasElement
@@ -21,24 +24,96 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement) {
         resizedCanvas.height = height
         val ctx = resizedCanvas.getContext("2d") as CanvasRenderingContext2D
         ctx.drawImage(canvas, 0.0, 0.0, width.toDouble(), height.toDouble())
-        return LiteRtImage(resizedCanvas)
+        return LiteRtImage(resizedCanvas, _channels)
+    }
+
+    actual fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage {
+        val croppedCanvas = document.createElement("canvas") as HTMLCanvasElement
+        croppedCanvas.width = width
+        croppedCanvas.height = height
+        val ctx = croppedCanvas.getContext("2d") as CanvasRenderingContext2D
+        ctx.drawImage(canvas, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), 0.0, 0.0, width.toDouble(), height.toDouble())
+        return LiteRtImage(croppedCanvas, _channels)
+    }
+
+    actual fun centerCrop(width: Int, height: Int): LiteRtImage {
+        val left = (this.width - width) / 2
+        val top = (this.height - height) / 2
+        return crop(left.coerceAtLeast(0), top.coerceAtLeast(0), width, height)
+    }
+
+    actual fun rotate(degrees: Float): LiteRtImage {
+        val rads = degrees * kotlin.math.PI / 180.0
+        val sin = kotlin.math.abs(kotlin.math.sin(rads))
+        val cos = kotlin.math.abs(kotlin.math.cos(rads))
+        val w = width
+        val h = height
+        val newWidth = kotlin.math.floor(w * cos + h * sin).toInt()
+        val newHeight = kotlin.math.floor(h * cos + w * sin).toInt()
+
+        val rotatedCanvas = document.createElement("canvas") as HTMLCanvasElement
+        rotatedCanvas.width = newWidth
+        rotatedCanvas.height = newHeight
+        val ctx = rotatedCanvas.getContext("2d") as CanvasRenderingContext2D
+        ctx.translate(newWidth / 2.0, newHeight / 2.0)
+        ctx.rotate(rads)
+        ctx.drawImage(canvas, -w / 2.0, -h / 2.0)
+        return LiteRtImage(rotatedCanvas, _channels)
+    }
+
+    actual fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage {
+        val flippedCanvas = document.createElement("canvas") as HTMLCanvasElement
+        flippedCanvas.width = width
+        flippedCanvas.height = height
+        val ctx = flippedCanvas.getContext("2d") as CanvasRenderingContext2D
+        ctx.save()
+        val scaleX = if (horizontal) -1.0 else 1.0
+        val scaleY = if (vertical) -1.0 else 1.0
+        ctx.scale(scaleX, scaleY)
+        val drawX = if (horizontal) -width.toDouble() else 0.0
+        val drawY = if (vertical) -height.toDouble() else 0.0
+        ctx.drawImage(canvas, drawX, drawY)
+        ctx.restore()
+        return LiteRtImage(flippedCanvas, _channels)
+    }
+
+    actual fun toGrayscale(): LiteRtImage {
+        val grayCanvas = document.createElement("canvas") as HTMLCanvasElement
+        grayCanvas.width = width
+        grayCanvas.height = height
+        val ctx = grayCanvas.getContext("2d") as CanvasRenderingContext2D
+        ctx.filter = "grayscale(100%)"
+        ctx.drawImage(canvas, 0.0, 0.0)
+        return LiteRtImage(grayCanvas, 1)
+    }
+
+    actual fun toRgb(): LiteRtImage {
+        if (_channels == 3) return this
+        return LiteRtImage(canvas, 3)
     }
 
     actual fun toFloatArray(mean: Float, std: Float): FloatArray {
         val width = canvas.width
         val height = canvas.height
+        val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
-        val data = imageData.data // Uint8ClampedArray
+        val data = imageData.data // Uint8ClampedArray (always 4 channels)
 
-        val floatArray = FloatArray(width * height * 3)
+        val floatArray = FloatArray(width * height * c)
         for (i in 0 until width * height) {
-            val r = data.asDynamic()[i * 4].unsafeCast<Int>().toFloat()
-            val g = data.asDynamic()[i * 4 + 1].unsafeCast<Int>().toFloat()
-            val b = data.asDynamic()[i * 4 + 2].unsafeCast<Int>().toFloat()
-            floatArray[i * 3] = (r - mean) / std
-            floatArray[i * 3 + 1] = (g - mean) / std
-            floatArray[i * 3 + 2] = (b - mean) / std
+            val base = i * 4
+            val dst = i * c
+            if (c >= 3) {
+                floatArray[dst] = (data.asDynamic()[base].unsafeCast<Int>().toFloat() - mean) / std
+                floatArray[dst + 1] = (data.asDynamic()[base + 1].unsafeCast<Int>().toFloat() - mean) / std
+                floatArray[dst + 2] = (data.asDynamic()[base + 2].unsafeCast<Int>().toFloat() - mean) / std
+                if (c == 4) {
+                    floatArray[dst + 3] = (data.asDynamic()[base + 3].unsafeCast<Int>().toFloat() - mean) / std
+                }
+            } else if (c == 1) {
+                floatArray[dst] = (data.asDynamic()[base].unsafeCast<Int>().toFloat() - mean) / std
+            }
         }
         return floatArray
     }
@@ -46,15 +121,25 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement) {
     actual fun toInt8Array(): ByteArray {
         val width = canvas.width
         val height = canvas.height
+        val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
         val data = imageData.data
 
-        val byteArray = ByteArray(width * height * 3)
+        val byteArray = ByteArray(width * height * c)
         for (i in 0 until width * height) {
-            byteArray[i * 3] = data.asDynamic()[i * 4].unsafeCast<Int>().toByte()
-            byteArray[i * 3 + 1] = data.asDynamic()[i * 4 + 1].unsafeCast<Int>().toByte()
-            byteArray[i * 3 + 2] = data.asDynamic()[i * 4 + 2].unsafeCast<Int>().toByte()
+            val base = i * 4
+            val dst = i * c
+            if (c >= 3) {
+                byteArray[dst] = data.asDynamic()[base].unsafeCast<Int>().toByte()
+                byteArray[dst + 1] = data.asDynamic()[base + 1].unsafeCast<Int>().toByte()
+                byteArray[dst + 2] = data.asDynamic()[base + 2].unsafeCast<Int>().toByte()
+                if (c == 4) {
+                    byteArray[dst + 3] = data.asDynamic()[base + 3].unsafeCast<Int>().toByte()
+                }
+            } else if (c == 1) {
+                byteArray[dst] = data.asDynamic()[base].unsafeCast<Int>().toByte()
+            }
         }
         return byteArray
     }
@@ -62,15 +147,25 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement) {
     actual fun toIntArray(): IntArray {
         val width = canvas.width
         val height = canvas.height
+        val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
         val data = imageData.data
 
-        val intArray = IntArray(width * height * 3)
+        val intArray = IntArray(width * height * c)
         for (i in 0 until width * height) {
-            intArray[i * 3] = data.asDynamic()[i * 4].unsafeCast<Int>()
-            intArray[i * 3 + 1] = data.asDynamic()[i * 4 + 1].unsafeCast<Int>()
-            intArray[i * 3 + 2] = data.asDynamic()[i * 4 + 2].unsafeCast<Int>()
+            val base = i * 4
+            val dst = i * c
+            if (c >= 3) {
+                intArray[dst] = data.asDynamic()[base].unsafeCast<Int>()
+                intArray[dst + 1] = data.asDynamic()[base + 1].unsafeCast<Int>()
+                intArray[dst + 2] = data.asDynamic()[base + 2].unsafeCast<Int>()
+                if (c == 4) {
+                    intArray[dst + 3] = data.asDynamic()[base + 3].unsafeCast<Int>()
+                }
+            } else if (c == 1) {
+                intArray[dst] = data.asDynamic()[base].unsafeCast<Int>()
+            }
         }
         return intArray
     }
@@ -78,15 +173,25 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement) {
     actual fun toBooleanArray(): BooleanArray {
         val width = canvas.width
         val height = canvas.height
+        val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
         val data = imageData.data
 
-        val booleanArray = BooleanArray(width * height * 3)
+        val booleanArray = BooleanArray(width * height * c)
         for (i in 0 until width * height) {
-            booleanArray[i * 3] = data.asDynamic()[i * 4].unsafeCast<Int>() > 127
-            booleanArray[i * 3 + 1] = data.asDynamic()[i * 4 + 1].unsafeCast<Int>() > 127
-            booleanArray[i * 3 + 2] = data.asDynamic()[i * 4 + 2].unsafeCast<Int>() > 127
+            val base = i * 4
+            val dst = i * c
+            if (c >= 3) {
+                booleanArray[dst] = data.asDynamic()[base].unsafeCast<Int>() > 127
+                booleanArray[dst + 1] = data.asDynamic()[base + 1].unsafeCast<Int>() > 127
+                booleanArray[dst + 2] = data.asDynamic()[base + 2].unsafeCast<Int>() > 127
+                if (c == 4) {
+                    booleanArray[dst + 3] = data.asDynamic()[base + 3].unsafeCast<Int>() > 127
+                }
+            } else if (c == 1) {
+                booleanArray[dst] = data.asDynamic()[base].unsafeCast<Int>() > 127
+            }
         }
         return booleanArray
     }
@@ -94,15 +199,25 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement) {
     actual fun toLongArray(): LongArray {
         val width = canvas.width
         val height = canvas.height
+        val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
         val data = imageData.data
 
-        val longArray = LongArray(width * height * 3)
+        val longArray = LongArray(width * height * c)
         for (i in 0 until width * height) {
-            longArray[i * 3] = data.asDynamic()[i * 4].unsafeCast<Int>().toLong()
-            longArray[i * 3 + 1] = data.asDynamic()[i * 4 + 1].unsafeCast<Int>().toLong()
-            longArray[i * 3 + 2] = data.asDynamic()[i * 4 + 2].unsafeCast<Int>().toLong()
+            val base = i * 4
+            val dst = i * c
+            if (c >= 3) {
+                longArray[dst] = data.asDynamic()[base].unsafeCast<Int>().toLong()
+                longArray[dst + 1] = data.asDynamic()[base + 1].unsafeCast<Int>().toLong()
+                longArray[dst + 2] = data.asDynamic()[base + 2].unsafeCast<Int>().toLong()
+                if (c == 4) {
+                    longArray[dst + 3] = data.asDynamic()[base + 3].unsafeCast<Int>().toLong()
+                }
+            } else if (c == 1) {
+                longArray[dst] = data.asDynamic()[base].unsafeCast<Int>().toLong()
+            }
         }
         return longArray
     }
@@ -191,6 +306,18 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement) {
         private fun readInt16(bytes: ByteArray, offset: Int): Int =
             (bytes[offset].toInt() and 0xFF) or ((bytes[offset+1].toInt() and 0xFF) shl 8)
     }
+}
+
+fun LiteRtImage.asCanvas(): HTMLCanvasElement {
+    return this.canvas
+}
+
+fun HTMLCanvasElement.asLiteRtImage(): LiteRtImage {
+    return LiteRtImage(this)
+}
+
+fun HTMLImageElement.asLiteRtImage(): LiteRtImage {
+    return LiteRtImage.fromImageElement(this)
 }
 
 

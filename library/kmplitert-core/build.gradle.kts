@@ -32,12 +32,16 @@ base {
     archivesName.set("kmplitert-core")
 }
 
+val isPublishToMavenCentral = gradle.startParameter.taskNames.any {
+    it.contains("publishToMavenCentral", ignoreCase = true)
+}
+val isMac = HostManager.hostIsMac
+val isWindows = HostManager.hostIsMingw
+val isLinux = HostManager.hostIsLinux
+val cInteropPath = "src/nativeInterop"
+
 mavenPublishing {
     publishToMavenCentral()
-
-    val isPublishToMavenCentral = gradle.startParameter.taskNames.any {
-        it.contains("publishToMavenCentral", ignoreCase = true)
-    }
 
     if (isPublishToMavenCentral) {
         signAllPublications()
@@ -79,11 +83,6 @@ publishing {
     }
 }
 
-val isMac = HostManager.hostIsMac
-val isWindows = HostManager.hostIsMingw
-val isLinux = HostManager.hostIsLinux
-val cInteropPath = "src/nativeInterop"
-
 kotlin {
     android {
         namespace = "io.github.leitingzi.kmplitert.core"
@@ -101,17 +100,17 @@ kotlin {
         }
     }
 
-    if (isMac) {
+    if (isPublishToMavenCentral || isMac) {
         iosArm64()
         iosSimulatorArm64()
         macosArm64()
     }
 
-    if (isWindows) {
+    if (isPublishToMavenCentral || isWindows) {
         mingwX64()
     }
 
-    if (isLinux) {
+    if (isPublishToMavenCentral || isLinux) {
         linuxX64()
         linuxArm64()
     }
@@ -133,8 +132,8 @@ kotlin {
             val path = project.file("$cInteropPath/lib/litert/${konanTarget.libDir}").absolutePath
             linkerOpts("-L$path", "-lLiteRt")
             when {
-                konanTarget.isAppleTarget || konanTarget.isLinuxTarget -> linkerOpts("-rpath", path)
-                konanTarget.isLinuxTarget -> linkerOpts("--allow-shlib-undefined")
+                konanTarget.isApple || konanTarget.isLinux -> linkerOpts("-rpath", path)
+                konanTarget.isLinux -> linkerOpts("--allow-shlib-undefined")
             }
         }
     }
@@ -174,6 +173,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.edge.litert)
+            implementation(libs.androidx.core.ktx)
         }
         jvmMain.dependencies {
             implementation(libs.java.jna)
@@ -223,13 +223,16 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-val KonanTarget.isAppleTarget: Boolean get() = when (this) {
-    KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64, KonanTarget.MACOS_ARM64 -> true
+val KonanTarget.isApple: Boolean get() = when (this) {
+    KonanTarget.IOS_ARM64,
+    KonanTarget.IOS_SIMULATOR_ARM64,
+    KonanTarget.IOS_X64,
+    KonanTarget.MACOS_ARM64 -> true
     else -> false
 }
 
-val KonanTarget.isLinuxTarget: Boolean get() = when (this) {
-    KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> true
+val KonanTarget.isLinux: Boolean get() = when (this) {
+    KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64, KonanTarget.LINUX_ARM32_HFP -> true
     else -> false
 }
 

@@ -13,6 +13,21 @@ package io.github.leitingzi.kmplitert.core
 expect class LiteRtImage {
 
     /**
+     * The width of the image in pixels.
+     */
+    val width: Int
+
+    /**
+     * The height of the image in pixels.
+     */
+    val height: Int
+
+    /**
+     * The number of color channels in the image (e.g., 3 for RGB, 4 for RGBA, 1 for Grayscale).
+     */
+    val channels: Int
+
+    /**
      * Returns a resized copy of this image.
      *
      * The original image is not modified.
@@ -22,6 +37,57 @@ expect class LiteRtImage {
      * @return A new [LiteRtImage] with the specified dimensions.
      */
     fun resize(width: Int, height: Int): LiteRtImage
+
+    /**
+     * Returns a cropped copy of this image.
+     *
+     * @param x The leftmost pixel of the crop region.
+     * @param y The topmost pixel of the crop region.
+     * @param width The width of the crop region.
+     * @param height The height of the crop region.
+     * @return A new [LiteRtImage] containing the cropped region.
+     */
+    fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage
+
+    /**
+     * Returns a center-cropped copy of this image.
+     *
+     * @param width The target width of the crop.
+     * @param height The target height of the crop.
+     * @return A new [LiteRtImage] containing the center-cropped region.
+     */
+    fun centerCrop(width: Int, height: Int): LiteRtImage
+
+    /**
+     * Returns a rotated copy of this image.
+     *
+     * @param degrees The angle to rotate in degrees (clockwise).
+     * @return A new [LiteRtImage] rotated by the specified angle.
+     */
+    fun rotate(degrees: Float): LiteRtImage
+
+    /**
+     * Returns a flipped copy of this image.
+     *
+     * @param horizontal Whether to flip the image horizontally.
+     * @param vertical Whether to flip the image vertically.
+     * @return A new [LiteRtImage] flipped as specified.
+     */
+    fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage
+
+    /**
+     * Converts the image to grayscale.
+     *
+     * @return A new [LiteRtImage] in grayscale format (typically 1 channel).
+     */
+    fun toGrayscale(): LiteRtImage
+
+    /**
+     * Converts the image to RGB format (discarding alpha if present).
+     *
+     * @return A new [LiteRtImage] in RGB format (3 channels).
+     */
+    fun toRgb(): LiteRtImage
 
     /**
      * Converts the image into a normalized float array.

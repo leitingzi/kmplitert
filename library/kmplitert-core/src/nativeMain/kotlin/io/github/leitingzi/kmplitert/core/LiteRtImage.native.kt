@@ -4,11 +4,12 @@ package io.github.leitingzi.kmplitert.core
 
 actual class LiteRtImage(
     val data: ByteArray,
-    val width: Int,
-    val height: Int
+    actual val width: Int,
+    actual val height: Int,
+    actual val channels: Int = 3
 ) {
     actual fun resize(width: Int, height: Int): LiteRtImage {
-        val newData = ByteArray(width * height * 3)
+        val newData = ByteArray(width * height * channels)
         val xRatio = if (width > 1) (this.width - 1).toFloat() / (width - 1) else 0f
         val yRatio = if (height > 1) (this.height - 1).toFloat() / (height - 1) else 0f
 
@@ -22,11 +23,11 @@ actual class LiteRtImage(
                 val xNext = if (x + 1 < this.width) x + 1 else x
                 val yNext = if (y + 1 < this.height) y + 1 else y
                 
-                for (c in 0 until 3) {
-                    val a = this.data[((y * this.width + x) * 3 + c)].toInt() and 0xFF
-                    val b = this.data[((y * this.width + xNext) * 3 + c)].toInt() and 0xFF
-                    val d = this.data[((yNext * this.width + x) * 3 + c)].toInt() and 0xFF
-                    val e = this.data[((yNext * this.width + xNext) * 3 + c)].toInt() and 0xFF
+                for (c in 0 until channels) {
+                    val a = this.data[((y * this.width + x) * channels + c)].toInt() and 0xFF
+                    val b = this.data[((y * this.width + xNext) * channels + c)].toInt() and 0xFF
+                    val d = this.data[((yNext * this.width + x) * channels + c)].toInt() and 0xFF
+                    val e = this.data[((yNext * this.width + xNext) * channels + c)].toInt() and 0xFF
 
                     // Y = A(1-w)(1-h) + B(w)(1-h) + D(h)(1-w) + E(wh)
                     val pixel = (a * (1 - xDiff) * (1 - yDiff) +
@@ -34,16 +35,133 @@ actual class LiteRtImage(
                             d * (yDiff) * (1 - xDiff) +
                             e * (yDiff * xDiff)).toInt()
 
-                    newData[((i * width + j) * 3 + c)] = pixel.coerceIn(0, 255).toByte()
+                    newData[((i * width + j) * channels + c)] = pixel.coerceIn(0, 255).toByte()
                 }
             }
         }
-        return LiteRtImage(newData, width, height)
+        return LiteRtImage(newData, width, height, channels)
+    }
+
+    actual fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage {
+        val newData = ByteArray(width * height * channels)
+        for (i in 0 until height) {
+            val srcY = y + i
+            if (srcY < 0 || srcY >= this.height) continue
+            for (j in 0 until width) {
+                val srcX = x + j
+                if (srcX < 0 || srcX >= this.width) continue
+                for (c in 0 until channels) {
+                    newData[(i * width + j) * channels + c] = this.data[(srcY * this.width + srcX) * channels + c]
+                }
+            }
+        }
+        return LiteRtImage(newData, width, height, channels)
+    }
+
+    actual fun centerCrop(width: Int, height: Int): LiteRtImage {
+        val left = (this.width - width) / 2
+        val top = (this.height - height) / 2
+        return crop(left, top, width, height)
+    }
+
+    actual fun rotate(degrees: Float): LiteRtImage {
+        // Only 90, 180, 270 degrees for simplicity in native if needed, 
+        // but let's try a general rotation or at least 90-degree steps.
+        // For now, let's implement 90-degree steps as they are common for mobile cameras.
+        val normalizedDegrees = ((degrees % 360 + 360) % 360).toInt()
+        return when (normalizedDegrees) {
+            90 -> rotate90()
+            180 -> rotate180()
+            270 -> rotate270()
+            else -> this // Unsupported arbitrary rotation in simple native implementation
+        }
+    }
+
+    private fun rotate90(): LiteRtImage {
+        val newData = ByteArray(width * height * channels)
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                for (c in 0 until channels) {
+                    newData[(x * height + (height - 1 - y)) * channels + c] = data[(y * width + x) * channels + c]
+                }
+            }
+        }
+        return LiteRtImage(newData, height, width, channels)
+    }
+
+    private fun rotate180(): LiteRtImage {
+        val newData = ByteArray(width * height * channels)
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                for (c in 0 until channels) {
+                    newData[((height - 1 - y) * width + (width - 1 - x)) * channels + c] = data[(y * width + x) * channels + c]
+                }
+            }
+        }
+        return LiteRtImage(newData, width, height, channels)
+    }
+
+    private fun rotate270(): LiteRtImage {
+        val newData = ByteArray(width * height * channels)
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                for (c in 0 until channels) {
+                    newData[((width - 1 - x) * height + y) * channels + c] = data[(y * width + x) * channels + c]
+                }
+            }
+        }
+        return LiteRtImage(newData, height, width, channels)
+    }
+
+    actual fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage {
+        val newData = ByteArray(width * height * channels)
+        for (y in 0 until height) {
+            val srcY = if (vertical) height - 1 - y else y
+            for (x in 0 until width) {
+                val srcX = if (horizontal) width - 1 - x else x
+                for (c in 0 until channels) {
+                    newData[(y * width + x) * channels + c] = data[(srcY * this.width + srcX) * channels + c]
+                }
+            }
+        }
+        return LiteRtImage(newData, width, height, channels)
+    }
+
+    actual fun toGrayscale(): LiteRtImage {
+        if (channels == 1) return this
+        val newData = ByteArray(width * height)
+        for (i in 0 until width * height) {
+            val r = data[i * channels].toInt() and 0xFF
+            val g = data[i * channels + 1].toInt() and 0xFF
+            val b = data[i * channels + 2].toInt() and 0xFF
+            // Luminance formula
+            val gray = (0.299 * r + 0.587 * g + 0.114 * b).toInt()
+            newData[i] = gray.coerceIn(0, 255).toByte()
+        }
+        return LiteRtImage(newData, width, height, 1)
+    }
+
+    actual fun toRgb(): LiteRtImage {
+        if (channels == 3) return this
+        val newData = ByteArray(width * height * 3)
+        for (i in 0 until width * height) {
+            if (channels == 1) {
+                val gray = data[i]
+                newData[i * 3] = gray
+                newData[i * 3 + 1] = gray
+                newData[i * 3 + 2] = gray
+            } else if (channels == 4) {
+                newData[i * 3] = data[i * 4]
+                newData[i * 3 + 1] = data[i * 4 + 1]
+                newData[i * 3 + 2] = data[i * 4 + 2]
+            }
+        }
+        return LiteRtImage(newData, width, height, 3)
     }
 
     actual fun toFloatArray(mean: Float, std: Float): FloatArray {
-        val floatArray = FloatArray(width * height * 3)
-        for (i in 0 until width * height * 3) {
+        val floatArray = FloatArray(width * height * channels)
+        for (i in 0 until width * height * channels) {
             val value = data[i].toInt() and 0xFF
             floatArray[i] = (value - mean) / std
         }
@@ -51,32 +169,32 @@ actual class LiteRtImage(
     }
 
     actual fun toInt8Array(): ByteArray {
-        val result = ByteArray(width * height * 3)
-        for (i in 0 until width * height * 3) {
+        val result = ByteArray(width * height * channels)
+        for (i in 0 until width * height * channels) {
             result[i] = data[i]
         }
         return result
     }
 
     actual fun toIntArray(): IntArray {
-        val result = IntArray(width * height * 3)
-        for (i in 0 until width * height * 3) {
+        val result = IntArray(width * height * channels)
+        for (i in 0 until width * height * channels) {
             result[i] = data[i].toInt() and 0xFF
         }
         return result
     }
 
     actual fun toBooleanArray(): BooleanArray {
-        val result = BooleanArray(width * height * 3)
-        for (i in 0 until width * height * 3) {
+        val result = BooleanArray(width * height * channels)
+        for (i in 0 until width * height * channels) {
             result[i] = (data[i].toInt() and 0xFF) > 127
         }
         return result
     }
 
     actual fun toLongArray(): LongArray {
-        val result = LongArray(width * height * 3)
-        for (i in 0 until width * height * 3) {
+        val result = LongArray(width * height * channels)
+        for (i in 0 until width * height * channels) {
             result[i] = (data[i].toInt() and 0xFF).toLong()
         }
         return result
@@ -91,7 +209,7 @@ actual class LiteRtImage(
         }
 
         actual fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage {
-            return LiteRtImage(data, width, height)
+            return LiteRtImage(data, width, height, 3)
         }
 
         private fun decodeBmp(bytes: ByteArray): LiteRtImage {
