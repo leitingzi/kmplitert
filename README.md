@@ -1,64 +1,87 @@
 # KMPLiteRT 🚀
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-purple.svg?logo=kotlin)](http://kotlinlang.org)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core)](https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core)
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20JVM%20%7C%20Web%20%7C%20Native-orange.svg)](#-platform-support)
+[![CI Status](https://github.com/leitingzi/kmplitert/actions/workflows/ci.yml/badge.svg)](https://github.com/leitingzi/kmplitert/actions)
 
-**KMPLiteRT** brings the power of [Google LiteRT](https://ai.google.dev/edge/litert) (formerly TensorFlow Lite) to the Kotlin Multiplatform ecosystem. It provides a unified, type-safe API to run machine learning inference across mobile, desktop, and web platforms.
-
-> [!IMPORTANT]
-> **Beta Release**
-> This project has reached a stable milestone with unified support across all platforms. API stability is now a priority, and resource management is robustly handled.
+**KMPLiteRT** is a high-performance, type-safe Kotlin Multiplatform (KMP) library that brings **Google LiteRT** (formerly TensorFlow Lite) to the multiplatform ecosystem. It enables developers to execute machine learning models with native performance on Android, iOS, JVM, Native (Desktop), and Web platforms using a single, unified codebase.
 
 ---
 
-## ✨ Features
+## 🏗️ Architecture
 
-- 🏗️ **Unified API**: Write your inference logic once in `commonMain` and run it everywhere.
-- ⚡ **Coroutine Support**: First-class support for asynchronous initialization and inference.
-- 📊 **Metadata Inspection**: Query tensor types, shapes (layout), and buffer requirements at runtime.
-- 🚀 **Hardware Acceleration**: Support for CPU, GPU, and NPU (including WebGPU and WebNN).
-- 🔒 **Type-Safe Tensors**: Direct and safe access to `Float`, `Int`, `Long`, `Boolean`, and `Byte` buffers via `TFBuffer`.
-- 🔄 **Multi-Signature Support**: Seamlessly work with models containing multiple computation graphs.
-- 🏎️ **Optimized Data Transfer**: Platform-specific optimizations (`memcpy`, `TypedArray.set`) for high-performance inference.
-- 🖼️ **Image Preprocessing**: Built-in utilities for image resizing and format conversion (via `kmplitert-tool`).
+KMPLiteRT abstracts platform-specific LiteRT runtimes into a consistent Kotlin DSL. It handles the complexity of native interop, memory management, and hardware acceleration backends.
+
+```mermaid
+graph TD
+    Common["Common Main (API)"]
+    Android["Android (JNI)"]
+    iOS["iOS/macOS (C-Interop/Metal)"]
+    JVM["JVM (JNA/C-API)"]
+    Native["Native (Win/Linux C-Interop)"]
+    Web["Web (JS/Wasm JS Wrapper)"]
+    
+    Common --> Android
+    Common --> iOS
+    Common --> JVM
+    Common --> Native
+    Common --> Web
+    
+    subgraph "Hardware Backends"
+        XNNPACK["XNNPACK (CPU)"]
+        GPU["GPU (Metal/OpenGL)"]
+        WebGPU["WebGPU / WebNN"]
+        NPU["NPU (Android/WebNN)"]
+    end
+    
+    Android -.-> XNNPACK & GPU & NPU
+    iOS -.-> XNNPACK & GPU
+    JVM -.-> XNNPACK & GPU
+    Native -.-> XNNPACK & GPU
+    Web -.-> WebGPU & NPU
+```
 
 ---
 
-## 🏛️ Architecture: `kmplitert-core`
+## ✨ Key Features
 
-`kmplitert-core` is the foundational module of the project. It abstracts the native LiteRT runtimes into a clean, idiomatic Kotlin API.
-
-- **Platform Abstraction**: Uses Kotlin `expect/actual` to wrap JNI (Android), C-API via JNA (JVM), C-Interop (Native), and JS/Wasm JS wrappers.
-- **Efficient Buffers**: The `TFBuffer` API manages memory efficiently, utilizing `memcpy` on Native and `TypedArray` optimizations on Web to minimize overhead.
-- **Consistent Lifecycle**: Provides a predictable `init()` -> `run()` -> `close()` lifecycle with guaranteed resource cleanup.
-- **API documentation**: [dokka documentation](https://leitingzi.github.io/kmplitert/)
+- **Unified Inference Engine**: Orchestrate models, tensors, and signatures using a single API across all targets.
+- **Hardware Acceleration**: Deep integration with platform-specific accelerators (Metal, WebGPU, WebNN, XNNPACK).
+- **Type-Safe Memory Management**: The `TFBuffer` API provides optimized access to native memory using typed buffers (`Float`, `Int8`, `Int32`, `Int64`, `Boolean`).
+- **Runtime Metadata Inspection**: Fully inspect model input/output layouts, dimensions, strides, and buffer requirements.
+- **Image Processing Toolkit**: `kmplitert-tool` provides a KMP DSL for image resizing, cropping, and model-ready normalization.
+- **Coroutine-First**: Lifecycle methods (`init`, `run`, `read`) are designed for non-blocking asynchronous workflows.
 
 ---
 
-## 💻 Platform Support & Acceleration Matrix
+## 📊 Platform & Hardware Acceleration Matrix
 
-| Platform | Status | Implementation | Hardware Acceleration |
-| :--- | :---: | :--- | :--- |
-| **Android** | ✅ Beta | [LiteRT Android SDK](https://github.com/google-ai-edge/litert) | CPU / GPU / NPU |
-| **JVM (Desktop)** | ✅ Beta | LiteRT C API via JNA | CPU / GPU (WebGPU) |
-| **Web (JS/Wasm)** | ✅ Beta | [@litertjs/core](https://www.npmjs.com/package/@litertjs/core) | Browser / WebGL / WebGPU / WebNN |
-| **Native (Win/Linux/Mac)** | ✅ Beta | LiteRT C API | CPU / GPU |
-| **iOS** | ✅ Beta | LiteRT C API | CPU / GPU (Metal) |
+| Platform | Core Implementation | CPU (XNNPACK) | GPU | NPU / AI Accelerator |
+| :--- | :--- | :---: | :---: | :---: |
+| **Android** | LiteRT Android SDK (JNI) | ✅ | ✅ (OpenGL) | ✅ (NNAPI/NPU) |
+| **iOS / MacOS** | LiteRT C-API + C-Interop | ✅ | ✅ (Metal) | ✅ (CoreML via Metal) |
+| **JVM (Desktop)** | JNA + Dynamic Library | ✅ | ✅ (Vulkan/GL) | 🚧 (Planning) |
+| **Native (Win/Linux)** | LiteRT C-API + C-Interop | ✅ | ✅ (WebGPU/GL) | 🚧 (Planning) |
+| **Web (JS/Wasm)** | `@litertjs/core` Wrapper | ✅ | ✅ (WebGPU) | ✅ (WebNN) |
 
 ---
 
 ## 📦 Installation
 
-Add the dependencies to your `commonMain` source set in `build.gradle.kts`:
+Add the dependencies to your `commonMain` source set in your `build.gradle.kts`:
 
 ```kotlin
+val kmplitertVersion = "0.1.4"
+
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.leitingzi:kmplitert-core:0.1.3")
-            implementation("io.github.leitingzi:kmplitert-tool:0.1.3")
+            // Core ML runtime
+            implementation("io.github.leitingzi:kmplitert-core:$kmplitertVersion")
+            
+            // Optional image preprocessing and file utilities
+            implementation("io.github.leitingzi:kmplitert-tool:$kmplitertVersion")
         }
     }
 }
@@ -66,144 +89,124 @@ kotlin {
 
 ---
 
-## 💡 Usage Examples
+## 💡 Core API Guide
 
-### 1. Platform Initialization (Android Only)
-Before using `LiteRTFileUtils` on Android (e.g., to load models from assets), you must initialize it with a `Context`.
-
-```kotlin
-import io.github.leitingzi.kmplitert.tool.LiteRTFileUtils
-
-// In your Android Activity or Application
-LiteRTFileUtils.init(applicationContext)
-```
-
-### 2. Loading Model from ByteArray
-Useful for loading models from KMP resources or remote downloads.
-
-```kotlin
-import io.github.leitingzi.kmplitert.tool.LiteRTFileUtils
-
-val modelBytes: ByteArray = Res.readBytes("files/model.tflite")// ... load model bytes
-val modelPath = LiteRTFileUtils.createFileFromByteArray(modelBytes, "model.tflite")
-
-// Now use modelPath with LiteRTCompiler
-```
-
-### 3. Basic Vector Inference with Metadata Inspection
-Suitable for regression, classification, or any model processing simple numerical vectors.
+### 1. The Compiler Lifecycle
+The `LiteRTCompiler` manages the entire lifecycle of a model.
 
 ```kotlin
 import io.github.leitingzi.kmplitert.core.*
 
-suspend fun runInference(modelPath: String) {
-    // 1. Instantiate the compiler with a specific accelerator
-    val compiler = LiteRTCompiler(
-        filePath = modelPath, 
-        accelerator = LiteRTAccelerator.CPU
-    )
-    
-    try {
-        // 2. Initialize (load model and prepare environment)
-        compiler.init()
+// 1. Create compiler with preferred accelerator
+val compiler = LiteRTCompiler(
+    filePath = "path/to/model.tflite",
+    accelerator = LiteRTAccelerator.GPU 
+)
 
-        // 3. Inspect Model Metadata (Optional but helpful)
-        val inputType = compiler.getInputTensorType("input_0")
-        // inputType.elementType can be FLOAT, INT, INT8, BOOLEAN, or INT64
-        println("Input Type: ${inputType.elementType}, Shape: ${inputType.layout?.dimensions}")
-        
-        val reqs = compiler.getInputBufferRequirements("input_0")
-        println("Required Buffer Size: ${reqs.bufferSize} bytes")
+// 2. Initialize (Load model & prepare environment) - Suspending
+compiler.init()
 
-        // 4. Get managed buffers
-        val inputs = compiler.getInputBuffers()
-        val outputs = compiler.getOutputBuffers()
+// ... perform inference ...
 
-        // 5. Fill input data using typed write operations
-        // Supports writeFloat, writeInt, writeInt8, writeBoolean, writeLong
-        inputs[0].writeFloat(floatArrayOf(1.0f, 2.0f, 3.0f))
-
-        // 6. Execute inference
-        compiler.run(inputs, outputs)
-
-        // 7. Extract results using typed read operations
-        val result = outputs[0].readFloat()
-        println("Inference result: ${result.contentToString()}")
-        
-    } finally {
-        // 8. Always close to release native resources
-        compiler.close()
-    }
-}
+// 3. Close to release native resources
+compiler.close()
 ```
 
-### 4. Image Classification
-For computer vision models, use `LiteRtImage` for seamless preprocessing (resizing and format conversion).
+### 2. Typed Tensor Buffers (`TFBuffer`)
+KMPLiteRT uses `TFBuffer` to minimize data copying between Kotlin and the native runtime.
 
 ```kotlin
-import io.github.leitingzi.kmplitert.core.*
+val inputs = compiler.getInputBuffers()
+val outputs = compiler.getOutputBuffers()
+
+// Typed Write
+inputs[0].writeFloat(floatArrayOf(1.0f, 2.5f, 3.1f))
+
+// Execute Inference
+compiler.run(inputs, outputs)
+
+// Typed Read (Suspending)
+val results = outputs[0].readFloat()
+```
+
+### 3. Metadata Inspection
+Query the model structure at runtime to adapt your data pipeline.
+
+```kotlin
+val tensorType = compiler.getInputTensorType("input_name")
+println("Element Type: ${tensorType.elementType}") // FLOAT, INT8, etc.
+println("Dimensions: ${tensorType.layout?.dimensions}") // [1, 224, 224, 3]
+
+val requirements = compiler.getOutputBufferRequirements("output_name")
+println("Min Buffer Size: ${requirements.bufferSize} bytes")
+```
+
+---
+
+## 🖼️ Image Preprocessing Pipeline (`kmplitert-tool`)
+
+Prepare raw image data for computer vision models using the fluent API.
+
+```kotlin
 import io.github.leitingzi.kmplitert.tool.*
 
-suspend fun classifyImage(modelPath: String, rawImageBytes: ByteArray) {
-    // Specify the accelerator (CPU, GPU, or NPU)
-    val compiler = LiteRTCompiler(filePath = modelPath, accelerator = LiteRTAccelerator.GPU)
-    
-    try {
-        compiler.init()
-        val inputs = compiler.getInputBuffers()
-        val outputs = compiler.getOutputBuffers()
+val modelInputData = LiteRtImage.fromBytes(rawImageData)
+    .resize(width = 224, height = 224)
+    .centerCrop(224, 224)
+    .toRgb()
+    .toFloatArray(mean = 127.5f, std = 127.5f) // Normalize to [-1, 1]
 
-        // 1. Preprocessing: Load -> Resize -> Convert to model format
-        // LiteRtImage supports: toFloatArray, toInt8Array, toIntArray, toBooleanArray, toLongArray
-        val inputData = LiteRtImage.fromBytes(rawImageBytes)
-            .resize(224, 224)
-            .toFloatArray(mean = 127.5f, std = 127.5f)
+inputs[0].writeFloat(modelInputData)
+```
 
-        inputs[0].writeFloat(inputData)
-        compiler.run(inputs, outputs)
+---
 
-        val result = outputs[0].readFloat()
-        val maxIndex = result.indices.maxByOrNull { result[it] }
-        println("Identified class index: $maxIndex")
-        
-    } finally {
-        compiler.close()
+## 🧪 Model Verification Pipeline (Common Test)
+
+Ensure your model behaves identically across all platforms using our generic testing framework.
+
+```kotlin
+class MyModelTest {
+    @Test
+    fun testConsistency() = runTest {
+        val config = ModelTestConfig(
+            name = "MobileNet",
+            modelBytes = loadResourceAsBytes("mobilenet.tflite"),
+            inputs = listOf(TensorExpectation("input", LiteRTElementType.FLOAT, testData = ...)),
+            outputs = listOf(TensorExpectation("output", LiteRTElementType.FLOAT, expectedValue = ...))
+        )
+        // This will run the inference and verify results on Android, JVM, Native, and Web!
+        runModelInferenceTest(config) 
     }
 }
 ```
 
 ---
 
-## 📐 Model Input / Output Metadata
-
-KMPLiteRT provides explicit APIs to query your model's structure. This is essential for dynamic buffer allocation or validating that the model matches your expectations.
-
-- **`getInputTensorType(name)`**: Returns `LiteRTTensorType` containing the `LiteRTElementType` (FLOAT, INT, etc.) and `LiteRTLayout` (dimensions and rank).
-- **`getInputBufferRequirements(name)`**: Returns `LiteRTBufferRequirements`, describing the exact memory `bufferSize` and `strides` needed for a custom buffer.
-
-While the application usually knows the model contract, these APIs enable building more generic tools and safer data pipelines.
+## 🛡️ Resource Management & Performance
+- **Lifecycle Awareness**: Always call `compiler.close()` (preferably in a `finally` block) to prevent native memory leaks.
+- **Buffer Reuse**: Input and output buffers are managed by the `LiteRTCompiler` instance. Do not re-allocate them for every inference; reuse the same `TFBuffer` objects for multiple `run()` calls.
+- **Web Platform**: In Web environments (JS/Wasm), the library utilizes `SharedArrayBuffer` (when available) and `TypedArray` views to maximize throughput.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you encounter issues or have ideas for improvements, please:
-- Open an **Issue** to report bugs or suggest features.
-- Submit a **Pull Request** with your enhancements.
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-```text
-Copyright 2026 leitingzi (yebintang)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-```
+Distributed under the Apache License, Version 2.0. See `LICENSE` for more information.
 
 ---
-<p align="center">Made with ❤️ for the Kotlin Multiplatform community.</p>
+<p align="center">
+  Maintained with ❤️ for the Kotlin Multiplatform community.
+</p>
