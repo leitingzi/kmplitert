@@ -50,7 +50,7 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - name: Run Android Unit Tests
+      - name: Run Android Host Tests
         run: ./gradlew :library:kmplitert-core:testAndroidHostTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-native:
