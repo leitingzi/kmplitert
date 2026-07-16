@@ -33,7 +33,17 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
     return buffer
 }
 
+@OptIn(kotlin.experimental.ExperimentalNativeApi::class)
 actual fun LiteRTAccelerator.isSupportedOnCurrentPlatform(): Boolean {
+    // GPU (Metal) on iOS Simulator is known to crash with segmentation fault 
+    // due to symbol collisions in the SRL library and lack of hardware support in CI.
+    if (this == LiteRTAccelerator.GPU) {
+        // Simple way to detect iOS in Kotlin/Native
+        val os = Platform.osFamily
+        if (os == OsFamily.IOS) {
+            return false
+        }
+    }
     return true
 }
 
