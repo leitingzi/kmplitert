@@ -17,4 +17,11 @@ actual object LiteRTFileUtils {
         file.writeBytes(data)
         return file.absolutePath
     }
+
+    actual suspend fun readAsset(path: String): ByteArray {
+        val classLoader = Thread.currentThread().contextClassLoader ?: this::class.java.classLoader
+        val inputStream = classLoader.getResourceAsStream(path)
+            ?: throw IllegalStateException("Resource not found at path: $path")
+        return inputStream.use { it.readAllBytes() }
+    }
 }

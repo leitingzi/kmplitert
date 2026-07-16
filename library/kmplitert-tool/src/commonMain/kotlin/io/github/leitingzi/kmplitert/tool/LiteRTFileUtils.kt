@@ -26,4 +26,13 @@ expect object LiteRTFileUtils {
      * @throws IllegalStateException If the file cannot be created or written.
      */
     fun createFileFromByteArray(data: ByteArray, fileName: String): String
+
+    /**
+     * Reads the binary content of a model from the platform's assets or resources.
+     *
+     * @param path The relative path to the asset (e.g., "models/my_model.tflite").
+     * @return The binary content of the asset.
+     * @throws IllegalStateException If the asset cannot be found or read.
+     */
+    suspend fun readAsset(path: String): ByteArray
 }
