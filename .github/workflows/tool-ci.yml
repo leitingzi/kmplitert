@@ -51,7 +51,7 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Run Android Unit Tests
-        run: ./gradlew :library:kmplitert-tool:testDebugUnitTest --no-configuration-cache --stacktrace --info --no-daemon
+        run: ./gradlew :library:kmplitert-tool:testAndroidHostTest --no-configuration-cache --stacktrace --info --no-daemon
 
   test-native:
     name: Test Native • ${{ matrix.target }}
