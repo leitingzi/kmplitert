@@ -27,24 +27,4 @@ actual object LiteRTFileUtils {
         // For now, return the filename as is.
         return fileName
     }
-
-    @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun readAsset(path: String): ByteArray {
-        val file = fopen(path, "rb") ?: throw IllegalStateException("Failed to open asset file at $path")
-        try {
-            fseek(file, 0, SEEK_END)
-            val size = ftell(file).toLong()
-            fseek(file, 0, SEEK_SET)
-            val buffer = ByteArray(size.toInt())
-            buffer.usePinned { pinned ->
-                val read = fread(pinned.addressOf(0), 1.toULong(), size.toULong(), file)
-                if (read != size.toULong()) {
-                    throw IllegalStateException("Failed to read all data from $path")
-                }
-            }
-            return buffer
-        } finally {
-            fclose(file)
-        }
-    }
 }

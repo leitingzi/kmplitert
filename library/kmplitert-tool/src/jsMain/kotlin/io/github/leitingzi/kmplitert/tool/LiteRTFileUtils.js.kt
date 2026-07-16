@@ -23,18 +23,4 @@ actual object LiteRTFileUtils {
         val blob = Blob(arrayOf(uint8Array), BlobPropertyBag(type = "application/octet-stream"))
         return URL.createObjectURL(blob)
     }
-
-    actual suspend fun readAsset(path: String): ByteArray {
-        val response = window.asDynamic().fetch(path).unsafeCast<Promise<Response>>().await()
-        if (!response.ok) {
-            throw IllegalStateException("Failed to fetch asset at $path")
-        }
-        val arrayBuffer = response.arrayBuffer().await()
-        val int8Array = Int8Array(arrayBuffer)
-        val byteArray = ByteArray(int8Array.length)
-        for (i in 0 until int8Array.length) {
-            byteArray[i] = int8Array[i]
-        }
-        return byteArray
-    }
 }

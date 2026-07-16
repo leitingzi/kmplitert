@@ -38,12 +38,4 @@ actual object LiteRTFileUtils {
         file.writeBytes(array = data)
         return file.absolutePath
     }
-
-    actual suspend fun readAsset(path: String): ByteArray {
-        val assetManager = getContext()?.assets
-            ?: throw IllegalStateException("Context not initialized. Call LiteRTFileUtils.init(context) first.")
-        return assetManager.open(path).use {
-            it.readBytes()
-        }
-    }
 }

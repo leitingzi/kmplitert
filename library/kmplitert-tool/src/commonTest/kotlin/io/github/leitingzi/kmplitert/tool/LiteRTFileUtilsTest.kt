@@ -22,17 +22,4 @@ class LiteRTFileUtilsTest {
             println("Skipping or failed createFileFromByteArray test: ${e.message}")
         }
     }
-
-    @Test
-    fun testReadAssetNotFound() = runTest {
-        try {
-            LiteRTFileUtils.readAsset("non_existent.tflite")
-            // If it doesn't throw, it's either because the file exists (unlikely) 
-            // or the platform implementation didn't catch the error.
-        } catch (e: IllegalStateException) {
-            // Expected
-        } catch (e: Throwable) {
-            // Other errors are also possible depending on platform
-        }
-    }
 }
