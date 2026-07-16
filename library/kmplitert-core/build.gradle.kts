@@ -129,11 +129,25 @@ kotlin {
         }
 
         binaries.all {
-            val path = project.file("$cInteropPath/lib/litert/${konanTarget.libDir}").absolutePath
-            linkerOpts("-L$path", "-lLiteRt")
+            val libDir = project.file("$cInteropPath/lib/litert/${konanTarget.libDir}")
+            val path = libDir.absolutePath
             
-            if (konanTarget.isApple || konanTarget.isLinux) {
-                linkerOpts("-rpath", path)
+            if (konanTarget.isApple) {
+                val libFile = libDir.resolve("libLiteRt.dylib")
+                if (libFile.exists()) {
+                    // Direct file link is more reliable for dylibs on iOS
+                    linkerOpts(libFile.absolutePath)
+                } else {
+                    linkerOpts("-L$path", "-lLiteRt")
+                }
+                // Ensure the library can be found at runtime
+                linkerOpts("-rpath", "@loader_path")
+                linkerOpts("-rpath", path) 
+            } else {
+                linkerOpts("-L$path", "-lLiteRt")
+                if (konanTarget.isLinux) {
+                    linkerOpts("-rpath", path)
+                }
             }
             
             if (konanTarget.isLinux) {
