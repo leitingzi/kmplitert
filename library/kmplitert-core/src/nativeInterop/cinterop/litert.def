@@ -1,5 +1,6 @@
 package = litert
 headers = litert/c/litert_common.h litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_compiled_model.h litert/c/litert_tensor_buffer.h litert/c/litert_options.h litert/c/litert_layout.h litert/c/litert_tensor_buffer_requirements.h
+linkerOpts = -lLiteRt
 
 ---
 

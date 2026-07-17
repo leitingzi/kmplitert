@@ -121,6 +121,19 @@ kotlin {
     // androidNativeX64()
 
     targets.withType<KotlinNativeTarget>().configureEach {
+        if (konanTarget.isApple) {
+            compilations.configureEach {
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        val ios = "appleMinos.ios_arm64=15.0"
+                        val iosSimulator = "appleMinos.ios_simulator_arm64=15.0"
+                        val macos = "appleMinos.macosx_arm64=12.0"
+                        freeCompilerArgs.add("-Xoverride-konan-properties=$ios;$iosSimulator;$macos")
+                    }
+                }
+            }
+        }
+
         compilations.getByName("main").cinterops {
             create("litert") {
                 definitionFile.set(project.file("$cInteropPath/cinterop/litert.def"))
@@ -136,6 +149,8 @@ kotlin {
             linkerOpts("-L$path", "-lLiteRt")
             
             if (konanTarget.isApple) {
+                // Link C++ standard library which is required by LiteRT
+                linkerOpts("-lc++")
                 // Use -Wl to ensure the compiler driver forwards these to the linker correctly
                 linkerOpts("-Wl,-rpath,@loader_path")
                 linkerOpts("-Wl,-rpath,$path") 
