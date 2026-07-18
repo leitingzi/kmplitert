@@ -37,14 +37,14 @@ kotlin {
             iosTarget.binaries.framework {
                 baseName = "AppCore"
                 isStatic = false // Changed to false to allow better dynamic linking with LiteRT
-                
+
                 // Redefine libDir mapping for LiteRT paths
                 val targetDir = when (iosTarget.konanTarget) {
                     KonanTarget.IOS_ARM64 -> "ios/arm64"
                     KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
                     else -> null
                 }
-                
+
                 if (targetDir != null) {
                     val coreProjectDir = project(":library:kmplitert-core").projectDir
                     val libPath = "$coreProjectDir/src/nativeInterop/lib/litert/$targetDir"
@@ -82,6 +82,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             api(projects.library.kmplitertCore)
+            api(projects.library.kmplitertTool)
         }
     }
 }
