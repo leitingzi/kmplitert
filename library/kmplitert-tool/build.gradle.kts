@@ -152,6 +152,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
+            api(projects.library.kmplitertCore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

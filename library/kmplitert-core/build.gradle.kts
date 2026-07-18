@@ -210,11 +210,11 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
-            api(projects.library.kmplitertTool)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
+            implementation(projects.library.kmplitertTool)
         }
     }
 }
