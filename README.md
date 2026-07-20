@@ -96,6 +96,65 @@ kotlin {
 }
 ```
 
+### 🍎 Native & iOS Setup
+
+For Native targets (especially iOS), KMPLiteRT requires the native LiteRT dynamic libraries. To ensure your application links correctly and bundles the necessary binaries, follow this pattern in your `build.gradle.kts`:
+
+#### 1. Target Configuration
+
+```kotlin
+kotlin {
+    // 1. Define iOS targets
+    val iosTargets = listOf(iosArm64(), iosSimulatorArm64())
+    
+    iosTargets.forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "YourApp"
+            isStatic = false // Dynamic linking is required for LiteRT dylibs
+            
+            // 2. Link against LiteRT C API
+            // You can find the prebuilt dylibs in the kmplitert-core project
+            val targetDir = when (iosTarget.konanTarget) {
+                KonanTarget.IOS_ARM64 -> "ios/arm64"
+                KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
+                else -> null
+            }
+
+            if (targetDir != null) {
+                // Adjust this path to where your libraries are located
+                val libPath = "/path/to/kmplitert/library/kmplitert-core/src/nativeInterop/lib/litert/$targetDir"
+                
+                linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
+                linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
+                linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
+
+                // 3. Bundle the dylibs into your Framework
+                linkTaskProvider.configure {
+                    doLast {
+                        val destination = destinationDirectory.get().asFile
+                        val frameworkDir = File(destination, "${baseName}.framework")
+                        if (frameworkDir.exists()) {
+                            copy {
+                                from(libPath)
+                                include("*.dylib")
+                                into(frameworkDir)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+#### 2. Runtime Environment
+
+If you are running tests or desktop applications directly, ensure the dynamic library search path includes the directory containing `libLiteRt`:
+- **macOS/iOS**: `DYLD_LIBRARY_PATH`
+- **Linux**: `LD_LIBRARY_PATH`
+- **Windows**: `PATH`
+
 ---
 
 ## 🚀 Quick Start
