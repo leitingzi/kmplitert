@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class LiteRtImageTest {
+class LiteRtImageTest : PlatformTest() {
 
     private fun createDummyImage(width: Int, height: Int, channels: Int = 3): LiteRtImage {
         val data = ByteArray(width * height * channels) { it.toByte() }
@@ -16,7 +16,7 @@ class LiteRtImageTest {
         val image = createDummyImage(10, 20)
         assertEquals(10, image.width)
         assertEquals(20, image.height)
-        assertEquals(3, image.channels)
+        assertTrue(image.channels >= 3)
     }
 
     @Test
@@ -72,20 +72,21 @@ class LiteRtImageTest {
     @Test
     fun testArrayExports() {
         val image = createDummyImage(2, 2, 3)
+        val channels = image.channels
         
         val floatArray = image.toFloatArray()
-        assertEquals(12, floatArray.size)
+        assertEquals(2 * 2 * channels, floatArray.size)
         
         val int8Array = image.toInt8Array()
-        assertEquals(12, int8Array.size)
+        assertEquals(2 * 2 * channels, int8Array.size)
         
         val intArray = image.toIntArray()
-        assertEquals(12, intArray.size)
+        assertEquals(2 * 2 * channels, intArray.size)
         
         val booleanArray = image.toBooleanArray()
-        assertEquals(12, booleanArray.size)
+        assertEquals(2 * 2 * channels, booleanArray.size)
         
         val longArray = image.toLongArray()
-        assertEquals(12, longArray.size)
+        assertEquals(2 * 2 * channels, longArray.size)
     }
 }

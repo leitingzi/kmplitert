@@ -15,6 +15,7 @@ kotlin = "2.4.0"
 kotlin-wrappers = "2026.7.2"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
+robolectric = "4.14.1"
 java-jna = "5.19.1"
 kmplitert = "0.1.4"
 
@@ -43,6 +44,7 @@ wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", ve
 java-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
 java-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }
 edge-litert = { module = "com.google.ai.edge.litert:litert", version = "2.1.5" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
 
 [plugins]

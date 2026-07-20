@@ -49,6 +49,26 @@ kotlin {
                     val coreProjectDir = project(":library:kmplitert-core").projectDir
                     val libPath = "$coreProjectDir/src/nativeInterop/lib/litert/$targetDir"
                     linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
+                    
+                    // Add portable rpath for the framework itself
+                    linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
+                    linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
+
+                    // Copy the dylibs into the framework output directory
+                    linkTaskProvider.configure {
+                        doLast {
+                            val destination = destinationDirectory.get().asFile
+                            val frameworkDir = File(destination, "${baseName}.framework")
+                            if (frameworkDir.exists()) {
+                                copy {
+                                    from(libPath)
+                                    include("*.dylib")
+                                    into(frameworkDir)
+                                }
+                                println("Bundled LiteRT dylibs into ${frameworkDir.absolutePath}")
+                            }
+                        }
+                    }
                 }
             }
         }

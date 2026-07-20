@@ -97,6 +97,7 @@ kotlin {
         }
         withHostTest {
             isIncludeAndroidResources = true
+            isReturnDefaultValues = true
         }
     }
 
@@ -187,6 +188,12 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
+        }
+        val androidHostTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.robolectric)
+            }
         }
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
