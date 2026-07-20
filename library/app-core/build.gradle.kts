@@ -37,18 +37,38 @@ kotlin {
             iosTarget.binaries.framework {
                 baseName = "AppCore"
                 isStatic = false // Changed to false to allow better dynamic linking with LiteRT
-                
+
                 // Redefine libDir mapping for LiteRT paths
                 val targetDir = when (iosTarget.konanTarget) {
                     KonanTarget.IOS_ARM64 -> "ios/arm64"
                     KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
                     else -> null
                 }
-                
+
                 if (targetDir != null) {
                     val coreProjectDir = project(":library:kmplitert-core").projectDir
                     val libPath = "$coreProjectDir/src/nativeInterop/lib/litert/$targetDir"
                     linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
+                    
+                    // Add portable rpath for the framework itself
+                    linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
+                    linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
+
+                    // Copy the dylibs into the framework output directory
+                    linkTaskProvider.configure {
+                        doLast {
+                            val destination = destinationDirectory.get().asFile
+                            val frameworkDir = File(destination, "${baseName}.framework")
+                            if (frameworkDir.exists()) {
+                                copy {
+                                    from(libPath)
+                                    include("*.dylib")
+                                    into(frameworkDir)
+                                }
+                                println("Bundled LiteRT dylibs into ${frameworkDir.absolutePath}")
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -82,6 +102,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             api(projects.library.kmplitertCore)
+            api(projects.library.kmplitertTool)
         }
     }
 }

@@ -151,9 +151,10 @@ kotlin {
             if (konanTarget.isApple) {
                 // Link C++ standard library which is required by LiteRT
                 linkerOpts("-lc++")
-                // Use -Wl to ensure the compiler driver forwards these to the linker correctly
+                // Use portable rpath settings for iOS/MacOS
+                linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
+                linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
                 linkerOpts("-Wl,-rpath,@loader_path")
-                linkerOpts("-Wl,-rpath,$path") 
             } else if (konanTarget.isLinux) {
                 linkerOpts("-Wl,-rpath,$path")
             }
@@ -210,11 +211,11 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
-            api(projects.library.kmplitertTool)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
+            implementation(projects.library.kmplitertTool)
         }
     }
 }

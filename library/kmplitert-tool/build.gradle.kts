@@ -3,7 +3,10 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -35,6 +38,7 @@ val isPublishToMavenCentral = gradle.startParameter.taskNames.any {
 val isMac = HostManager.hostIsMac
 val isWindows = HostManager.hostIsMingw
 val isLinux = HostManager.hostIsLinux
+val cInteropPath = "../kmplitert-core/src/nativeInterop"
 
 mavenPublishing {
     publishToMavenCentral()
@@ -93,6 +97,7 @@ kotlin {
         }
         withHostTest {
             isIncludeAndroidResources = true
+            isReturnDefaultValues = true
         }
     }
 
@@ -109,6 +114,43 @@ kotlin {
     if (isPublishToMavenCentral || isLinux) {
         linuxX64()
         linuxArm64()
+    }
+
+    targets.withType<KotlinNativeTarget>().configureEach {
+        if (konanTarget.isApple) {
+            compilations.configureEach {
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        val ios = "appleMinos.ios_arm64=15.0"
+                        val iosSimulator = "appleMinos.ios_simulator_arm64=15.0"
+                        val macos = "appleMinos.macosx_arm64=12.0"
+                        freeCompilerArgs.add("-Xoverride-konan-properties=$ios;$iosSimulator;$macos")
+                    }
+                }
+            }
+        }
+
+        binaries.all {
+            val libDir = project(":library:kmplitert-core").file("$cInteropPath/lib/litert/${konanTarget.libDir}")
+            val path = libDir.absolutePath
+
+            // Standard link search path and library name
+            linkerOpts("-L$path", "-lLiteRt")
+
+            if (konanTarget.isApple) {
+                // Link C++ standard library which is required by LiteRT
+                linkerOpts("-lc++")
+                // Use -Wl to ensure the compiler driver forwards these to the linker correctly
+                linkerOpts("-Wl,-rpath,@loader_path")
+                linkerOpts("-Wl,-rpath,$path")
+            } else if (konanTarget.isLinux) {
+                linkerOpts("-Wl,-rpath,$path")
+            }
+
+            if (konanTarget.isLinux) {
+                linkerOpts("-Wl,--allow-shlib-undefined")
+            }
+        }
     }
 
     jvm()
@@ -147,15 +189,84 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
         }
+        val androidHostTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.robolectric)
+            }
+        }
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
+            api(projects.library.kmplitertCore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
         }
     }
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    val target = targetName?.toKonanTarget() ?: return@configureEach
+    val libPath = project(":library:kmplitert-core").file("$cInteropPath/lib/litert/${target.libDir}").absolutePath
+
+    fun setEnvironment(path: String, sep: String) {
+        val value = listOfNotNull(libPath, System.getenv(path))
+        environment(name = path, value = value.joinToString(separator = sep))
+    }
+
+    when(target) {
+        KonanTarget.MINGW_X64 -> {
+            setEnvironment(path = "PATH", sep = ";")
+        }
+        KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> {
+            setEnvironment(path = "LD_LIBRARY_PATH", sep = ":")
+        }
+        KonanTarget.MACOS_ARM64, KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64 -> {
+            setEnvironment(path = "DYLD_LIBRARY_PATH", sep = ":")
+        }
+        else -> {}
+    }
+}
+
+val KonanTarget.isApple: Boolean get() = when (this) {
+    KonanTarget.IOS_ARM64,
+    KonanTarget.IOS_SIMULATOR_ARM64,
+    KonanTarget.IOS_X64,
+    KonanTarget.MACOS_ARM64 -> true
+    else -> false
+}
+
+val KonanTarget.isLinux: Boolean get() = when (this) {
+    KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64, KonanTarget.LINUX_ARM32_HFP -> true
+    else -> false
+}
+
+val KonanTarget.libDir: String? get() = when (this) {
+    KonanTarget.ANDROID_ARM64 -> "android/arm64"
+    KonanTarget.ANDROID_ARM32 -> "android/arm32"
+    KonanTarget.ANDROID_X64 -> "android/x86-64"
+    KonanTarget.IOS_ARM64 -> "ios/arm64"
+    KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
+    KonanTarget.MINGW_X64 -> "windows/x86-64"
+    KonanTarget.LINUX_ARM64 -> "linux/arm64"
+    KonanTarget.LINUX_X64 -> "linux/x86-64"
+    KonanTarget.MACOS_ARM64 -> "macos/arm64"
+    else -> null
+}
+
+fun String.toKonanTarget(): KonanTarget? = when (this) {
+    "mingwX64" -> KonanTarget.MINGW_X64
+    "linuxX64" -> KonanTarget.LINUX_X64
+    "linuxArm64" -> KonanTarget.LINUX_ARM64
+    "macosArm64" -> KonanTarget.MACOS_ARM64
+    "iosArm64" -> KonanTarget.IOS_ARM64
+    "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
+    "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
+    "androidNativeArm32" -> KonanTarget.ANDROID_ARM32
+    "androidNativeX64" -> KonanTarget.ANDROID_X64
+    else -> null
 }
