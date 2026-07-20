@@ -5,3 +5,4 @@ module:kmplitert-core
 io.github.leitingzi.kmplitert.core
 module:kmplitert-tool
 io.github.leitingzi.kmplitert.tool
+io.github.leitingzi.kmplitert.tool.classification
