@@ -222,10 +222,22 @@ kotlin {
 
 tasks.withType<KotlinNativeTest>().configureEach {
     val target = targetName?.toKonanTarget() ?: return@configureEach
-    val libPath = project.file("$cInteropPath/lib/litert/${target.libDir}").absolutePath
+    val targetDir = target.libDir ?: return@configureEach
+    val libPath = project.file("$cInteropPath/lib/litert/$targetDir")
+
+    // Copy dynamic libraries to the executable directory so they can be found via @rpath
+    doFirst {
+        if (libPath.exists()) {
+            copy {
+                from(libPath)
+                include("*.dylib", "*.so", "*.dll")
+                into(executable.parentFile)
+            }
+        }
+    }
 
     fun setEnvironment(path: String, sep: String) {
-        val value = listOfNotNull(libPath, System.getenv(path))
+        val value = listOfNotNull(libPath.absolutePath, System.getenv(path))
         environment(name = path, value = value.joinToString(separator = sep))
     }
 
@@ -238,6 +250,10 @@ tasks.withType<KotlinNativeTest>().configureEach {
         }
         KonanTarget.MACOS_ARM64, KonanTarget.IOS_ARM64, KonanTarget.IOS_SIMULATOR_ARM64 -> {
             setEnvironment(path = "DYLD_LIBRARY_PATH", sep = ":")
+            // For iOS Simulator, simctl needs SIMCTL_CHILD_ prefix to propagate env vars
+            if (target == KonanTarget.IOS_SIMULATOR_ARM64) {
+                environment("SIMCTL_CHILD_DYLD_LIBRARY_PATH", libPath.absolutePath)
+            }
         }
         else -> {}
     }
