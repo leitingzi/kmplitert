@@ -142,8 +142,9 @@ kotlin {
         }
 
         binaries.all {
-            val libDir = project.file("$cInteropPath/lib/litert/${konanTarget.libDir}")
-            val path = libDir.absolutePath
+            val targetDir = konanTarget.libDir ?: return@all
+            val libPath = project.file("$cInteropPath/lib/litert/$targetDir")
+            val path = libPath.absolutePath
             
             // Standard link search path and library name
             linkerOpts("-L$path", "-lLiteRt")
@@ -152,15 +153,37 @@ kotlin {
                 // Link C++ standard library which is required by LiteRT
                 linkerOpts("-lc++")
                 // Use portable rpath settings for iOS/MacOS
-                linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
-                linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
-                linkerOpts("-Wl,-rpath,@loader_path")
+                linkerOpts("-Wl,-rpath,@executable_path", "-Wl,-rpath,@executable_path/Frameworks")
+                linkerOpts("-Wl,-rpath,@loader_path", "-Wl,-rpath,@loader_path/Frameworks")
+                linkerOpts("-Wl,-rpath,@loader_path/../../Frameworks") // common location for tests
             } else if (konanTarget.isLinux) {
                 linkerOpts("-Wl,-rpath,$path")
             }
             
             if (konanTarget.isLinux) {
                 linkerOpts("-Wl,--allow-shlib-undefined")
+            }
+
+            // Robust bundling: copy dylibs to the binary destination folder and a Frameworks subfolder
+            val currentTarget = konanTarget
+            linkTaskProvider.configure {
+                doLast {
+                    val outputDir = destinationDirectory.get().asFile
+                    if (libPath.exists()) {
+                        project.copy {
+                            from(libPath)
+                            include("*.dylib", "*.so", "*.dll")
+                            into(outputDir)
+                        }
+                        if (currentTarget.isApple) {
+                            project.copy {
+                                from(libPath)
+                                include("*.dylib")
+                                into(outputDir.resolve("Frameworks"))
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -225,14 +248,27 @@ tasks.withType<KotlinNativeTest>().configureEach {
     val targetDir = target.libDir ?: return@configureEach
     val libPath = project.file("$cInteropPath/lib/litert/$targetDir")
 
-    // Copy dynamic libraries to the executable directory so they can be found via @rpath
+    // Debug logging and double-check bundling
     doFirst {
+        logger.lifecycle("DEBUG: Preparing test for target: $targetName ($target)")
+        logger.lifecycle("DEBUG: libPath: ${libPath.absolutePath} (exists: ${libPath.exists()})")
+        logger.lifecycle("DEBUG: Executable path: ${executable.absolutePath}")
+        
         if (libPath.exists()) {
-            copy {
+            project.copy {
                 from(libPath)
                 include("*.dylib", "*.so", "*.dll")
                 into(executable.parentFile)
             }
+            if (target.isApple) {
+                project.copy {
+                    from(libPath)
+                    include("*.dylib")
+                    into(executable.parentFile.resolve("Frameworks"))
+                }
+            }
+        } else {
+            logger.warn("WARNING: libPath does not exist: ${libPath.absolutePath}")
         }
     }
 
