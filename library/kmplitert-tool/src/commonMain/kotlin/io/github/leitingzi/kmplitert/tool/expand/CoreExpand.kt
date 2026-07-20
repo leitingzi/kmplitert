@@ -1,8 +1,9 @@
 package io.github.leitingzi.kmplitert.tool.expand
 
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
+import io.github.leitingzi.kmplitert.core.LiteRTLayout
+import io.github.leitingzi.kmplitert.core.LiteRTTensorType
 import io.github.leitingzi.kmplitert.core.TFBuffer
-import kotlin.math.roundToInt
 
 /* ---------- TFBuffer Extensions ---------- */
 
@@ -77,3 +78,30 @@ suspend fun LiteRTCompiler.getInputBuffer(index: Int): TFBuffer = getInputBuffer
  * Returns the [TFBuffer] for the output tensor at the specified [index].
  */
 suspend fun LiteRTCompiler.getOutputBuffer(index: Int): TFBuffer = getOutputBuffers()[index]
+
+/* ---------- Resource Management ---------- */
+
+/**
+ * Automatically closes the [LiteRTCompiler] after the [block] is executed.
+ */
+suspend fun <T> LiteRTCompiler.use(block: suspend (LiteRTCompiler) -> T): T {
+    return try {
+        block(this)
+    } finally {
+        close()
+    }
+}
+
+/* ---------- Model Info Helpers ---------- */
+
+/**
+ * Returns the dimensions of the tensor, or an empty list if not available.
+ */
+val LiteRTTensorType.dimensions: List<Int>
+    get() = layout?.dimensions ?: emptyList()
+
+/**
+ * Returns the total number of elements in the tensor layout.
+ */
+val LiteRTLayout.totalElements: Int
+    get() = if (dimensions.isEmpty()) 0 else dimensions.fold(1) { acc, d -> acc * d }

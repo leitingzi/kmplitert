@@ -1,5 +1,8 @@
 package io.github.leitingzi.kmplitert.tool.expand
 
+import io.github.leitingzi.kmplitert.core.LiteRTElementType
+import io.github.leitingzi.kmplitert.core.LiteRTLayout
+import io.github.leitingzi.kmplitert.core.LiteRTTensorType
 import kotlin.test.*
 
 class ExpandTest {
@@ -56,5 +59,24 @@ class ExpandTest {
         // union = 100 + 100 - 25 = 175
         // iou = 25 / 175 = 1/7 = 0.1428...
         assertEquals(0.142857f, calculateIou(box1, box2), 1e-5f)
+    }
+
+    @Test
+    fun testLayoutTotalElements() {
+        val layout = LiteRTLayout(listOf(1, 224, 224, 3), emptyList())
+        assertEquals(1 * 224 * 224 * 3, layout.totalElements)
+
+        val emptyLayout = LiteRTLayout(emptyList(), emptyList())
+        assertEquals(0, emptyLayout.totalElements)
+    }
+
+    @Test
+    fun testTensorTypeDimensions() {
+        val layout = LiteRTLayout(listOf(1, 10), emptyList())
+        val type = LiteRTTensorType(LiteRTElementType.FLOAT, layout)
+        assertEquals(listOf(1, 10), type.dimensions)
+
+        val typeNoLayout = LiteRTTensorType(LiteRTElementType.FLOAT, null)
+        assertTrue(typeNoLayout.dimensions.isEmpty())
     }
 }
