@@ -1,5 +1,6 @@
 package io.github.leitingzi.kmplitert.core
 
+import io.github.leitingzi.kmplitert.core.model.isWebGPUSupported
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
@@ -13,8 +14,8 @@ import kotlin.coroutines.resumeWithException
 actual suspend fun loadResourceAsBytes(name: String): ByteArray = suspendCancellableCoroutine { continuation ->
     // Try multiple common Karma resource paths
     val paths = listOf(
-        "/base/library/kmplitert-core/build/processedResources/js/test/$name",
         "/base/processedResources/js/test/$name",
+        "/base/library/kmplitert-core/build/processedResources/js/test/$name",
         "/base/library/kmplitert-core/src/commonTest/resources/$name",
         "/base/$name",
         name
@@ -57,6 +58,10 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray = suspendCancell
 }
 
 actual fun LiteRTAccelerator.isSupportedOnCurrentPlatform(): Boolean {
-    return true
+    return when (this) {
+        LiteRTAccelerator.CPU -> true
+        LiteRTAccelerator.GPU -> isWebGPUSupported()
+        LiteRTAccelerator.NPU -> false
+    }
 }
 
