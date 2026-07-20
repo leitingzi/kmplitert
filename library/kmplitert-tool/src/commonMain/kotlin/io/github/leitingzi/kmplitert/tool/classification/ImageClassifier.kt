@@ -1,5 +1,6 @@
 package io.github.leitingzi.kmplitert.tool.classification
 
+import io.github.leitingzi.kmplitert.core.LiteRTAccelerator
 import io.github.leitingzi.kmplitert.core.LiteRTCompiler
 import io.github.leitingzi.kmplitert.core.LiteRTElementType
 import io.github.leitingzi.kmplitert.tool.LiteRtImage
@@ -118,14 +119,16 @@ class ImageClassifier(
          * This helper method creates and initializes a [LiteRTCompiler] automatically.
          *
          * @param modelPath Path to the LiteRT model file.
+         * @param accelerator Preferred hardware accelerator. Defaults to CPU.
          * @param options Configuration options for classification.
          * @return An initialized [ImageClassifier].
          */
         suspend fun create(
             modelPath: String,
+            accelerator: LiteRTAccelerator = LiteRTAccelerator.CPU,
             options: ImageClassifierOptions = ImageClassifierOptions()
         ): ImageClassifier {
-            val compiler = LiteRTCompiler(modelPath, options.accelerator)
+            val compiler = LiteRTCompiler(modelPath, accelerator)
             compiler.init()
             return ImageClassifier(compiler, options)
         }

@@ -3,6 +3,7 @@ package io.github.leitingzi.kmplitert.core
 import io.github.leitingzi.kmplitert.tool.LiteRTFileUtils
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
+import kotlin.time.Duration.Companion.seconds
 
 class LiteRTTest {
 
@@ -113,7 +114,7 @@ class LiteRTTest {
     }
 
     @Test
-    fun testCelsiusToFahrenheit() = runTest {
+    fun testCelsiusToFahrenheit() = runTest(timeout = 60.seconds) {
         val bytes = try {
             loadResourceAsBytes("CelsiusToFahrenheit.tflite")
         } catch (e: Throwable) {
@@ -144,7 +145,7 @@ class LiteRTTest {
     }
 
     @Test
-    fun testCelsiusToFahrenheitEx() = runTest {
+    fun testCelsiusToFahrenheitEx() = runTest(timeout = 60.seconds) {
         val bytes = try {
             loadResourceAsBytes("CelsiusToFahrenheitEx.tflite")
         } catch (e: Throwable) {

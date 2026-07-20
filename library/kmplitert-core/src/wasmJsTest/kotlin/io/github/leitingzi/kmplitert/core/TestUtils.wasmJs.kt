@@ -2,6 +2,7 @@
 
 package io.github.leitingzi.kmplitert.core
 
+import io.github.leitingzi.kmplitert.core.model.isWebGPUSupported
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.khronos.webgl.ArrayBuffer
@@ -12,8 +13,10 @@ import kotlin.js.ExperimentalWasmJsInterop
 actual suspend fun loadResourceAsBytes(name: String): ByteArray {
     // Try some standard Karma paths
     val paths = listOf(
-        "/base/library/kmplitert-core/build/processedResources/js/test/$name",
+        "/base/processedResources/wasmJs/test/$name",
         "/base/processedResources/js/test/$name",
+        "/base/library/kmplitert-core/build/processedResources/wasmJs/test/$name",
+        "/base/library/kmplitert-core/build/processedResources/js/test/$name",
         "/base/library/kmplitert-core/src/commonTest/resources/$name",
         "/base/$name",
         name
@@ -41,6 +44,10 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
 }
 
 actual fun LiteRTAccelerator.isSupportedOnCurrentPlatform(): Boolean {
-    return true
+    return when (this) {
+        LiteRTAccelerator.CPU -> true
+        LiteRTAccelerator.GPU -> isWebGPUSupported()
+        LiteRTAccelerator.NPU -> false
+    }
 }
 
