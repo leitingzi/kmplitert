@@ -64,6 +64,7 @@ jobs:
           cache: gradle
 
       - name: Build and Test (Windows)
+        shell: bash
         run: |
           ./gradlew :library:kmplitert-core:assemble \
                     :library:kmplitert-core:mingwX64Test \

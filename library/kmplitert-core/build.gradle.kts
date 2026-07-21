@@ -136,15 +136,15 @@ kotlin {
 
         compilations.getByName("main").cinterops {
             create("litert") {
-                definitionFile.set(project.file("$cInteropPath/cinterop/litert.def"))
-                includeDirs(project.file("$cInteropPath/include"))
+                definitionFile.set(layout.projectDirectory.file("$cInteropPath/cinterop/litert.def"))
+                includeDirs(layout.projectDirectory.dir("$cInteropPath/include"))
             }
         }
 
         binaries.all {
             val targetDir = konanTarget.libDir ?: return@all
-            val libPath = project.file("$cInteropPath/lib/litert/$targetDir")
-            val path = libPath.absolutePath
+            val libPathFile = layout.projectDirectory.dir("$cInteropPath/lib/litert/$targetDir")
+            val path = libPathFile.asFile.absolutePath
             
             // Standard link search path and library name
             linkerOpts("-L$path", "-lLiteRt")
@@ -167,20 +167,17 @@ kotlin {
             // Robust bundling: copy dylibs to the binary destination folder and a Frameworks subfolder
             // Use a dedicated task to be configuration-cache friendly
             val bundleTaskName = "bundleLiteRtTo${konanTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
-            val isApple = konanTarget.isApple
+            val isAppleTarget = konanTarget.isApple
             val bundleTask = tasks.register<Copy>(bundleTaskName) {
-                description = ""
-                from(libPath)
-                include("*.dylib", "*.so", "*.dll")
+                from(libPathFile) {
+                    include("*.dylib", "*.so", "*.dll")
+                }
                 into(linkTaskProvider.flatMap { it.destinationDirectory })
 
-                if (isApple) {
-                    doLast {
-                        val frameworksDir = destinationDir.resolve("Frameworks")
-                        frameworksDir.mkdirs()
-                        fileTree(libPath).matching { include("*.dylib") }.forEach { file ->
-                            file.copyTo(File(frameworksDir, file.name), overwrite = true)
-                        }
+                if (isAppleTarget) {
+                    into("Frameworks") {
+                        from(libPathFile)
+                        include("*.dylib")
                     }
                 }
             }
@@ -248,38 +245,30 @@ kotlin {
 tasks.withType<KotlinNativeTest>().configureEach {
     val target = targetName?.toKonanTarget() ?: return@configureEach
     val targetDir = target.libDir ?: return@configureEach
-    val libPath = project.file("$cInteropPath/lib/litert/$targetDir")
+    val libPathFile = layout.projectDirectory.dir("$cInteropPath/lib/litert/$targetDir")
+    val libPathAbs = libPathFile.asFile.absolutePath
 
-    // Debug logging and double-check bundling
-    val sourceDir = libPath
-    val isApple = target.isApple
-    val currentTargetName = targetName
-    val currentTarget = target
-    doFirst {
-        logger.lifecycle("DEBUG: Preparing test for target: $currentTargetName ($currentTarget)")
-        logger.lifecycle("DEBUG: libPath: ${sourceDir.absolutePath} (exists: ${sourceDir.exists()})")
-        logger.lifecycle("DEBUG: Executable path: ${executable.absolutePath}")
+    // Extract bundling to a dedicated task to be configuration-cache friendly
+    val prepareTestTaskName = "prepareLiteRtFor${name.replaceFirstChar { it.uppercase() }}"
+    val isAppleTarget = target.isApple
+    val prepareTestTask = tasks.register<Copy>(prepareTestTaskName) {
+        from(libPathFile) {
+            include("*.dylib", "*.so", "*.dll")
+        }
+        into(executable.parentFile)
         
-        if (sourceDir.exists()) {
-            sourceDir.listFiles { _, name -> 
-                name.endsWith(".dylib") || name.endsWith(".so") || name.endsWith(".dll") 
-            }?.forEach { file ->
-                file.copyTo(File(executable.parentFile, file.name), overwrite = true)
+        if (isAppleTarget) {
+            into("Frameworks") {
+                from(libPathFile)
+                include("*.dylib")
             }
-            if (isApple) {
-                val frameworksDir = executable.parentFile.resolve("Frameworks")
-                frameworksDir.mkdirs()
-                sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->
-                    file.copyTo(File(frameworksDir, file.name), overwrite = true)
-                }
-            }
-        } else {
-            logger.warn("WARNING: libPath does not exist: ${sourceDir.absolutePath}")
         }
     }
+    
+    dependsOn(prepareTestTask)
 
     fun setEnvironment(path: String, sep: String) {
-        val value = listOfNotNull(libPath.absolutePath, System.getenv(path))
+        val value = listOfNotNull(libPathAbs, System.getenv(path))
         environment(name = path, value = value.joinToString(separator = sep))
     }
 
@@ -294,7 +283,7 @@ tasks.withType<KotlinNativeTest>().configureEach {
             setEnvironment(path = "DYLD_LIBRARY_PATH", sep = ":")
             // For iOS Simulator, simctl needs SIMCTL_CHILD_ prefix to propagate env vars
             if (target == KonanTarget.IOS_SIMULATOR_ARM64) {
-                environment("SIMCTL_CHILD_DYLD_LIBRARY_PATH", libPath.absolutePath)
+                environment("SIMCTL_CHILD_DYLD_LIBRARY_PATH", libPathAbs)
             }
         }
         else -> {}

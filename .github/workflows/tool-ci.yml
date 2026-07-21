@@ -62,6 +62,7 @@ jobs:
           cache: gradle
 
       - name: Run Tests (Windows)
+        shell: bash
         run: |
           ./gradlew :library:kmplitert-tool:mingwX64Test \
                     --stacktrace --info --no-daemon
