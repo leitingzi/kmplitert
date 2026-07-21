@@ -5,6 +5,8 @@ module:kmplitert-core
 io.github.leitingzi.kmplitert.core
 module:kmplitert-tool
 io.github.leitingzi.kmplitert.tool
+io.github.leitingzi.kmplitert.tool.audio
 io.github.leitingzi.kmplitert.tool.classification
 io.github.leitingzi.kmplitert.tool.detection
+io.github.leitingzi.kmplitert.tool.expand
 io.github.leitingzi.kmplitert.tool.text
