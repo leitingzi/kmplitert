@@ -1,12 +1,12 @@
 $dokka.format:html-v1
 $dokka.linkExtension:html
 
-module:kmplitert-core
-io.github.leitingzi.kmplitert.core
-module:kmplitert-tool
-io.github.leitingzi.kmplitert.tool
-io.github.leitingzi.kmplitert.tool.audio
-io.github.leitingzi.kmplitert.tool.classification
-io.github.leitingzi.kmplitert.tool.detection
-io.github.leitingzi.kmplitert.tool.expand
-io.github.leitingzi.kmplitert.tool.text
+module:core
+io.github.kmplitert.core
+module:tool
+io.github.kmplitert.tool
+io.github.kmplitert.tool.audio
+io.github.kmplitert.tool.classification
+io.github.kmplitert.tool.detection
+io.github.kmplitert.tool.expand
+io.github.kmplitert.tool.text
