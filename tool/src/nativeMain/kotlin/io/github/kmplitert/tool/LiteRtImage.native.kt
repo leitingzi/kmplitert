@@ -2,6 +2,8 @@
 
 package io.github.kmplitert.tool
 
+import io.github.kmplitert.core.TFBuffer
+
 actual class LiteRtImage(
     val data: ByteArray,
     actual val width: Int,
@@ -198,6 +200,14 @@ actual class LiteRtImage(
             result[i] = (data[i].toInt() and 0xFF).toLong()
         }
         return result
+    }
+
+    actual fun writeInt8Buffer(buffer: TFBuffer) {
+        buffer.writeInt8(data)
+    }
+
+    actual fun writeFloatBuffer(buffer: TFBuffer, mean: Float, std: Float) {
+        buffer.writeFloat(toFloatArray(mean, std))
     }
 
     actual companion object {

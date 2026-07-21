@@ -2,6 +2,7 @@
 
 package io.github.kmplitert.tool
 
+import io.github.kmplitert.core.TFBuffer
 import kotlinx.browser.document
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.Uint8ClampedArray
@@ -226,6 +227,14 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
             }
         }
         return longArray
+    }
+
+    actual fun writeInt8Buffer(buffer: TFBuffer) {
+        buffer.writeInt8(toInt8Array())
+    }
+
+    actual fun writeFloatBuffer(buffer: TFBuffer, mean: Float, std: Float) {
+        buffer.writeFloat(toFloatArray(mean, std))
     }
 
     actual companion object {

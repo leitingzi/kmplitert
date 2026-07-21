@@ -1,11 +1,28 @@
 package io.github.kmplitert.tool
 
+import io.github.kmplitert.core.TFBuffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertContentEquals
 
 class LiteRtImageTest : PlatformTest() {
 
+    class MockTFBuffer : TFBuffer {
+        var bytes: ByteArray? = null
+        var floats: FloatArray? = null
+        override fun writeInt(data: IntArray) {}
+        override fun writeFloat(data: FloatArray) { floats = data }
+        override fun writeInt8(data: ByteArray) { bytes = data }
+        override fun writeBoolean(data: BooleanArray) {}
+        override fun writeLong(data: LongArray) {}
+        override suspend fun readInt(): IntArray = intArrayOf()
+        override suspend fun readFloat(): FloatArray = floatArrayOf()
+        override suspend fun readInt8(): ByteArray = byteArrayOf()
+        override suspend fun readBoolean(): BooleanArray = booleanArrayOf()
+        override suspend fun readLong(): LongArray = longArrayOf()
+    }
+    
     private fun createDummyImage(width: Int, height: Int, channels: Int = 3): LiteRtImage {
         val data = ByteArray(width * height * channels) { it.toByte() }
         return LiteRtImage.fromRawRgb(data, width, height)
@@ -88,5 +105,17 @@ class LiteRtImageTest : PlatformTest() {
         
         val longArray = image.toLongArray()
         assertEquals(2 * 2 * channels, longArray.size)
+    }
+
+    @Test
+    fun testBufferWrites() {
+        val image = createDummyImage(2, 2, 3)
+        val mockBuffer = MockTFBuffer()
+        
+        image.writeInt8Buffer(mockBuffer)
+        assertContentEquals(image.toInt8Array(), mockBuffer.bytes)
+        
+        image.writeFloatBuffer(mockBuffer, 127.5f, 127.5f)
+        assertContentEquals(image.toFloatArray(127.5f, 127.5f), mockBuffer.floats)
     }
 }

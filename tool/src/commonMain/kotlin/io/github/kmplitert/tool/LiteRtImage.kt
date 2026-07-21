@@ -2,6 +2,8 @@
 
 package io.github.kmplitert.tool
 
+import io.github.kmplitert.core.TFBuffer
+
 /**
  * Represents an image that can be preprocessed before being fed into a LiteRT model.
  *
@@ -144,6 +146,28 @@ expect class LiteRtImage {
      * @return A long array containing the image pixel data in RGB order.
      */
     fun toLongArray(): LongArray
+
+    /**
+     * Directly writes the image pixel data to a signed 8-bit integer [TFBuffer].
+     *
+     * This is an optimized operation that avoids creating intermediate Kotlin arrays
+     * when possible.
+     *
+     * @param buffer The target [TFBuffer] to write to.
+     */
+    fun writeInt8Buffer(buffer: TFBuffer)
+
+    /**
+     * Directly writes the image pixel data to a float [TFBuffer] with normalization.
+     *
+     * This is an optimized operation that avoids creating intermediate Kotlin arrays
+     * when possible.
+     *
+     * @param buffer The target [TFBuffer] to write to.
+     * @param mean The value subtracted from each channel. Defaults to `0f`.
+     * @param std The value used to divide each channel after subtraction. Defaults to `1f`.
+     */
+    fun writeFloatBuffer(buffer: TFBuffer, mean: Float = 0f, std: Float = 1f)
 
     companion object {
 

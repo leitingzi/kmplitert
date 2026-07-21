@@ -3,6 +3,7 @@
 package io.github.kmplitert.tool
 
 
+import io.github.kmplitert.core.TFBuffer
 import kotlinx.browser.document
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
@@ -220,6 +221,14 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
             }
         }
         return longArray
+    }
+
+    actual fun writeInt8Buffer(buffer: TFBuffer) {
+        buffer.writeInt8(toInt8Array())
+    }
+
+    actual fun writeFloatBuffer(buffer: TFBuffer, mean: Float, std: Float) {
+        buffer.writeFloat(toFloatArray(mean, std))
     }
 
     actual companion object {

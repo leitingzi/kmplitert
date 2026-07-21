@@ -7,10 +7,13 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.Paint
-import androidx.core.graphics.scale
+import android.media.Image
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import io.github.kmplitert.core.TFBuffer
 
 actual class LiteRtImage(internal val bitmap: Bitmap, private val _channels: Int = -1) {
     actual val width: Int get() = bitmap.width
@@ -197,6 +200,14 @@ actual class LiteRtImage(internal val bitmap: Bitmap, private val _channels: Int
         return longArray
     }
 
+    actual fun writeInt8Buffer(buffer: TFBuffer) {
+        buffer.writeInt8(toInt8Array())
+    }
+
+    actual fun writeFloatBuffer(buffer: TFBuffer, mean: Float, std: Float) {
+        buffer.writeFloat(toFloatArray(mean, std))
+    }
+
     actual companion object {
         actual fun fromBytes(bytes: ByteArray): LiteRtImage {
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
@@ -217,6 +228,63 @@ actual class LiteRtImage(internal val bitmap: Bitmap, private val _channels: Int
             return LiteRtImage(bitmap = bitmap)
         }
     }
+}
+
+/**
+ * Creates a [LiteRtImage] from an Android [Image] (e.g., from CameraX).
+ *
+ * This function handles YUV_420_888 to RGB conversion efficiently.
+ */
+fun LiteRtImage.Companion.fromAndroidImage(image: Image): LiteRtImage {
+    require(image.format == ImageFormat.YUV_420_888) {
+        "Unsupported image format: ${image.format}. Only YUV_420_888 is supported."
+    }
+
+    val width = image.width
+    val height = image.height
+    val planes = image.planes
+    
+    val yPlane = planes[0]
+    val uPlane = planes[1]
+    val vPlane = planes[2]
+
+    val yBuffer = yPlane.buffer
+    val uBuffer = uPlane.buffer
+    val vBuffer = vPlane.buffer
+
+    val yRowStride = yPlane.rowStride
+    val uvRowStride = uPlane.rowStride
+    val uvPixelStride = uPlane.pixelStride
+
+    val pixels = IntArray(width * height)
+    val yData = ByteArray(yBuffer.remaining())
+    val uData = ByteArray(uBuffer.remaining())
+    val vData = ByteArray(vBuffer.remaining())
+    
+    yBuffer.get(yData)
+    uBuffer.get(uData)
+    vBuffer.get(vData)
+
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            val yIndex = y * yRowStride + x
+            val uvIndex = (y / 2) * uvRowStride + (x / 2) * uvPixelStride
+
+            val yValue = yData[yIndex].toInt() and 0xFF
+            val uValue = (uData[uvIndex.coerceAtMost(uData.size - 1)].toInt() and 0xFF) - 128
+            val vValue = (vData[uvIndex.coerceAtMost(vData.size - 1)].toInt() and 0xFF) - 128
+
+            val r = (yValue + 1.370705f * vValue).toInt().coerceIn(0, 255)
+            val g = (yValue - 0.337633f * uValue - 0.698001f * vValue).toInt().coerceIn(0, 255)
+            val b = (yValue + 1.732446f * uValue).toInt().coerceIn(0, 255)
+
+            pixels[y * width + x] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+        }
+    }
+
+    val bitmap = createBitmap(width, height)
+    bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
+    return LiteRtImage(bitmap)
 }
 
 fun LiteRtImage.asBitmap(): Bitmap {

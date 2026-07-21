@@ -2,6 +2,7 @@
 
 package io.github.kmplitert.tool
 
+import io.github.kmplitert.core.TFBuffer
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.AffineTransform
@@ -209,6 +210,14 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
         return longArray
     }
 
+    actual fun writeInt8Buffer(buffer: TFBuffer) {
+        buffer.writeInt8(toInt8Array())
+    }
+
+    actual fun writeFloatBuffer(buffer: TFBuffer, mean: Float, std: Float) {
+        buffer.writeFloat(toFloatArray(mean, std))
+    }
+
     actual companion object {
         actual fun fromBytes(bytes: ByteArray): LiteRtImage {
             val bufferedImage = ImageIO.read(ByteArrayInputStream(bytes))
@@ -228,6 +237,13 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
                     bufferedImage.setRGB(x, y, rgb)
                 }
             }
+            return LiteRtImage(bufferedImage)
+        }
+
+        /**
+         * Creates a [LiteRtImage] from a [java.awt.image.BufferedImage].
+         */
+        fun fromBufferedImage(bufferedImage: BufferedImage): LiteRtImage {
             return LiteRtImage(bufferedImage)
         }
     }
