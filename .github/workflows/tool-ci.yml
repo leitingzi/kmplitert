@@ -6,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - 'library/kmplitert-tool/**'
+      - 'tool/**'
       - 'gradle/**'
       - '*.gradle.kts'
       - 'gradle.properties'
@@ -26,10 +26,10 @@ jobs:
       - name: Run Tests (Linux, Android, JS, Wasm)
         run: |
           chmod +x gradlew
-          ./gradlew :library:kmplitert-tool:linuxX64Test \
-                    :library:kmplitert-tool:testAndroidHostTest \
-                    :library:kmplitert-tool:jsBrowserTest \
-                    :library:kmplitert-tool:wasmJsBrowserTest \
+          ./gradlew :tool:linuxX64Test \
+                    :tool:testAndroidHostTest \
+                    :tool:jsBrowserTest \
+                    :tool:wasmJsBrowserTest \
                     --stacktrace --info --no-daemon
 
   macos-ios:
@@ -46,8 +46,8 @@ jobs:
       - name: Run Tests (MacOS, iOS)
         run: |
           chmod +x gradlew
-          ./gradlew :library:kmplitert-tool:macosArm64Test \
-                    :library:kmplitert-tool:iosSimulatorArm64Test \
+          ./gradlew :tool:macosArm64Test \
+                    :tool:iosSimulatorArm64Test \
                     --stacktrace --info --no-daemon
 
   windows:
@@ -64,5 +64,5 @@ jobs:
       - name: Run Tests (Windows)
         shell: bash
         run: |
-          ./gradlew :library:kmplitert-tool:mingwX64Test \
+          ./gradlew :tool:mingwX64Test \
                     --stacktrace --info --no-daemon

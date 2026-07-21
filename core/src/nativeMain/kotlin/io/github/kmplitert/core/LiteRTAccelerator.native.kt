@@ -1,0 +1,13 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
+package io.github.kmplitert.core
+
+import litert.*
+
+fun LiteRTAccelerator.toNative(): Int {
+    return when (this) {
+        LiteRTAccelerator.CPU -> kLiteRtHwAcceleratorCpu
+        LiteRTAccelerator.GPU -> kLiteRtHwAcceleratorGpu
+        LiteRTAccelerator.NPU -> kLiteRtHwAcceleratorNpu
+    }
+}

@@ -29,7 +29,7 @@ jobs:
 
       - name: Copy headers
         run: |
-          DEST_ROOT="library/kmplitert-core/src/nativeInterop/include"
+          DEST_ROOT="core/src/nativeInterop/include"
           rm -rf "$DEST_ROOT/litert"
           mkdir -p "$DEST_ROOT"
           
@@ -76,7 +76,7 @@ jobs:
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT headers"
-          add: "library/kmplitert-core/src/nativeInterop/include"
+          add: "core/src/nativeInterop/include"
 
   copy-libraries:
     needs: copy-headers
@@ -151,7 +151,7 @@ jobs:
 
       - name: Prepare Artifacts
         run: |
-          DEST_PATH="library/kmplitert-core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
+          DEST_PATH="core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
           rm -rf "$DEST_PATH"
           mkdir -p "$DEST_PATH"
           
@@ -163,4 +163,4 @@ jobs:
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT prebuilt: ${{ matrix.platform }} ${{ matrix.arch }}"
-          add: "library/kmplitert-core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
+          add: "core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
