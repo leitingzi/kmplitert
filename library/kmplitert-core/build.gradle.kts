@@ -167,19 +167,21 @@ kotlin {
             // Robust bundling: copy dylibs to the binary destination folder and a Frameworks subfolder
             val currentTarget = konanTarget
             linkTaskProvider.configure {
+                val sourceDir = libPath
                 doLast {
                     val outputDir = destinationDirectory.get().asFile
-                    if (libPath.exists()) {
-                        project.copy {
-                            from(libPath)
-                            include("*.dylib", "*.so", "*.dll")
-                            into(outputDir)
+                    if (sourceDir.exists()) {
+                        sourceDir.listFiles { _, name -> 
+                            name.endsWith(".dylib") || name.endsWith(".so") || name.endsWith(".dll") 
+                        }?.forEach { file ->
+                            file.copyTo(File(outputDir, file.name), overwrite = true)
                         }
+
                         if (currentTarget.isApple) {
-                            project.copy {
-                                from(libPath)
-                                include("*.dylib")
-                                into(outputDir.resolve("Frameworks"))
+                            val frameworksDir = outputDir.resolve("Frameworks")
+                            frameworksDir.mkdirs()
+                            sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->
+                                file.copyTo(File(frameworksDir, file.name), overwrite = true)
                             }
                         }
                     }
@@ -249,26 +251,27 @@ tasks.withType<KotlinNativeTest>().configureEach {
     val libPath = project.file("$cInteropPath/lib/litert/$targetDir")
 
     // Debug logging and double-check bundling
+    val sourceDir = libPath
     doFirst {
         logger.lifecycle("DEBUG: Preparing test for target: $targetName ($target)")
-        logger.lifecycle("DEBUG: libPath: ${libPath.absolutePath} (exists: ${libPath.exists()})")
+        logger.lifecycle("DEBUG: libPath: ${sourceDir.absolutePath} (exists: ${sourceDir.exists()})")
         logger.lifecycle("DEBUG: Executable path: ${executable.absolutePath}")
         
-        if (libPath.exists()) {
-            project.copy {
-                from(libPath)
-                include("*.dylib", "*.so", "*.dll")
-                into(executable.parentFile)
+        if (sourceDir.exists()) {
+            sourceDir.listFiles { _, name -> 
+                name.endsWith(".dylib") || name.endsWith(".so") || name.endsWith(".dll") 
+            }?.forEach { file ->
+                file.copyTo(File(executable.parentFile, file.name), overwrite = true)
             }
             if (target.isApple) {
-                project.copy {
-                    from(libPath)
-                    include("*.dylib")
-                    into(executable.parentFile.resolve("Frameworks"))
+                val frameworksDir = executable.parentFile.resolve("Frameworks")
+                frameworksDir.mkdirs()
+                sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->
+                    file.copyTo(File(frameworksDir, file.name), overwrite = true)
                 }
             }
         } else {
-            logger.warn("WARNING: libPath does not exist: ${libPath.absolutePath}")
+            logger.warn("WARNING: libPath does not exist: ${sourceDir.absolutePath}")
         }
     }
 

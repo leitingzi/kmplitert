@@ -56,14 +56,16 @@ kotlin {
 
                     // Copy the dylibs into the framework output directory
                     linkTaskProvider.configure {
+                        val sourceDirPath = libPath
                         doLast {
                             val destination = destinationDirectory.get().asFile
                             val frameworkDir = File(destination, "${baseName}.framework")
                             if (frameworkDir.exists()) {
-                                copy {
-                                    from(libPath)
-                                    include("*.dylib")
-                                    into(frameworkDir)
+                                val sourceDir = File(sourceDirPath)
+                                if (sourceDir.exists()) {
+                                    sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->
+                                        file.copyTo(File(frameworkDir, file.name), overwrite = true)
+                                    }
                                 }
                                 println("Bundled LiteRT dylibs into ${frameworkDir.absolutePath}")
                             }
