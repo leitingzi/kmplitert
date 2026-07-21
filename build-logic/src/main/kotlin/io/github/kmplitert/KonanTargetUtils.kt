@@ -10,6 +10,13 @@ val KonanTarget.isApple: Boolean get() = when (this) {
     else -> false
 }
 
+val KonanTarget.isLinux: Boolean get() = when (this) {
+    KonanTarget.LINUX_ARM64,
+    KonanTarget.LINUX_X64,
+    KonanTarget.LINUX_ARM32_HFP -> true
+    else -> false
+}
+
 val KonanTarget.libDir: String? get() = when (this) {
     KonanTarget.ANDROID_ARM64 -> "android/arm64"
     KonanTarget.ANDROID_ARM32 -> "android/arm32"
