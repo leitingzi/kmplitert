@@ -165,27 +165,27 @@ kotlin {
             }
 
             // Robust bundling: copy dylibs to the binary destination folder and a Frameworks subfolder
-            val currentTarget = konanTarget
-            linkTaskProvider.configure {
-                val sourceDir = libPath
-                doLast {
-                    val outputDir = destinationDirectory.get().asFile
-                    if (sourceDir.exists()) {
-                        sourceDir.listFiles { _, name -> 
-                            name.endsWith(".dylib") || name.endsWith(".so") || name.endsWith(".dll") 
-                        }?.forEach { file ->
-                            file.copyTo(File(outputDir, file.name), overwrite = true)
-                        }
+            // Use a dedicated task to be configuration-cache friendly
+            val bundleTaskName = "bundleLiteRtTo${konanTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
+            val isApple = konanTarget.isApple
+            val bundleTask = tasks.register<Copy>(bundleTaskName) {
+                description = ""
+                from(libPath)
+                include("*.dylib", "*.so", "*.dll")
+                into(linkTaskProvider.flatMap { it.destinationDirectory })
 
-                        if (currentTarget.isApple) {
-                            val frameworksDir = outputDir.resolve("Frameworks")
-                            frameworksDir.mkdirs()
-                            sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->
-                                file.copyTo(File(frameworksDir, file.name), overwrite = true)
-                            }
+                if (isApple) {
+                    doLast {
+                        val frameworksDir = destinationDir.resolve("Frameworks")
+                        frameworksDir.mkdirs()
+                        fileTree(libPath).matching { include("*.dylib") }.forEach { file ->
+                            file.copyTo(File(frameworksDir, file.name), overwrite = true)
                         }
                     }
                 }
+            }
+            linkTaskProvider.configure {
+                finalizedBy(bundleTask)
             }
         }
     }
@@ -252,8 +252,11 @@ tasks.withType<KotlinNativeTest>().configureEach {
 
     // Debug logging and double-check bundling
     val sourceDir = libPath
+    val isApple = target.isApple
+    val currentTargetName = targetName
+    val currentTarget = target
     doFirst {
-        logger.lifecycle("DEBUG: Preparing test for target: $targetName ($target)")
+        logger.lifecycle("DEBUG: Preparing test for target: $currentTargetName ($currentTarget)")
         logger.lifecycle("DEBUG: libPath: ${sourceDir.absolutePath} (exists: ${sourceDir.exists()})")
         logger.lifecycle("DEBUG: Executable path: ${executable.absolutePath}")
         
@@ -263,7 +266,7 @@ tasks.withType<KotlinNativeTest>().configureEach {
             }?.forEach { file ->
                 file.copyTo(File(executable.parentFile, file.name), overwrite = true)
             }
-            if (target.isApple) {
+            if (isApple) {
                 val frameworksDir = executable.parentFile.resolve("Frameworks")
                 frameworksDir.mkdirs()
                 sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->

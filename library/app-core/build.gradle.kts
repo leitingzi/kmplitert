@@ -45,32 +45,28 @@ kotlin {
                     else -> null
                 }
 
-                if (targetDir != null) {
-                    val coreProjectDir = project(":library:kmplitert-core").projectDir
-                    val libPath = "$coreProjectDir/src/nativeInterop/lib/litert/$targetDir"
-                    linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
-                    
-                    // Add portable rpath for the framework itself
-                    linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
-                    linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
+                if (targetDir == null) {
+                    return@framework
+                }
 
-                    // Copy the dylibs into the framework output directory
-                    linkTaskProvider.configure {
-                        val sourceDirPath = libPath
-                        doLast {
-                            val destination = destinationDirectory.get().asFile
-                            val frameworkDir = File(destination, "${baseName}.framework")
-                            if (frameworkDir.exists()) {
-                                val sourceDir = File(sourceDirPath)
-                                if (sourceDir.exists()) {
-                                    sourceDir.listFiles { _, name -> name.endsWith(".dylib") }?.forEach { file ->
-                                        file.copyTo(File(frameworkDir, file.name), overwrite = true)
-                                    }
-                                }
-                                println("Bundled LiteRT dylibs into ${frameworkDir.absolutePath}")
-                            }
-                        }
-                    }
+                val coreProjectDir = project(":library:kmplitert-core").projectDir
+                val libPath = "$coreProjectDir/src/nativeInterop/lib/litert/$targetDir"
+                linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
+
+                // Add portable rpath for the framework itself
+                linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
+                linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
+
+                // Copy the dylibs into the framework output directory using a dedicated task to be configuration-cache friendly
+                val bundleTaskName = "bundleLiteRtTo${iosTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
+                val bundleTask = tasks.register<Copy>(bundleTaskName) {
+                    description = ""
+                    from(libPath)
+                    include("*.dylib")
+                    into(linkTaskProvider.flatMap { it.destinationDirectory.map { dir -> dir.asFile.resolve("${baseName}.framework") } })
+                }
+                linkTaskProvider.configure {
+                    finalizedBy(bundleTask)
                 }
             }
         }
