@@ -13,8 +13,8 @@ plugins {
 }
 
 dependencies {
-    dokka(projects.library.kmplitertCore)
-    dokka(projects.library.kmplitertTool)
+    dokka(projects.core)
+    dokka(projects.tool)
 }
 
 rootProject.plugins.withType<YarnPlugin> {

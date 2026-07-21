@@ -6,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - 'library/kmplitert-core/**'
+      - 'core/**'
       - 'gradle/**'
       - '*.gradle.kts'
       - 'gradle.properties'
@@ -26,11 +26,11 @@ jobs:
       - name: Build and Test (Linux, Android, JS, Wasm)
         run: |
           chmod +x gradlew
-          ./gradlew :library:kmplitert-core:assemble \
-                    :library:kmplitert-core:linuxX64Test \
-                    :library:kmplitert-core:testAndroidHostTest \
-                    :library:kmplitert-core:jsBrowserTest \
-                    :library:kmplitert-core:wasmJsBrowserTest \
+          ./gradlew :core:assemble \
+                    :core:linuxX64Test \
+                    :core:testAndroidHostTest \
+                    :core:jsBrowserTest \
+                    :core:wasmJsBrowserTest \
                     --stacktrace --info --no-daemon
 
   macos-ios:
@@ -47,9 +47,9 @@ jobs:
       - name: Build and Test (MacOS, iOS)
         run: |
           chmod +x gradlew
-          ./gradlew :library:kmplitert-core:assemble \
-                    :library:kmplitert-core:macosArm64Test \
-                    :library:kmplitert-core:iosSimulatorArm64Test \
+          ./gradlew :core:assemble \
+                    :core:macosArm64Test \
+                    :core:iosSimulatorArm64Test \
                     --stacktrace --info --no-daemon
 
   windows:
@@ -66,6 +66,6 @@ jobs:
       - name: Build and Test (Windows)
         shell: bash
         run: |
-          ./gradlew :library:kmplitert-core:assemble \
-                    :library:kmplitert-core:mingwX64Test \
+          ./gradlew :core:assemble \
+                    :core:mingwX64Test \
                     --stacktrace --info --no-daemon

@@ -49,5 +49,5 @@ dependencies {
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 
-    implementation(projects.library.appCore)
+    implementation(projects.app.shared)
 }

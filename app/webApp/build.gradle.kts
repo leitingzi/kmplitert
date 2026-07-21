@@ -23,7 +23,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
-            implementation(projects.library.appCore)
+            implementation(projects.app.shared)
         }
     }
 }

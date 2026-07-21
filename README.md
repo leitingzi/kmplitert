@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Kotlin](https://img.shields.io/badge/kotlin-2.4.0-purple.svg?logo=kotlin)](http://kotlinlang.org)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core)](https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.kmplitert/core)](https://central.sonatype.com/artifact/io.github.kmplitert/core)
 [![CI Status](https://github.com/leitingzi/kmplitert/actions/workflows/ci.yml/badge.svg)](https://github.com/leitingzi/kmplitert/actions)
 
 **KMPLiteRT** is a high-performance, type-safe Kotlin Multiplatform (KMP) library that brings **Google LiteRT** (formerly TensorFlow Lite) to the multiplatform ecosystem. It enables developers to execute machine learning models with native performance on Android, iOS, JVM, Native (Desktop), and Web platforms using a single, unified codebase.
@@ -19,7 +19,7 @@
 
 ---
 
-## 🏗️ Architecture
+## 🏗�?Architecture
 
 KMPLiteRT abstracts platform-specific LiteRT runtimes into a consistent Kotlin DSL. It handles the complexity of native interop, memory management, and hardware acceleration backends.
 
@@ -54,7 +54,7 @@ graph TD
 
 ---
 
-## ✨ Key Features
+## �?Key Features
 
 - **Unified Inference Engine**: Orchestrate models, tensors, and signatures using a single API across all targets.
 - **High-Level Task APIs**: Ready-to-use `ImageClassifier` and `ObjectDetector` for common Vision tasks.
@@ -68,11 +68,11 @@ graph TD
 
 | Platform | Core Implementation | CPU (XNNPACK) | GPU | NPU / AI Accelerator |
 | :--- | :--- | :---: | :---: | :---: |
-| **Android** | LiteRT Android SDK (JNI) | ✅ | ✅ (OpenGL) | ✅ (NNAPI/NPU) |
-| **iOS / MacOS** | LiteRT C-API + C-Interop | ✅ | ✅ (Metal) | ✅ (CoreML via Metal) |
-| **JVM (Desktop)** | JNA + Dynamic Library | ✅ | ✅ (Vulkan/GL) | 🚧 (Planning) |
-| **Native (Win/Linux)** | LiteRT C-API + C-Interop | ✅ | ✅ (WebGPU/GL) | 🚧 (Planning) |
-| **Web (JS/Wasm)** | `@litertjs/core` Wrapper | ✅ | ✅ (WebGPU) | ✅ (WebNN) |
+| **Android** | LiteRT Android SDK (JNI) | �?| �?(OpenGL) | �?(NNAPI/NPU) |
+| **iOS / MacOS** | LiteRT C-API + C-Interop | �?| �?(Metal) | �?(CoreML via Metal) |
+| **JVM (Desktop)** | JNA + Dynamic Library | �?| �?(Vulkan/GL) | 🚧 (Planning) |
+| **Native (Win/Linux)** | LiteRT C-API + C-Interop | �?| �?(WebGPU/GL) | 🚧 (Planning) |
+| **Web (JS/Wasm)** | `@litertjs/core` Wrapper | �?| �?(WebGPU) | �?(WebNN) |
 
 ---
 
@@ -87,10 +87,10 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Core ML runtime
-            implementation("io.github.leitingzi:kmplitert-core:$kmplitertVersion")
+            implementation("io.github.kmplitert:core:$kmplitertVersion")
             
             // Optional image preprocessing and task APIs (Classification, Detection)
-            implementation("io.github.leitingzi:kmplitert-tool:$kmplitertVersion")
+            implementation("io.github.kmplitert:tool:$kmplitertVersion")
         }
     }
 }
@@ -122,7 +122,7 @@ kotlin {
 
             if (targetDir != null) {
                 // Adjust this path to where your libraries are located
-                val libPath = "/path/to/kmplitert/library/kmplitert-core/src/nativeInterop/lib/litert/$targetDir"
+                val libPath = "/path/to/kmplitert/core/src/nativeInterop/lib/litert/$targetDir"
                 
                 linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
                 linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
@@ -162,7 +162,7 @@ If you are running tests or desktop applications directly, ensure the dynamic li
 Loading a model and running inference in just a few lines:
 
 ```kotlin
-import io.github.leitingzi.kmplitert.core.*
+import io.github.kmplitert.core.*
 
 val compiler = LiteRTCompiler("model.tflite", LiteRTAccelerator.CPU)
 compiler.init() // Initialize native runtime
@@ -180,7 +180,7 @@ compiler.close() // Release native resources
 
 ---
 
-## 🛠️ High-Level Task APIs (`kmplitert-tool`)
+## 🛠�?High-Level Task APIs (`kmplitert-tool`)
 
 Skip the boilerplate and use pre-built APIs for common machine learning tasks.
 
@@ -206,12 +206,12 @@ detections.forEach {
 
 ---
 
-## 🖼️ Image Preprocessing Pipeline
+## 🖼�?Image Preprocessing Pipeline
 
 Prepare raw image data for computer vision models using the fluent API.
 
 ```kotlin
-import io.github.leitingzi.kmplitert.tool.*
+import io.github.kmplitert.tool.*
 
 val modelInputData = LiteRtImage.fromBytes(rawImageData)
     .resize(width = 224, height = 224)

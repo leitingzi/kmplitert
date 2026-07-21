@@ -10,7 +10,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.uiToolingPreview)
     implementation(libs.kotlinx.coroutinesSwing)
-    implementation(projects.library.appCore)
+    implementation(projects.app.shared)
 }
 
 compose.desktop {
