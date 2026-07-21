@@ -131,8 +131,10 @@ kotlin {
         }
 
         binaries.all {
-            val libDir = project(":library:kmplitert-core").file("$cInteropPath/lib/litert/${konanTarget.libDir}")
-            val path = libDir.absolutePath
+            val targetDir = konanTarget.libDir ?: return@all
+            val coreProject = project(":library:kmplitert-core")
+            val libPathFile = coreProject.layout.projectDirectory.dir("src/nativeInterop/lib/litert/$targetDir")
+            val path = libPathFile.asFile.absolutePath
 
             // Standard link search path and library name
             linkerOpts("-L$path", "-lLiteRt")
@@ -149,6 +151,26 @@ kotlin {
 
             if (konanTarget.isLinux) {
                 linkerOpts("-Wl,--allow-shlib-undefined")
+            }
+
+            // Bundling for tests/binaries
+            val bundleTaskName = "bundleLiteRtTo${konanTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
+            val isAppleTarget = konanTarget.isApple
+            val bundleTask = tasks.register<Copy>(bundleTaskName) {
+                from(libPathFile) {
+                    include("*.dylib", "*.so", "*.dll")
+                }
+                into(linkTaskProvider.flatMap { it.destinationDirectory })
+
+                if (isAppleTarget) {
+                    into("Frameworks") {
+                        from(libPathFile)
+                        include("*.dylib")
+                    }
+                }
+            }
+            linkTaskProvider.configure {
+                finalizedBy(bundleTask)
             }
         }
     }
@@ -211,10 +233,13 @@ kotlin {
 
 tasks.withType<KotlinNativeTest>().configureEach {
     val target = targetName?.toKonanTarget() ?: return@configureEach
-    val libPath = project(":library:kmplitert-core").file("$cInteropPath/lib/litert/${target.libDir}").absolutePath
+    val targetDir = target.libDir ?: return@configureEach
+    val coreProject = project(":library:kmplitert-core")
+    val libPathFile = coreProject.layout.projectDirectory.dir("src/nativeInterop/lib/litert/$targetDir")
+    val libPathAbs = libPathFile.asFile.absolutePath
 
     fun setEnvironment(path: String, sep: String) {
-        val value = listOfNotNull(libPath, System.getenv(path))
+        val value = listOfNotNull(libPathAbs, System.getenv(path))
         environment(name = path, value = value.joinToString(separator = sep))
     }
 
@@ -230,6 +255,10 @@ tasks.withType<KotlinNativeTest>().configureEach {
         }
         else -> {}
     }
+
+    // Fix implicit dependency: the test task uses the output of the bundle task
+    val targetPrefix = target.name.replaceFirstChar { it.uppercase() }
+    dependsOn(tasks.withType<Copy>().matching { it.name.startsWith("bundleLiteRtTo$targetPrefix") })
 }
 
 val KonanTarget.isApple: Boolean get() = when (this) {

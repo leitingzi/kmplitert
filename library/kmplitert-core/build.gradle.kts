@@ -248,25 +248,6 @@ tasks.withType<KotlinNativeTest>().configureEach {
     val libPathFile = layout.projectDirectory.dir("$cInteropPath/lib/litert/$targetDir")
     val libPathAbs = libPathFile.asFile.absolutePath
 
-    // Extract bundling to a dedicated task to be configuration-cache friendly
-    val prepareTestTaskName = "prepareLiteRtFor${name.replaceFirstChar { it.uppercase() }}"
-    val isAppleTarget = target.isApple
-    val prepareTestTask = tasks.register<Copy>(prepareTestTaskName) {
-        from(libPathFile) {
-            include("*.dylib", "*.so", "*.dll")
-        }
-        into(executable.parentFile)
-        
-        if (isAppleTarget) {
-            into("Frameworks") {
-                from(libPathFile)
-                include("*.dylib")
-            }
-        }
-    }
-    
-    dependsOn(prepareTestTask)
-
     fun setEnvironment(path: String, sep: String) {
         val value = listOfNotNull(libPathAbs, System.getenv(path))
         environment(name = path, value = value.joinToString(separator = sep))
@@ -288,6 +269,10 @@ tasks.withType<KotlinNativeTest>().configureEach {
         }
         else -> {}
     }
+
+    // Fix implicit dependency: the test task uses the output of the bundle task
+    val targetPrefix = target.name.replaceFirstChar { it.uppercase() }
+    dependsOn(tasks.withType<Copy>().matching { it.name.startsWith("bundleLiteRtTo$targetPrefix") })
 }
 
 tasks.withType<Test>().configureEach {
