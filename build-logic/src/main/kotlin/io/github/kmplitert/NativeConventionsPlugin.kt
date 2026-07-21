@@ -25,11 +25,32 @@ class NativeConventionsPlugin : Plugin<Project> {
 fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
     val coreProject = project(coreProjectPath)
     val kotlin = extensions.getByType<KotlinMultiplatformExtension>()
+    val cInteropPath = "src/nativeInterop"
 
     kotlin.targets.withType<KotlinNativeTarget>().configureEach {
+        if (konanTarget.isApple) {
+            compilations.configureEach {
+                compileTaskProvider.configure {
+                    compilerOptions {
+                        val ios = "appleMinos.ios_arm64=15.0"
+                        val iosSimulator = "appleMinos.ios_simulator_arm64=15.0"
+                        val macos = "appleMinos.macosx_arm64=12.0"
+                        freeCompilerArgs.add("-Xoverride-konan-properties=$ios;$iosSimulator;$macos")
+                    }
+                }
+            }
+        }
+
+        compilations.getByName("main").cinterops {
+            create("litert") {
+                definitionFile.set(coreProject.layout.projectDirectory.file("$cInteropPath/cinterop/litert.def"))
+                includeDirs(coreProject.layout.projectDirectory.dir("$cInteropPath/include"))
+            }
+        }
+
         binaries.all {
             val targetDir = konanTarget.libDir ?: return@all
-            val libPathFile = coreProject.layout.projectDirectory.dir("src/nativeInterop/lib/litert/$targetDir")
+            val libPathFile = coreProject.layout.projectDirectory.dir("$cInteropPath/lib/litert/$targetDir")
             val path = libPathFile.asFile.absolutePath
 
             linkerOpts("-L$path", "-lLiteRt")
@@ -68,7 +89,7 @@ fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
     tasks.withType<KotlinNativeTest>().configureEach {
         val target = targetName?.toKonanTarget() ?: return@configureEach
         val targetDir = target.libDir ?: return@configureEach
-        val libPathFile = coreProject.layout.projectDirectory.dir("src/nativeInterop/lib/litert/$targetDir")
+        val libPathFile = coreProject.layout.projectDirectory.dir("$cInteropPath/lib/litert/$targetDir")
         val libPathAbs = libPathFile.asFile.absolutePath
 
         fun setEnvironment(envPath: String, sep: String) {
@@ -92,5 +113,3 @@ fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
         dependsOn(tasks.withType<Copy>().matching { it.name.startsWith("bundleLiteRtTo$targetPrefix") })
     }
 }
-
-
