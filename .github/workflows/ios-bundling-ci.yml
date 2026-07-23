@@ -1,0 +1,45 @@
+name: iOS Bundling CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'app/shared/**'
+      - 'core/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+
+jobs:
+  verify-ios-bundling:
+    name: Verify iOS Framework Bundling
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Build iOS Simulator Framework
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:shared:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+
+      - name: Verify libLiteRt.dylib existence in Frameworks
+        run: |
+          FRAMEWORK_PATH="app/shared/build/bin/iosSimulatorArm64/debugFramework/AppCore.framework"
+          DYLIB_PATH="$FRAMEWORK_PATH/Frameworks/libLiteRt.dylib"
+          
+          if [ -f "$DYLIB_PATH" ]; then
+            echo "✅ libLiteRt.dylib found in $DYLIB_PATH"
+          else
+            echo "❌ libLiteRt.dylib NOT found in $DYLIB_PATH"
+            echo "Directory structure of $FRAMEWORK_PATH:"
+            ls -R "$FRAMEWORK_PATH"
+            exit 1
+          fi
