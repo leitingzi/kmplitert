@@ -63,7 +63,7 @@ kotlin {
                     description = ""
                     from(libPath)
                     include("*.dylib")
-                    into(linkTaskProvider.flatMap { it.destinationDirectory.map { dir -> dir.asFile.resolve("${baseName}.framework") } })
+                    into(linkTaskProvider.flatMap { it.destinationDirectory.map { dir -> dir.asFile.resolve("${baseName}.framework/Frameworks") } })
                 }
                 linkTaskProvider.configure {
                     finalizedBy(bundleTask)
