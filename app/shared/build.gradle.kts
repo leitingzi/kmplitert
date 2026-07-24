@@ -36,7 +36,7 @@ kotlin {
         ).forEach { iosTarget ->
             iosTarget.binaries.framework {
                 baseName = "AppCore"
-                isStatic = false // Changed to false to allow better dynamic linking with LiteRT
+                isStatic = false // Changed too false to allow better dynamic linking with LiteRT
 
                 // Redefine libDir mapping for LiteRT paths
                 val targetDir = when (iosTarget.konanTarget) {
@@ -63,7 +63,11 @@ kotlin {
                     description = ""
                     from(libPath)
                     include("*.dylib")
-                    into(linkTaskProvider.flatMap { it.destinationDirectory.map { dir -> dir.asFile.resolve("${baseName}.framework/Frameworks") } })
+                    into(linkTaskProvider.flatMap {
+                        it.destinationDirectory.map { dir ->
+                            dir.asFile.resolve("${baseName}.framework/Frameworks")
+                        }
+                    })
                 }
                 linkTaskProvider.configure {
                     finalizedBy(bundleTask)
