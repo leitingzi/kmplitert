@@ -44,11 +44,11 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(pixelBuffer: CVPixelBufferRef): Lit
             kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
             kCVPixelFormatType_420YpCbCr8BiPlanarFullRange -> {
                 // YUV 420 Bi-Planar (NV12/NV21)
-                val yBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0L)!!.reinterpret<ByteVar>()
-                val yBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0L).toInt()
+                val yBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0u)!!.reinterpret<ByteVar>()
+                val yBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0u).toInt()
                 
-                val uvBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1L)!!.reinterpret<ByteVar>()
-                val uvBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1L).toInt()
+                val uvBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1u)!!.reinterpret<ByteVar>()
+                val uvBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1u).toInt()
                 
                 val data = ByteArray(width * height * 3)
                 
