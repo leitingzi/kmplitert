@@ -129,19 +129,26 @@ jobs:
           xcrun simctl install "$DEVICE_ID" "$APP_PATH"
           
           # 5. Launch the app
+          # First, verify the installed bundle ID
+          echo "Installed applications:"
+          xcrun simctl listapps "$DEVICE_ID" | grep "com.leitz" || true
+          
           BUNDLE_ID="com.leitz.kmplitert.kmplitert"
           echo "Launching app: $BUNDLE_ID"
+          # Launch and capture the output
           xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
           
           # 6. Wait and verify stability
           echo "Waiting 15 seconds to verify app stability..."
           sleep 15
           
-          # Check if the app process is still running
-          if xcrun simctl spawn "$DEVICE_ID" ps aux | grep "$BUNDLE_ID" | grep -v grep; then
-            echo "✅ App is still running after 15 seconds."
+          # Check if the app process is still running using launchctl
+          if xcrun simctl spawn "$DEVICE_ID" launchctl list | grep "$BUNDLE_ID"; then
+            echo "✅ App is still running (found in launchctl)."
           else
-            echo "❌ App process not found. It might have crashed on startup."
+            echo "❌ App process not found in launchctl. It might have crashed on startup."
+            echo "--- Simulator System Logs (last 50 lines) ---"
+            xcrun simctl spawn "$DEVICE_ID" log show --last 1m | tail -n 50
             exit 1
           fi
           
