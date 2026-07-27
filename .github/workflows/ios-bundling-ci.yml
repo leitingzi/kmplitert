@@ -144,21 +144,34 @@ jobs:
           
           BUNDLE_ID="com.leitz.kmplitert.kmplitert"
           echo "Launching app: $BUNDLE_ID"
-          # Launch and capture the output (contains PID)
-          xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
+          # Launch and capture the output which contains the PID
+          LAUNCH_OUTPUT=$(xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID")
+          echo "$LAUNCH_OUTPUT"
+          
+          # Extract PID from output like "com.leitz.kmplitert.kmplitert: 15483"
+          APP_PID=$(echo "$LAUNCH_OUTPUT" | awk -F': ' '{print $2}')
+          
+          if [ -z "$APP_PID" ]; then
+            echo "❌ Failed to capture App PID."
+            exit 1
+          fi
+          echo "✅ App launched with PID: $APP_PID"
           
           # 6. Wait and verify stability
           echo "Waiting 15 seconds to verify app stability..."
           sleep 15
           
-          # Check if the app process is still running using launchctl
-          if xcrun simctl spawn "$DEVICE_ID" launchctl list | grep "$BUNDLE_ID"; then
-            echo "✅ App is still running (found in launchctl)."
+          # Check if the app process is still running using ps on the host
+          if ps -p "$APP_PID" > /dev/null; then
+            echo "✅ App is still running (PID $APP_PID found in host process list)."
           else
-            echo "❌ App process not found in launchctl. It might have crashed on startup."
+            echo "❌ App process $APP_PID not found. It might have crashed on startup."
             echo "--- Simulator Crash Diagnostics (dyld / App Specific) ---"
-            # Filter logs for dyld errors or app-specific messages
-            xcrun simctl spawn "$DEVICE_ID" log show --last 1m --predicate 'senderImagePath contains "dyld" OR process == "kmplitert"' | tail -n 100
+            # Filter logs for errors or app-specific messages
+            xcrun simctl spawn "$DEVICE_ID" log show --last 1m --predicate 'messageType == error OR process == "kmplitert"' | tail -n 100
+            
+            echo "--- Checking for Crash Reports ---"
+            ls -lt ~/Library/Logs/DiagnosticReports/ | grep "kmplitert" || echo "No recent crash reports found."
             exit 1
           fi
           
