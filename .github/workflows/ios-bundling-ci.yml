@@ -79,8 +79,45 @@ jobs:
                      -scheme iosApp \
                      -configuration Debug \
                      -sdk iphonesimulator \
+                     -derivedDataPath build \
                      -destination 'platform=iOS Simulator,name=iPhone 17' \
                      build \
                      CODE_SIGNING_ALLOWED=NO
         env:
           JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Run iOS App (Smoke Test)
+        run: |
+          # 1. Boot the simulator
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 17" | grep -v "unavailable" | head -1 | awk -F '[()]' '{print $2}')
+          echo "Booting simulator with ID: $DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID" || true
+          
+          # Wait for simulator to be ready
+          xcrun simctl waitstatus "$DEVICE_ID" booted
+          
+          # 2. Install the app
+          APP_PATH="build/Build/Products/Debug-iphonesimulator/iosApp.app"
+          echo "Installing app from: $APP_PATH"
+          xcrun simctl install "$DEVICE_ID" "$APP_PATH"
+          
+          # 3. Launch the app
+          BUNDLE_ID="com.leitz.kmplitert.kmplitert"
+          echo "Launching app: $BUNDLE_ID"
+          xcrun simctl launch --console "$DEVICE_ID" "$BUNDLE_ID" &
+          
+          # 4. Wait and verify
+          sleep 15
+          
+          # Check if the app process is still running
+          if xcrun simctl spawn "$DEVICE_ID" ps aux | grep -v grep | grep "$BUNDLE_ID"; then
+            echo "✅ App launched successfully and is still running."
+          else
+            echo "❌ App failed to stay running. It might have crashed."
+            # Optional: collect crash logs if needed
+            exit 1
+          fi
+          
+          # 5. Cleanup
+          xcrun simctl terminate "$DEVICE_ID" "$BUNDLE_ID"
+          xcrun simctl shutdown "$DEVICE_ID"
