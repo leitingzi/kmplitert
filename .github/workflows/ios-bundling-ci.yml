@@ -113,13 +113,14 @@ jobs:
           
           # 4. Find and Install the app
           echo "Locating the built app bundle..."
-          # Use find to locate the .app directory within the build folder
-          APP_PATH=$(find build -name "iosApp.app" -type d | head -1)
+          # Use find to locate any .app directory within the build folder, 
+          # excluding those inside other bundles (if any)
+          APP_PATH=$(find build/Build/Products -name "*.app" -type d -maxdepth 2 | head -1)
           
           if [ -z "$APP_PATH" ]; then
-            echo "❌ Could not find iosApp.app in the build directory."
-            echo "Listing contents of build directory for debugging:"
-            ls -R build
+            echo "❌ Could not find any .app bundle in the build directory."
+            echo "Listing contents of build/Build/Products for debugging:"
+            ls -R build/Build/Products
             exit 1
           fi
           
