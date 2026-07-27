@@ -92,9 +92,13 @@ jobs:
           echo "Listing all available simulators..."
           xcrun simctl list devices
           
-          # 2. Extract Device ID for iPhone 17
-          # The format is usually "Name (UDID) (Status)"
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 17" | grep -v "unavailable" | head -1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+          # 2. Extract Device ID for iPhone 17 (exact match preferred)
+          DEVICE_ID=$(xcrun simctl list devices | grep -E " iPhone 17 \(" | grep -v "unavailable" | head -1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+          
+          if [ -z "$DEVICE_ID" ]; then
+            echo "Could not find exact iPhone 17, falling back to any variant..."
+            DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 17" | grep -v "unavailable" | head -1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+          fi
           
           if [ -z "$DEVICE_ID" ]; then
             echo "❌ Could not find a valid iPhone 17 simulator ID."
@@ -103,12 +107,11 @@ jobs:
           
           echo "✅ Using simulator with ID: $DEVICE_ID"
           
-          # 3. Boot the simulator
-          xcrun simctl boot "$DEVICE_ID" || true
-          
-          # Wait for simulator to be fully booted
-          echo "Waiting for simulator to boot..."
-          xcrun simctl bootstatus "$DEVICE_ID" -w
+          # 3. Boot and wait for simulator
+          echo "Booting and waiting for simulator..."
+          # Note: -w is not supported in some versions, bootstatus waits by default.
+          # -b boots the device if it's not already booted.
+          xcrun simctl bootstatus "$DEVICE_ID" -b
           
           # 4. Install the app
           APP_PATH="build/Build/Products/Debug-iphonesimulator/iosApp.app"
@@ -129,8 +132,6 @@ jobs:
             echo "✅ App is still running after 15 seconds."
           else
             echo "❌ App process not found. It might have crashed on startup."
-            # Optionally list system logs if needed
-            # xcrun simctl spawn "$DEVICE_ID" log show --last 1m --predicate 'process == "iosApp"'
             exit 1
           fi
           
