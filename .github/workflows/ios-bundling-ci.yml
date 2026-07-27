@@ -51,7 +51,13 @@ jobs:
           ./gradlew :core:iosSimulatorArm64Test :tool:iosSimulatorArm64Test --no-daemon
 
       - name: Build iOS Framework
-        run: ./gradlew :app:shared:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+        run: |
+          chmod +x gradlew
+          # Verify source dylibs exist before building
+          ls -R core/src/nativeInterop/lib/litert/ios/sim-arm64
+          
+          # Run the link task and bundling task together to ensure correct output directory resolution
+          ./gradlew :app:shared:linkDebugFrameworkIosSimulatorArm64 :app:shared:bundleLiteRtToIosSimulatorArm64Debug --no-daemon
 
       - name: Verify libLiteRt.dylib existence in Framework
         run: |
