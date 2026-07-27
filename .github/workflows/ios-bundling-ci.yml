@@ -109,13 +109,22 @@ jobs:
           
           # 3. Boot and wait for simulator
           echo "Booting and waiting for simulator..."
-          # Note: -w is not supported in some versions, bootstatus waits by default.
-          # -b boots the device if it's not already booted.
           xcrun simctl bootstatus "$DEVICE_ID" -b
           
-          # 4. Install the app
-          APP_PATH="build/Build/Products/Debug-iphonesimulator/iosApp.app"
-          echo "Installing app from: $APP_PATH"
+          # 4. Find and Install the app
+          echo "Locating the built app bundle..."
+          # Use find to locate the .app directory within the build folder
+          APP_PATH=$(find build -name "iosApp.app" -type d | head -1)
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ Could not find iosApp.app in the build directory."
+            echo "Listing contents of build directory for debugging:"
+            ls -R build
+            exit 1
+          fi
+          
+          echo "✅ Found app at: $APP_PATH"
+          echo "Installing app..."
           xcrun simctl install "$DEVICE_ID" "$APP_PATH"
           
           # 5. Launch the app
