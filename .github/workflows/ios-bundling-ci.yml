@@ -88,36 +88,52 @@ jobs:
 
       - name: Run iOS App (Smoke Test)
         run: |
-          # 1. Boot the simulator
-          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 17" | grep -v "unavailable" | head -1 | awk -F '[()]' '{print $2}')
-          echo "Booting simulator with ID: $DEVICE_ID"
+          # 1. Debug: List all available devices
+          echo "Listing all available simulators..."
+          xcrun simctl list devices
+          
+          # 2. Extract Device ID for iPhone 17
+          # The format is usually "Name (UDID) (Status)"
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone 17" | grep -v "unavailable" | head -1 | sed -E 's/.*\(([0-9A-F-]+)\).*/\1/')
+          
+          if [ -z "$DEVICE_ID" ]; then
+            echo "❌ Could not find a valid iPhone 17 simulator ID."
+            exit 1
+          fi
+          
+          echo "✅ Using simulator with ID: $DEVICE_ID"
+          
+          # 3. Boot the simulator
           xcrun simctl boot "$DEVICE_ID" || true
           
-          # Wait for simulator to be ready
-          xcrun simctl waitstatus "$DEVICE_ID" booted
+          # Wait for simulator to be fully booted
+          echo "Waiting for simulator to boot..."
+          xcrun simctl bootstatus "$DEVICE_ID" -w
           
-          # 2. Install the app
+          # 4. Install the app
           APP_PATH="build/Build/Products/Debug-iphonesimulator/iosApp.app"
           echo "Installing app from: $APP_PATH"
           xcrun simctl install "$DEVICE_ID" "$APP_PATH"
           
-          # 3. Launch the app
+          # 5. Launch the app
           BUNDLE_ID="com.leitz.kmplitert.kmplitert"
           echo "Launching app: $BUNDLE_ID"
-          xcrun simctl launch --console "$DEVICE_ID" "$BUNDLE_ID" &
+          xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
           
-          # 4. Wait and verify
+          # 6. Wait and verify stability
+          echo "Waiting 15 seconds to verify app stability..."
           sleep 15
           
           # Check if the app process is still running
-          if xcrun simctl spawn "$DEVICE_ID" ps aux | grep -v grep | grep "$BUNDLE_ID"; then
-            echo "✅ App launched successfully and is still running."
+          if xcrun simctl spawn "$DEVICE_ID" ps aux | grep "$BUNDLE_ID" | grep -v grep; then
+            echo "✅ App is still running after 15 seconds."
           else
-            echo "❌ App failed to stay running. It might have crashed."
-            # Optional: collect crash logs if needed
+            echo "❌ App process not found. It might have crashed on startup."
+            # Optionally list system logs if needed
+            # xcrun simctl spawn "$DEVICE_ID" log show --last 1m --predicate 'process == "iosApp"'
             exit 1
           fi
           
-          # 5. Cleanup
+          # 7. Cleanup
           xcrun simctl terminate "$DEVICE_ID" "$BUNDLE_ID"
           xcrun simctl shutdown "$DEVICE_ID"
