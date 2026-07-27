@@ -125,6 +125,15 @@ jobs:
           fi
           
           echo "✅ Found app at: $APP_PATH"
+          
+          # Diagnostic: Check embedded Frameworks
+          echo "Checking embedded Frameworks in .app bundle..."
+          if [ -d "$APP_PATH/Frameworks" ]; then
+            ls -R "$APP_PATH/Frameworks"
+          else
+            echo "⚠️ No Frameworks directory found in .app bundle."
+          fi
+          
           echo "Installing app..."
           xcrun simctl install "$DEVICE_ID" "$APP_PATH"
           
@@ -135,7 +144,7 @@ jobs:
           
           BUNDLE_ID="com.leitz.kmplitert.kmplitert"
           echo "Launching app: $BUNDLE_ID"
-          # Launch and capture the output
+          # Launch and capture the output (contains PID)
           xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
           
           # 6. Wait and verify stability
@@ -147,8 +156,9 @@ jobs:
             echo "✅ App is still running (found in launchctl)."
           else
             echo "❌ App process not found in launchctl. It might have crashed on startup."
-            echo "--- Simulator System Logs (last 50 lines) ---"
-            xcrun simctl spawn "$DEVICE_ID" log show --last 1m | tail -n 50
+            echo "--- Simulator Crash Diagnostics (dyld / App Specific) ---"
+            # Filter logs for dyld errors or app-specific messages
+            xcrun simctl spawn "$DEVICE_ID" log show --last 1m --predicate 'senderImagePath contains "dyld" OR process == "kmplitert"' | tail -n 100
             exit 1
           fi
           
