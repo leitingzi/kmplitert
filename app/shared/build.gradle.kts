@@ -70,9 +70,9 @@ kotlin {
                     })
                 }
 
-                // Ensure the Xcode assembly task depends on our bundling task
+                // Ensure the Xcode assembly and embedding tasks depend on our bundling task
                 tasks.matching {
-                    it.name.startsWith("assemble") && 
+                    (it.name.startsWith("assemble") || it.name.startsWith("embedAndSign")) && 
                     it.name.contains(iosTarget.name, ignoreCase = true) &&
                     it.name.contains("AppleFrameworkForXcode")
                 }.configureEach {

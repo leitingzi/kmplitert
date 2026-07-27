@@ -82,3 +82,5 @@ jobs:
                      -destination 'platform=iOS Simulator,name=iPhone 17' \
                      build \
                      CODE_SIGNING_ALLOWED=NO
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
