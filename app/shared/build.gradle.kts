@@ -60,7 +60,7 @@ kotlin {
                 // Copy the dylibs into the framework output directory using a dedicated task to be configuration-cache friendly
                 val bundleTaskName = "bundleLiteRtTo${iosTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
                 val bundleTask = tasks.register<Copy>(bundleTaskName) {
-                    description = ""
+                    dependsOn(linkTaskProvider)
                     from(libPath)
                     include("*.dylib")
                     into(linkTaskProvider.flatMap {
@@ -69,8 +69,14 @@ kotlin {
                         }
                     })
                 }
-                linkTaskProvider.configure {
-                    finalizedBy(bundleTask)
+
+                // Ensure the Xcode assembly task depends on our bundling task
+                tasks.matching {
+                    it.name.startsWith("assemble") && 
+                    it.name.contains(iosTarget.name, ignoreCase = true) &&
+                    it.name.contains("AppleFrameworkForXcode")
+                }.configureEach {
+                    dependsOn(bundleTask)
                 }
             }
         }
