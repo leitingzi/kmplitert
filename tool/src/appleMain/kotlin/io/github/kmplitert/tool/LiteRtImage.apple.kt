@@ -13,9 +13,10 @@ internal actual fun fromVideoFrameNative(
     rotation: LiteRtRotation,
     flip: LiteRtFlip
 ): LiteRtImage {
-    @Suppress("CANNOT_CHECK_FOR_ERASED_TYPE")
-    if (frame is CVPixelBufferRef) {
-        return LiteRtImage.Companion.fromIosPixelBuffer(frame, rotation, flip)
+    @Suppress("UNCHECKED_CAST")
+    val ptr = frame as? CPointer<out CPointed>
+    if (ptr != null) {
+        return LiteRtImage.Companion.fromIosPixelBuffer(ptr.reinterpret(), rotation, flip)
     }
     return fromPlatformImage(frame, rotation, flip)
 }
@@ -131,12 +132,9 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
 
             when (rotation) {
                 LiteRtRotation.ROTATION_90 -> {
-                    val backColor = nativeHeap.allocArray<UByteVar>(4)
-                    vImageRotate90_ARGB8888(argbBuffer.ptr, finalBuffer.ptr, 0u, backColor, kvImageNoFlags)
-                    nativeHeap.free(backColor)
+                    vImageRotate90_ARGB8888(argbBuffer.ptr, finalBuffer.ptr, 0u, null, kvImageNoFlags)
                 }
                 LiteRtRotation.ROTATION_180 -> {
-                    val backColor = nativeHeap.allocArray<UByteVar>(4)
                     val tempData = nativeHeap.allocArray<ByteVar>(width * height * 4)
                     val tempBuffer = alloc<vImage_Buffer>().apply {
                         this.data = tempData
@@ -144,13 +142,11 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                         this.height = height.convert()
                         this.rowBytes = (width * 4).convert()
                     }
-                    vImageRotate90_ARGB8888(argbBuffer.ptr, tempBuffer.ptr, 0u, backColor, kvImageNoFlags)
-                    vImageRotate90_ARGB8888(tempBuffer.ptr, finalBuffer.ptr, 0u, backColor, kvImageNoFlags)
+                    vImageRotate90_ARGB8888(argbBuffer.ptr, tempBuffer.ptr, 0u, null, kvImageNoFlags)
+                    vImageRotate90_ARGB8888(tempBuffer.ptr, finalBuffer.ptr, 0u, null, kvImageNoFlags)
                     nativeHeap.free(tempData)
-                    nativeHeap.free(backColor)
                 }
                 LiteRtRotation.ROTATION_270 -> {
-                    val backColor = nativeHeap.allocArray<UByteVar>(4)
                     // 270 = 90 * 3
                     val temp1Data = nativeHeap.allocArray<ByteVar>(targetWidth * targetHeight * 4)
                     val temp1Buffer = alloc<vImage_Buffer>().apply {
@@ -166,12 +162,11 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                         this.height = height.convert()
                         this.rowBytes = (width * 4).convert()
                     }
-                    vImageRotate90_ARGB8888(argbBuffer.ptr, temp1Buffer.ptr, 0u, backColor, kvImageNoFlags)
-                    vImageRotate90_ARGB8888(temp1Buffer.ptr, temp2Buffer.ptr, 0u, backColor, kvImageNoFlags)
-                    vImageRotate90_ARGB8888(temp2Buffer.ptr, finalBuffer.ptr, 0u, backColor, kvImageNoFlags)
+                    vImageRotate90_ARGB8888(argbBuffer.ptr, temp1Buffer.ptr, 0u, null, kvImageNoFlags)
+                    vImageRotate90_ARGB8888(temp1Buffer.ptr, temp2Buffer.ptr, 0u, null, kvImageNoFlags)
+                    vImageRotate90_ARGB8888(temp2Buffer.ptr, finalBuffer.ptr, 0u, null, kvImageNoFlags)
                     nativeHeap.free(temp1Data)
                     nativeHeap.free(temp2Data)
-                    nativeHeap.free(backColor)
                 }
                 else -> vImageCopyBuffer(argbBuffer.ptr, finalBuffer.ptr, 4.convert(), kvImageNoFlags)
             }

@@ -31,9 +31,9 @@ private fun UIImage.toRgbBytes(): ByteArray? {
     val bitsPerComponent = 8uL
     val bitmapInfo = (CGImageAlphaInfo.kCGImageAlphaNoneSkipLast.value or kCGBitmapByteOrder32Big.toUInt())
     
-    val dataSize = (width * height * bytesPerPixel).toLong()
+    val dataSize = (width.toLong() * height.toLong() * bytesPerPixel.toLong())
     val data = nativeHeap.allocArray<UByteVar>(dataSize)
-    val context = CGBitmapContextCreate(data, width.convert(), height.convert(), bitsPerComponent, bytesPerRow, colorSpace, bitmapInfo)
+    val context = CGBitmapContextCreate(data, width.convert(), height.convert(), bitsPerComponent.convert(), bytesPerRow.convert(), colorSpace, bitmapInfo)
     
     if (context == null) {
         nativeHeap.free(data)
@@ -44,8 +44,8 @@ private fun UIImage.toRgbBytes(): ByteArray? {
     this.drawInRect(CGRectMake(0.0, 0.0, width.toDouble(), height.toDouble()))
     UIGraphicsPopContext()
     
-    val result = ByteArray((width * height * 3).toInt())
-    for (i in 0 until (width * height).toInt()) {
+    val result = ByteArray((width.toLong() * height.toLong() * 3L).toInt())
+    for (i in 0 until (width.toLong() * height.toLong()).toInt()) {
         result[i * 3] = data[i * 4 + 1].toByte()     // R
         result[i * 3 + 1] = data[i * 4 + 2].toByte() // G
         result[i * 3 + 2] = data[i * 4 + 3].toByte() // B
