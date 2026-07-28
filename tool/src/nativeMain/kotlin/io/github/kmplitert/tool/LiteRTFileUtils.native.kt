@@ -10,21 +10,21 @@ import platform.posix.*
 actual object LiteRTFileUtils {
     @OptIn(ExperimentalForeignApi::class)
     actual fun createFileFromByteArray(data: ByteArray, fileName: String): String {
-        val file = fopen(fileName, "wb") ?: throw IllegalStateException("Failed to open file $fileName for writing")
+        val fullPath = getWritablePath(fileName)
+        val file = fopen(fullPath, "wb") ?: throw IllegalStateException("Failed to open file $fullPath for writing")
         try {
             data.usePinned { pinned ->
                 val written = fwrite(pinned.addressOf(0), 1.toULong(), data.size.toULong(), file)
                 if (written != data.size.toULong()) {
-                    throw IllegalStateException("Failed to write all data to $fileName")
+                    throw IllegalStateException("Failed to write all data to $fullPath")
                 }
             }
         } finally {
             fclose(file)
         }
         
-        // Return absolute path if possible, but for simple native, relative might be all we have
-        // unless we use platform specific ways to get absolute path.
-        // For now, return the filename as is.
-        return fileName
+        return fullPath
     }
 }
+
+internal expect fun getWritablePath(fileName: String): String

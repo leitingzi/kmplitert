@@ -167,5 +167,3 @@ kotlin {
         }
     }
 }
-
-// Extension and helpers moved to build-logic
