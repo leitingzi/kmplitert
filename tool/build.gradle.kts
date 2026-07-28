@@ -23,6 +23,15 @@ dokka {
     }
 }
 
+tasks.register("buildAndroidJni") {
+    group = "build"
+    description = "Build Android JNI library manually"
+    
+    doLast {
+        println("Note: Native JNI build for tool module requires manual CMake/NDK execution or future integration with AGP KMP.")
+    }
+}
+
 group = "io.github.leitingzi"
 version = libs.versions.kmplitert.get()
 

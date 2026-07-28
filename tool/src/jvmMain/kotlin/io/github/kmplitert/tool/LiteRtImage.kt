@@ -3,7 +3,6 @@
 package io.github.kmplitert.tool
 
 import io.github.kmplitert.core.TFBuffer
-import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
@@ -245,6 +244,50 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
          */
         fun fromBufferedImage(bufferedImage: BufferedImage): LiteRtImage {
             return LiteRtImage(bufferedImage)
+        }
+
+        /**
+         * Creates a [LiteRtImage] from a raw YUV/NV21 [java.nio.ByteBuffer].
+         */
+        fun fromYuvByteBuffer(
+            buffer: java.nio.ByteBuffer,
+            width: Int,
+            height: Int,
+            rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
+            flip: LiteRtFlip = LiteRtFlip()
+        ): LiteRtImage {
+            // JVM implementation using pure Java/Kotlin for now, 
+            // but can be optimized with JNI or Vector API if needed.
+            val data = ByteArray(buffer.remaining())
+            buffer.get(data)
+            
+            // Basic NV21 to RGB conversion
+            val pixels = IntArray(width * height)
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    val yIndex = y * width + x
+                    val uvIndex = width * height + (y / 2) * width + (x / 2) * 2
+                    
+                    val yValue = data[yIndex].toInt() and 0xFF
+                    val vValue = (data[uvIndex].toInt() and 0xFF) - 128
+                    val uValue = (data[uvIndex + 1].toInt() and 0xFF) - 128
+                    
+                    val r = (yValue + 1.370705f * vValue).toInt().coerceIn(0, 255)
+                    val g = (yValue - 0.337633f * uValue - 0.698001f * vValue).toInt().coerceIn(0, 255)
+                    val b = (yValue + 1.732446f * uValue).toInt().coerceIn(0, 255)
+                    
+                    pixels[y * width + x] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+                }
+            }
+            
+            val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+            bufferedImage.setRGB(0, 0, width, height, pixels, 0, width)
+            
+            var image = LiteRtImage(bufferedImage)
+            if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+            if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+            
+            return image
         }
     }
 }

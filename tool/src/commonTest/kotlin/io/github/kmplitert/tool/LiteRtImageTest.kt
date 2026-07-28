@@ -108,6 +108,21 @@ class LiteRtImageTest : PlatformTest() {
     }
 
     @Test
+    fun testRotationEnum() {
+        assertEquals(0, LiteRtRotation.ROTATION_0.degrees)
+        assertEquals(90, LiteRtRotation.ROTATION_90.degrees)
+        assertEquals(180, LiteRtRotation.ROTATION_180.degrees)
+        assertEquals(270, LiteRtRotation.ROTATION_270.degrees)
+    }
+
+    @Test
+    fun testFlipDataClass() {
+        val flip = LiteRtFlip(horizontal = true, vertical = true)
+        assertTrue(flip.horizontal)
+        assertTrue(flip.vertical)
+    }
+
+    @Test
     fun testBufferWrites() {
         val image = createDummyImage(2, 2, 3)
         val mockBuffer = MockTFBuffer()
