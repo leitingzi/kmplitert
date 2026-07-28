@@ -227,6 +227,33 @@ actual class LiteRtImage(internal val bitmap: Bitmap, private val _channels: Int
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
             return LiteRtImage(bitmap = bitmap)
         }
+
+        actual fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation,
+            flip: LiteRtFlip
+        ): LiteRtImage {
+            return when (frame) {
+                is Image -> fromAndroidImage(frame, rotation, flip)
+                is Bitmap -> {
+                    var image = LiteRtImage(frame)
+                    if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+                    if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+                    image
+                }
+                else -> {
+                    // Try to handle ImageProxy via reflection to avoid direct dependency
+                    try {
+                        val imageMethod = frame.javaClass.getMethod("getImage")
+                        val image = imageMethod.invoke(frame) as? Image
+                        if (image != null) return fromAndroidImage(image, rotation, flip)
+                    } catch (e: Exception) {
+                        // Not an ImageProxy or reflection failed
+                    }
+                    throw IllegalArgumentException("Unsupported frame type: ${frame.javaClass.name}")
+                }
+            }
+        }
     }
 }
 

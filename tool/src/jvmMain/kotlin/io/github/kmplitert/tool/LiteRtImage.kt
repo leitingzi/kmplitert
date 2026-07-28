@@ -30,8 +30,6 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
 
     actual fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage {
         val croppedImage = bufferedImage.getSubimage(x, y, width, height)
-        // getSubimage returns a shared image, we might want a copy to be safe, but for now this is fine.
-        // Actually, for consistency with other platforms, a copy might be better.
         val copy = BufferedImage(width, height, bufferedImage.type.let { if (it == 0) BufferedImage.TYPE_INT_ARGB else it })
         val g = copy.createGraphics()
         g.drawImage(croppedImage, 0, 0, null)
@@ -104,8 +102,6 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
                         floatArray[index++] = ((rgb shr 24 and 0xFF).toFloat() - mean) / std
                     }
                 } else if (c == 1) {
-                    // For grayscale, BufferedImage usually returns the gray value in R, G, and B if it's TYPE_BYTE_GRAY
-                    // or we can just take one.
                     floatArray[index++] = ((rgb and 0xFF).toFloat() - mean) / std
                 }
             }
@@ -239,6 +235,25 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
             return LiteRtImage(bufferedImage)
         }
 
+        actual fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation,
+            flip: LiteRtFlip
+        ): LiteRtImage {
+            return when (frame) {
+                is BufferedImage -> {
+                    var image = LiteRtImage(frame)
+                    if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+                    if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+                    image
+                }
+                is java.nio.ByteBuffer -> {
+                    fromYuvByteBuffer(frame, 640, 480, rotation, flip)
+                }
+                else -> throw IllegalArgumentException("Unsupported frame type on JVM: ${frame.javaClass.name}")
+            }
+        }
+
         /**
          * Creates a [LiteRtImage] from a [java.awt.image.BufferedImage].
          */
@@ -256,12 +271,9 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
             rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
             flip: LiteRtFlip = LiteRtFlip()
         ): LiteRtImage {
-            // JVM implementation using pure Java/Kotlin for now, 
-            // but can be optimized with JNI or Vector API if needed.
             val data = ByteArray(buffer.remaining())
             buffer.get(data)
             
-            // Basic NV21 to RGB conversion
             val pixels = IntArray(width * height)
             for (y in 0 until height) {
                 for (x in 0 until width) {
