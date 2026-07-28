@@ -289,7 +289,7 @@ fun LiteRtImage.Companion.fromAndroidImage(
     
     val bitmap = createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
     
-    if (isNativeLibraryLoaded) {
+    if (isNativeLibraryLoaded && yBuffer.isDirect && uBuffer.isDirect && vBuffer.isDirect) {
         nativeConvertYUV(
             yBuffer, yPlane.rowStride,
             uBuffer, vBuffer, uPlane.rowStride, uPlane.pixelStride,
@@ -297,21 +297,24 @@ fun LiteRtImage.Companion.fromAndroidImage(
             rotation.degrees, flip.horizontal, flip.vertical
         )
     } else {
-        // Fallback to Kotlin implementation (Optimized version of previous implementation)
+        // Fallback to Kotlin implementation
         val pixels = IntArray(targetWidth * targetHeight)
         val yRowStride = yPlane.rowStride
         val uvRowStride = uPlane.rowStride
         val uvPixelStride = uPlane.pixelStride
         
-        // This is slow but ensure functionality when native lib is missing
+        val yLimit = yBuffer.limit()
+        val uLimit = uBuffer.limit()
+        val vLimit = vBuffer.limit()
+        
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val yIndex = y * yRowStride + x
                 val uvIndex = (y / 2) * uvRowStride + (x / 2) * uvPixelStride
 
-                val yValue = (if (yBuffer.remaining() > yIndex) yBuffer.get(yIndex).toInt() else 0) and 0xFF
-                val uValue = ((if (uBuffer.remaining() > uvIndex) uBuffer.get(uvIndex).toInt() else 0) and 0xFF) - 128
-                val vValue = ((if (vBuffer.remaining() > uvIndex) vBuffer.get(uvIndex).toInt() else 0) and 0xFF) - 128
+                val yValue = (if (yIndex < yLimit) yBuffer.get(yIndex).toInt() else 0) and 0xFF
+                val uValue = ((if (uvIndex < uLimit) uBuffer.get(uvIndex).toInt() else 0) and 0xFF) - 128
+                val vValue = ((if (uvIndex < vLimit) vBuffer.get(uvIndex).toInt() else 0) and 0xFF) - 128
 
                 val r = (yValue + 1.370705f * vValue).toInt().coerceIn(0, 255)
                 val g = (yValue - 0.337633f * uValue - 0.698001f * vValue).toInt().coerceIn(0, 255)

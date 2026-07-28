@@ -248,7 +248,7 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
                     image
                 }
                 is java.nio.ByteBuffer -> {
-                    fromYuvByteBuffer(frame, 640, 480, rotation, flip)
+                    fromYuvByteBuffer(frame, 640, 480, true, rotation, flip)
                 }
                 else -> throw IllegalArgumentException("Unsupported frame type on JVM: ${frame.javaClass.name}")
             }
@@ -262,12 +262,18 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
         }
 
         /**
-         * Creates a [LiteRtImage] from a raw YUV/NV21 [java.nio.ByteBuffer].
+         * Creates a [LiteRtImage] from a raw YUV/NV21 or NV12 [java.nio.ByteBuffer].
+         * 
+         * @param buffer The YUV data buffer.
+         * @param width The image width.
+         * @param height The image height.
+         * @param isNV21 True if the format is NV21 (V then U), false if NV12 (U then V).
          */
         fun fromYuvByteBuffer(
             buffer: java.nio.ByteBuffer,
             width: Int,
             height: Int,
+            isNV21: Boolean = true,
             rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
             flip: LiteRtFlip = LiteRtFlip()
         ): LiteRtImage {
@@ -281,8 +287,16 @@ actual class LiteRtImage(internal val bufferedImage: BufferedImage, private val 
                     val uvIndex = width * height + (y / 2) * width + (x / 2) * 2
                     
                     val yValue = data[yIndex].toInt() and 0xFF
-                    val vValue = (data[uvIndex].toInt() and 0xFF) - 128
-                    val uValue = (data[uvIndex + 1].toInt() and 0xFF) - 128
+                    
+                    val uValue: Int
+                    val vValue: Int
+                    if (isNV21) {
+                        vValue = (data[uvIndex].toInt() and 0xFF) - 128
+                        uValue = (data[uvIndex + 1].toInt() and 0xFF) - 128
+                    } else {
+                        uValue = (data[uvIndex].toInt() and 0xFF) - 128
+                        vValue = (data[uvIndex + 1].toInt() and 0xFF) - 128
+                    }
                     
                     val r = (yValue + 1.370705f * vValue).toInt().coerceIn(0, 255)
                     val g = (yValue - 0.337633f * uValue - 0.698001f * vValue).toInt().coerceIn(0, 255)

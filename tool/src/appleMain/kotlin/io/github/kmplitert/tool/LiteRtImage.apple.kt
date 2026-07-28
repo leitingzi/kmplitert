@@ -34,64 +34,83 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
     rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
     flip: LiteRtFlip = LiteRtFlip()
 ): LiteRtImage {
+    val pixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer)
     CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly)
     try {
         val width = CVPixelBufferGetWidth(pixelBuffer).toInt()
         val height = CVPixelBufferGetHeight(pixelBuffer).toInt()
 
         memScoped {
-            val srcYPtr = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0u)
-            val srcYRowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0u)
-            val srcUVPtr = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1u)
-            val srcUVRowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1u)
-
-            val srcBufferY = alloc<vImage_Buffer>().apply {
-                data = srcYPtr
-                width = width.toULong()
-                height = height.toULong()
-                rowBytes = srcYRowBytes
-            }
-            val srcBufferUV = alloc<vImage_Buffer>().apply {
-                data = srcUVPtr
-                width = (width / 2).toULong()
-                height = (height / 2).toULong()
-                rowBytes = srcUVRowBytes
-            }
-
             val argbData = nativeHeap.allocArray<ByteVar>(width * height * 4)
             val argbBuffer = alloc<vImage_Buffer>().apply {
                 data = argbData
-                width = width.toULong()
-                height = height.toULong()
+                this.width = width.toULong()
+                this.height = height.toULong()
                 rowBytes = (width * 4).toULong()
             }
 
-            val infoYUV = alloc<vImage_YpCbCrToARGB>()
-            val pixelRange = alloc<vImage_YpCbCrPixelRange>().apply {
-                Yp_bias = 16
-                CbCr_bias = 128
-                YpScale = 219
-                CbCrScale = 224
-            }
-            
-            vImageConvert_YpCbCrToARGB_GenerateConversion(
-                kvImage_YpCbCrToARGBMatrix_ITU_R_601_4,
-                pixelRange.ptr,
-                infoYUV.ptr,
-                kvImage420Yp8_CbCr8,
-                kvImageARGB8888,
-                kvImageNoFlags
-            )
+            if (pixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange ||
+                pixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            ) {
+                val srcYPtr = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0u)
+                val srcYRowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0u)
+                val srcUVPtr = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1u)
+                val srcUVRowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1u)
 
-            vImageConvert_420Yp8_CbCr8ToARGB8888(
-                srcBufferY.ptr,
-                srcBufferUV.ptr,
-                argbBuffer.ptr,
-                infoYUV.ptr,
-                null,
-                255u,
-                kvImageNoFlags
-            )
+                val srcBufferY = alloc<vImage_Buffer>().apply {
+                    data = srcYPtr
+                    this.width = width.toULong()
+                    this.height = height.toULong()
+                    rowBytes = srcYRowBytes
+                }
+                val srcBufferUV = alloc<vImage_Buffer>().apply {
+                    data = srcUVPtr
+                    this.width = (width / 2).toULong()
+                    this.height = (height / 2).toULong()
+                    rowBytes = srcUVRowBytes
+                }
+
+                val infoYUV = alloc<vImage_YpCbCrToARGB>()
+                val pixelRange = alloc<vImage_YpCbCrPixelRange>().apply {
+                    Yp_bias = 16
+                    CbCr_bias = 128
+                    YpScale = 219
+                    CbCrScale = 224
+                }
+
+                vImageConvert_YpCbCrToARGB_GenerateConversion(
+                    kvImage_YpCbCrToARGBMatrix_ITU_R_601_4,
+                    pixelRange.ptr,
+                    infoYUV.ptr,
+                    kvImage420Yp8_CbCr8,
+                    kvImageARGB8888,
+                    kvImageNoFlags
+                )
+
+                vImageConvert_420Yp8_CbCr8ToARGB8888(
+                    srcBufferY.ptr,
+                    srcBufferUV.ptr,
+                    argbBuffer.ptr,
+                    infoYUV.ptr,
+                    null,
+                    255u,
+                    kvImageNoFlags
+                )
+            } else if (pixelFormat == kCVPixelFormatType_32BGRA) {
+                val srcPtr = CVPixelBufferGetBaseAddress(pixelBuffer)
+                val srcRowBytes = CVPixelBufferGetBytesPerRow(pixelBuffer)
+                val srcBuffer = alloc<vImage_Buffer>().apply {
+                    data = srcPtr
+                    this.width = width.toULong()
+                    this.height = height.toULong()
+                    rowBytes = srcRowBytes
+                }
+                // BGRA to ARGB (vImage usually handles ARGB internally or we can just treat it as such if consistent)
+                // Actually BGRA 8888 to ARGB 8888 if needed.
+                vImageCopyBuffer(srcBuffer.ptr, argbBuffer.ptr, 4uL, kvImageNoFlags)
+            } else {
+                throw IllegalArgumentException("Unsupported pixel format: $pixelFormat")
+            }
 
             val targetWidth = if (rotation == LiteRtRotation.ROTATION_90 || rotation == LiteRtRotation.ROTATION_270) height else width
             val targetHeight = if (rotation == LiteRtRotation.ROTATION_90 || rotation == LiteRtRotation.ROTATION_270) width else height

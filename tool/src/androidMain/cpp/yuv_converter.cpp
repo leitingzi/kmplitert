@@ -65,6 +65,8 @@ void convertYUV420ToRGBA(
     uint32_t* out_rgba, int width, int height,
     Rotation rotation, Flip flip
 ) {
+    if (!y_data || !u_data || !v_data || !out_rgba) return;
+
     int out_width = (rotation == Rotation::ROTATION_90 || rotation == Rotation::ROTATION_270) ? height : width;
     int out_height = (rotation == Rotation::ROTATION_90 || rotation == Rotation::ROTATION_270) ? width : height;
 
