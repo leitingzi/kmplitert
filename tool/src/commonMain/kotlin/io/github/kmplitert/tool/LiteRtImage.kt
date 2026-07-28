@@ -192,5 +192,24 @@ expect class LiteRtImage {
          * @return A [LiteRtImage].
          */
         fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage
+
+        /**
+         * Creates a [LiteRtImage] from a platform-specific video frame or image object.
+         *
+         * - On Android: Expects [android.media.Image] or [androidx.camera.core.ImageProxy].
+         * - On iOS: Expects [platform.CoreVideo.CVPixelBufferRef].
+         * - On JVM: Expects [java.awt.image.BufferedImage] or [java.nio.ByteBuffer].
+         *
+         * @param frame The platform-specific frame object.
+         * @param rotation The rotation to apply.
+         * @param flip The flipping to apply.
+         * @return A [LiteRtImage].
+         * @throws IllegalArgumentException If the frame type is not supported on the current platform.
+         */
+        fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
+            flip: LiteRtFlip = LiteRtFlip()
+        ): LiteRtImage
     }
 }

@@ -5,13 +5,12 @@ package io.github.kmplitert.tool
 import io.github.kmplitert.core.TFBuffer
 import kotlinx.browser.document
 import org.khronos.webgl.Uint8Array
-import org.khronos.webgl.Uint8ClampedArray
 import org.khronos.webgl.get
 import org.khronos.webgl.set
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLImageElement
-import kotlin.js.unsafeCast
+import org.w3c.dom.HTMLVideoElement
 
 /**
  * LiteRtImage implementation for Web (JS/WasmJs).
@@ -87,7 +86,6 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
         grayCanvas.width = width
         grayCanvas.height = height
         val ctx = grayCanvas.getContext("2d") as CanvasRenderingContext2D
-        // filter might not be supported in all environments, but it's the standard way
         ctx.filter = "grayscale(100%)"
         ctx.drawImage(canvas, 0.0, 0.0)
         return LiteRtImage(grayCanvas, 1)
@@ -104,7 +102,7 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
         val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
-        val pixels = imageData.data // Uint8ClampedArray
+        val pixels = imageData.data
 
         val floatArray = FloatArray(width * height * c)
         for (i in 0 until (width * height)) {
@@ -238,11 +236,6 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
     }
 
     actual companion object {
-        /**
-         * Note: Synchronous decoding of image bytes is not supported on Web.
-         * This method will throw an exception if called.
-         * Consider using a secondary constructor or factory method that takes a loaded HTMLImageElement or Canvas.
-         */
         actual fun fromBytes(bytes: ByteArray): LiteRtImage {
             if (bytes.size > 54 && bytes[0] == 'B'.code.toByte() && bytes[1] == 'M'.code.toByte()) {
                 return decodeBmp(bytes)
@@ -261,8 +254,6 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
             val imageData = ctx.createImageData(width.toDouble(), height.toDouble())
             val pixels = imageData.data
             
-            // Use a Uint8Array view to avoid clamping issues with signed Bytes in WasmJs interop.
-            // Uint8Array will wrap around -1 to 255, whereas Uint8ClampedArray would clamp it to 0.
             val uint8View = Uint8Array(pixels.buffer, pixels.byteOffset, pixels.length)
             
             for (i in 0 until (width * height)) {
@@ -276,6 +267,39 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
             }
             ctx.putImageData(imageData, 0.0, 0.0)
             return LiteRtImage(canvas, 3)
+        }
+
+        actual fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation,
+            flip: LiteRtFlip
+        ): LiteRtImage {
+            val canvas = document.createElement("canvas") as HTMLCanvasElement
+            val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+            
+            when (frame) {
+                is HTMLVideoElement -> {
+                    canvas.width = frame.videoWidth
+                    canvas.height = frame.videoHeight
+                    ctx.drawImage(frame, 0.0, 0.0)
+                }
+                is HTMLImageElement -> {
+                    canvas.width = frame.width
+                    canvas.height = frame.height
+                    ctx.drawImage(frame, 0.0, 0.0)
+                }
+                is HTMLCanvasElement -> {
+                    canvas.width = frame.width
+                    canvas.height = frame.height
+                    ctx.drawImage(frame, 0.0, 0.0)
+                }
+                else -> throw IllegalArgumentException("Unsupported frame type on Web (Wasm): ${frame::class}")
+            }
+            
+            var image = LiteRtImage(canvas)
+            if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+            if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+            return image
         }
 
         fun fromImageElement(image: HTMLImageElement): LiteRtImage {

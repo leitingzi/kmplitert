@@ -99,7 +99,7 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
         val c = _channels
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val imageData = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
-        val data = imageData.data // Uint8ClampedArray (always 4 channels)
+        val data = imageData.data
 
         val floatArray = FloatArray(width * height * c)
         for (i in 0 until width * height) {
@@ -232,11 +232,6 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
     }
 
     actual companion object {
-        /**
-         * Note: Synchronous decoding of image bytes is not supported on Web.
-         * This method will throw an exception if called.
-         * Consider using a secondary constructor or factory method that takes a loaded HTMLImageElement or Canvas.
-         */
         actual fun fromBytes(bytes: ByteArray): LiteRtImage {
             if (bytes.size > 54 && bytes[0] == 'B'.code.toByte() && bytes[1] == 'M'.code.toByte()) {
                 return decodeBmp(bytes)
@@ -267,6 +262,39 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
             }
             ctx.putImageData(imageData, 0.0, 0.0)
             return LiteRtImage(canvas, 3)
+        }
+
+        actual fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation,
+            flip: LiteRtFlip
+        ): LiteRtImage {
+            val canvas = document.createElement("canvas") as HTMLCanvasElement
+            val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+            
+            when (frame) {
+                is org.w3c.dom.HTMLVideoElement -> {
+                    canvas.width = frame.videoWidth
+                    canvas.height = frame.videoHeight
+                    ctx.drawImage(frame, 0.0, 0.0)
+                }
+                is org.w3c.dom.HTMLImageElement -> {
+                    canvas.width = frame.width
+                    canvas.height = frame.height
+                    ctx.drawImage(frame, 0.0, 0.0)
+                }
+                is org.w3c.dom.HTMLCanvasElement -> {
+                    canvas.width = frame.width
+                    canvas.height = frame.height
+                    ctx.drawImage(frame, 0.0, 0.0)
+                }
+                else -> throw IllegalArgumentException("Unsupported frame type on Web: ${frame::class.js.name}")
+            }
+            
+            var image = LiteRtImage(canvas)
+            if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+            if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+            return image
         }
 
         fun fromImageElement(image: HTMLImageElement): LiteRtImage {

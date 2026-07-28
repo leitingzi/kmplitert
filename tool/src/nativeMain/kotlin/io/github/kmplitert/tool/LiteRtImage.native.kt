@@ -67,15 +67,12 @@ actual class LiteRtImage(
     }
 
     actual fun rotate(degrees: Float): LiteRtImage {
-        // Only 90, 180, 270 degrees for simplicity in native if needed, 
-        // but let's try a general rotation or at least 90-degree steps.
-        // For now, let's implement 90-degree steps as they are common for mobile cameras.
         val normalizedDegrees = ((degrees % 360 + 360) % 360).toInt()
         return when (normalizedDegrees) {
             90 -> rotate90()
             180 -> rotate180()
             270 -> rotate270()
-            else -> this // Unsupported arbitrary rotation in simple native implementation
+            else -> this 
         }
     }
 
@@ -136,7 +133,6 @@ actual class LiteRtImage(
             val r = data[i * channels].toInt() and 0xFF
             val g = data[i * channels + 1].toInt() and 0xFF
             val b = data[i * channels + 2].toInt() and 0xFF
-            // Luminance formula
             val gray = (0.299 * r + 0.587 * g + 0.114 * b).toInt()
             newData[i] = gray.coerceIn(0, 255).toByte()
         }
@@ -171,11 +167,7 @@ actual class LiteRtImage(
     }
 
     actual fun toInt8Array(): ByteArray {
-        val result = ByteArray(width * height * channels)
-        for (i in 0 until width * height * channels) {
-            result[i] = data[i]
-        }
-        return result
+        return data.copyOf()
     }
 
     actual fun toIntArray(): IntArray {
@@ -222,8 +214,15 @@ actual class LiteRtImage(
             return LiteRtImage(data, width, height, 3)
         }
 
+        actual fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation,
+            flip: LiteRtFlip
+        ): LiteRtImage {
+            return fromVideoFrameNative(frame, rotation, flip)
+        }
+
         private fun decodeBmp(bytes: ByteArray): LiteRtImage {
-            // Very basic BMP decoder (supports 24-bit RGB)
             val width = readInt32(bytes, 18)
             val height = readInt32(bytes, 22)
             val offset = readInt32(bytes, 10)
@@ -237,7 +236,6 @@ actual class LiteRtImage(
             val data = ByteArray(width * height * 3)
 
             for (y in 0 until height) {
-                // BMP stores rows from bottom to top
                 val rowOffset = offset + (height - 1 - y) * rowSize
                 for (x in 0 until width) {
                     val b = bytes[rowOffset + x * 3]
@@ -266,3 +264,9 @@ actual class LiteRtImage(
         }
     }
 }
+
+internal expect fun fromVideoFrameNative(
+    frame: Any,
+    rotation: LiteRtRotation,
+    flip: LiteRtFlip
+): LiteRtImage

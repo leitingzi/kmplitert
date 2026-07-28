@@ -3,81 +3,55 @@
 package io.github.kmplitert.tool
 
 import kotlinx.cinterop.*
-import platform.CoreVideo.*
 import platform.CoreGraphics.*
 import platform.UIKit.*
 
-/**
- * Creates a [LiteRtImage] from an iOS [CVPixelBufferRef].
- *
- * This function handles common pixel formats like BGRA and YUV efficiently.
- */
-fun LiteRtImage.Companion.fromIosPixelBuffer(pixelBuffer: CVPixelBufferRef): LiteRtImage {
-    CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly)
-    try {
-        val width = CVPixelBufferGetWidth(pixelBuffer).toInt()
-        val height = CVPixelBufferGetHeight(pixelBuffer).toInt()
-        val format = CVPixelBufferGetPixelFormatType(pixelBuffer)
-
-        return when (format) {
-            kCVPixelFormatType_32BGRA -> {
-                val baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)!!.reinterpret<ByteVar>()
-                val bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer).toInt()
-                val data = ByteArray(width * height * 3)
-                
-                for (y in 0 until height) {
-                    val rowOffset = y * bytesPerRow
-                    for (x in 0 until width) {
-                        val b = baseAddress[rowOffset + x * 4]
-                        val g = baseAddress[rowOffset + x * 4 + 1]
-                        val r = baseAddress[rowOffset + x * 4 + 2]
-                        // Skip Alpha (baseAddress[rowOffset + x * 4 + 3])
-                        
-                        val destOffset = (y * width + x) * 3
-                        data[destOffset] = r
-                        data[destOffset + 1] = g
-                        data[destOffset + 2] = b
-                    }
-                }
-                LiteRtImage(data, width, height, 3)
-            }
-            kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
-            kCVPixelFormatType_420YpCbCr8BiPlanarFullRange -> {
-                // YUV 420 Bi-Planar (NV12/NV21)
-                val yBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0u)!!.reinterpret<ByteVar>()
-                val yBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0u).toInt()
-                
-                val uvBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1u)!!.reinterpret<ByteVar>()
-                val uvBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1u).toInt()
-                
-                val data = ByteArray(width * height * 3)
-                
-                for (y in 0 until height) {
-                    val yRowOffset = y * yBytesPerRow
-                    val uvRowOffset = (y / 2) * uvBytesPerRow
-                    for (x in 0 until width) {
-                        val yVal = yBaseAddress[yRowOffset + x].toInt() and 0xFF
-                        
-                        // NV12: UVUV...
-                        val uvIndex = (x / 2) * 2
-                        val uVal = (uvBaseAddress[uvRowOffset + uvIndex].toInt() and 0xFF) - 128
-                        val vVal = (uvBaseAddress[uvRowOffset + uvIndex + 1].toInt() and 0xFF) - 128
-                        
-                        val r = (yVal + 1.370705f * vVal).toInt().coerceIn(0, 255)
-                        val g = (yVal - 0.337633f * uVal - 0.698001f * vVal).toInt().coerceIn(0, 255)
-                        val b = (yVal + 1.732446f * uVal).toInt().coerceIn(0, 255)
-                        
-                        val destOffset = (y * width + x) * 3
-                        data[destOffset] = r.toByte()
-                        data[destOffset + 1] = g.toByte()
-                        data[destOffset + 2] = b.toByte()
-                    }
-                }
-                LiteRtImage(data, width, height, 3)
-            }
-            else -> throw UnsupportedOperationException("Unsupported PixelBuffer format: $format")
-        }
-    } finally {
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly)
+internal actual fun fromPlatformImage(
+    frame: Any,
+    rotation: LiteRtRotation,
+    flip: LiteRtFlip
+): LiteRtImage {
+    if (frame is UIImage) {
+        val bytes = frame.toRgbBytes() ?: throw IllegalArgumentException("Failed to get RGB bytes from UIImage")
+        var image = LiteRtImage(bytes, frame.size.useContents { width.toInt() }, frame.size.useContents { height.toInt() }, 3)
+        if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+        if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+        return image
     }
+    throw IllegalArgumentException("Unsupported frame type on iOS: ${frame::class}")
+}
+
+private fun UIImage.toRgbBytes(): ByteArray? {
+    val imageRef = this.CGImage ?: return null
+    val width = CGImageGetWidth(imageRef)
+    val height = CGImageGetHeight(imageRef)
+    val colorSpace = CGColorSpaceCreateDeviceRGB()
+    val bytesPerPixel = 4uL
+    val bytesPerRow = bytesPerPixel * width
+    val bitsPerComponent = 8uL
+    val bitmapInfo = (CGImageAlphaInfo.kCGImageAlphaNoneSkipLast.value or kCGBitmapByteOrder32Big.toUInt())
+    
+    val dataSize = (width.toLong() * height.toLong() * bytesPerPixel.toLong())
+    val data = nativeHeap.allocArray<UByteVar>(dataSize)
+    val context = CGBitmapContextCreate(data, width.convert(), height.convert(), bitsPerComponent.convert(), bytesPerRow.convert(), colorSpace, bitmapInfo)
+    
+    if (context == null) {
+        nativeHeap.free(data)
+        return null
+    }
+    
+    UIGraphicsPushContext(context)
+    this.drawInRect(CGRectMake(0.0, 0.0, width.toDouble(), height.toDouble()))
+    UIGraphicsPopContext()
+    
+    val result = ByteArray((width.toLong() * height.toLong() * 3L).toInt())
+    for (i in 0 until (width.toLong() * height.toLong()).toInt()) {
+        result[i * 3] = data[i * 4 + 1].toByte()     // R
+        result[i * 3 + 1] = data[i * 4 + 2].toByte() // G
+        result[i * 3 + 2] = data[i * 4 + 3].toByte() // B
+    }
+    
+    nativeHeap.free(data)
+    CGContextRelease(context)
+    return result
 }

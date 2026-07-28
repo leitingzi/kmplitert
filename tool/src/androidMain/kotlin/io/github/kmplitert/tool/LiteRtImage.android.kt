@@ -227,15 +227,46 @@ actual class LiteRtImage(internal val bitmap: Bitmap, private val _channels: Int
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
             return LiteRtImage(bitmap = bitmap)
         }
+
+        actual fun fromVideoFrame(
+            frame: Any,
+            rotation: LiteRtRotation,
+            flip: LiteRtFlip
+        ): LiteRtImage {
+            return when (frame) {
+                is Image -> fromAndroidImage(frame, rotation, flip)
+                is Bitmap -> {
+                    var image = LiteRtImage(frame)
+                    if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+                    if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
+                    image
+                }
+                else -> {
+                    // Try to handle ImageProxy via reflection to avoid direct dependency
+                    try {
+                        val imageMethod = frame.javaClass.getMethod("getImage")
+                        val image = imageMethod.invoke(frame) as? Image
+                        if (image != null) return fromAndroidImage(image, rotation, flip)
+                    } catch (e: Exception) {
+                        // Not an ImageProxy or reflection failed
+                    }
+                    throw IllegalArgumentException("Unsupported frame type: ${frame.javaClass.name}")
+                }
+            }
+        }
     }
 }
 
 /**
- * Creates a [LiteRtImage] from an Android [Image] (e.g., from CameraX).
+ * Creates a [LiteRtImage] from an Android [Image] (e.g., from CameraX) with optional transformation.
  *
- * This function handles YUV_420_888 to RGB conversion efficiently.
+ * This function handles YUV_420_888 to RGB conversion efficiently using native C++ code.
  */
-fun LiteRtImage.Companion.fromAndroidImage(image: Image): LiteRtImage {
+fun LiteRtImage.Companion.fromAndroidImage(
+    image: Image,
+    rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
+    flip: LiteRtFlip = LiteRtFlip()
+): LiteRtImage {
     require(image.format == ImageFormat.YUV_420_888) {
         "Unsupported image format: ${image.format}. Only YUV_420_888 is supported."
     }
@@ -252,39 +283,76 @@ fun LiteRtImage.Companion.fromAndroidImage(image: Image): LiteRtImage {
     val uBuffer = uPlane.buffer
     val vBuffer = vPlane.buffer
 
-    val yRowStride = yPlane.rowStride
-    val uvRowStride = uPlane.rowStride
-    val uvPixelStride = uPlane.pixelStride
-
-    val pixels = IntArray(width * height)
-    val yData = ByteArray(yBuffer.remaining())
-    val uData = ByteArray(uBuffer.remaining())
-    val vData = ByteArray(vBuffer.remaining())
+    // Target dimensions after rotation
+    val targetWidth = if (rotation == LiteRtRotation.ROTATION_90 || rotation == LiteRtRotation.ROTATION_270) height else width
+    val targetHeight = if (rotation == LiteRtRotation.ROTATION_90 || rotation == LiteRtRotation.ROTATION_270) width else height
     
-    yBuffer.get(yData)
-    uBuffer.get(uData)
-    vBuffer.get(vData)
+    val bitmap = createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+    
+    if (isNativeLibraryLoaded && yBuffer.isDirect && uBuffer.isDirect && vBuffer.isDirect) {
+        nativeConvertYUV(
+            yBuffer, yPlane.rowStride,
+            uBuffer, vBuffer, uPlane.rowStride, uPlane.pixelStride,
+            bitmap, width, height,
+            rotation.degrees, flip.horizontal, flip.vertical
+        )
+    } else {
+        // Fallback to Kotlin implementation
+        val pixels = IntArray(targetWidth * targetHeight)
+        val yRowStride = yPlane.rowStride
+        val uvRowStride = uPlane.rowStride
+        val uvPixelStride = uPlane.pixelStride
+        
+        val yLimit = yBuffer.limit()
+        val uLimit = uBuffer.limit()
+        val vLimit = vBuffer.limit()
+        
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val yIndex = y * yRowStride + x
+                val uvIndex = (y / 2) * uvRowStride + (x / 2) * uvPixelStride
 
-    for (y in 0 until height) {
-        for (x in 0 until width) {
-            val yIndex = y * yRowStride + x
-            val uvIndex = (y / 2) * uvRowStride + (x / 2) * uvPixelStride
+                val yValue = (if (yIndex < yLimit) yBuffer.get(yIndex).toInt() else 0) and 0xFF
+                val uValue = ((if (uvIndex < uLimit) uBuffer.get(uvIndex).toInt() else 0) and 0xFF) - 128
+                val vValue = ((if (uvIndex < vLimit) vBuffer.get(uvIndex).toInt() else 0) and 0xFF) - 128
 
-            val yValue = yData[yIndex].toInt() and 0xFF
-            val uValue = (uData[uvIndex.coerceAtMost(uData.size - 1)].toInt() and 0xFF) - 128
-            val vValue = (vData[uvIndex.coerceAtMost(vData.size - 1)].toInt() and 0xFF) - 128
-
-            val r = (yValue + 1.370705f * vValue).toInt().coerceIn(0, 255)
-            val g = (yValue - 0.337633f * uValue - 0.698001f * vValue).toInt().coerceIn(0, 255)
-            val b = (yValue + 1.732446f * uValue).toInt().coerceIn(0, 255)
-
-            pixels[y * width + x] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+                val r = (yValue + 1.370705f * vValue).toInt().coerceIn(0, 255)
+                val g = (yValue - 0.337633f * uValue - 0.698001f * vValue).toInt().coerceIn(0, 255)
+                val b = (yValue + 1.732446f * uValue).toInt().coerceIn(0, 255)
+                val rgba = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+                
+                // Handle rotation/flip in Kotlin fallback
+                var tx = x; var ty = y
+                if (flip.horizontal) tx = width - 1 - tx
+                if (flip.vertical) ty = height - 1 - ty
+                
+                val (fx, fy) = when(rotation) {
+                    LiteRtRotation.ROTATION_90 -> (targetWidth - 1 - ty) to tx
+                    LiteRtRotation.ROTATION_180 -> (targetWidth - 1 - tx) to (targetHeight - 1 - ty)
+                    LiteRtRotation.ROTATION_270 -> ty to (targetHeight - 1 - tx)
+                    else -> tx to ty
+                }
+                pixels[fy * targetWidth + fx] = rgba
+            }
         }
+        bitmap.setPixels(pixels, 0, targetWidth, 0, 0, targetWidth, targetHeight)
     }
 
-    val bitmap = createBitmap(width, height)
-    bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
     return LiteRtImage(bitmap)
+}
+
+private external fun nativeConvertYUV(
+    yBuffer: java.nio.ByteBuffer, yRowStride: Int,
+    uBuffer: java.nio.ByteBuffer, vBuffer: java.nio.ByteBuffer, uvRowStride: Int, uvPixelStride: Int,
+    outBitmap: Bitmap, width: Int, height: Int,
+    rotationDeg: Int, flipH: Boolean, flipV: Boolean
+)
+
+private val isNativeLibraryLoaded = try {
+    System.loadLibrary("kmplitert_tool_native")
+    true
+} catch (e: UnsatisfiedLinkError) {
+    false
 }
 
 fun LiteRtImage.asBitmap(): Bitmap {
