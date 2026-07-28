@@ -29,11 +29,11 @@ private fun UIImage.toRgbBytes(): ByteArray? {
     val bytesPerPixel = 4uL
     val bytesPerRow = bytesPerPixel * width
     val bitsPerComponent = 8uL
-    val bitmapInfo = CGImageAlphaInfo.kCGImageAlphaNoneSkipLast.value or kCGBitmapByteOrder32Big
+    val bitmapInfo = (CGImageAlphaInfo.kCGImageAlphaNoneSkipLast.value or kCGBitmapByteOrder32Big.toUInt())
     
     val dataSize = (width * height * bytesPerPixel).toLong()
     val data = nativeHeap.allocArray<UByteVar>(dataSize)
-    val context = CGBitmapContextCreate(data, width, height, bitsPerComponent, bytesPerRow, colorSpace, bitmapInfo)
+    val context = CGBitmapContextCreate(data, width.convert(), height.convert(), bitsPerComponent, bytesPerRow, colorSpace, bitmapInfo)
     
     if (context == null) {
         nativeHeap.free(data)

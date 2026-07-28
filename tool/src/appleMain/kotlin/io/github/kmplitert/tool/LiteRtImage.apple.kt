@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalForeignApi::class)
+@file:Suppress("CANNOT_CHECK_FOR_ERASED_TYPE")
 
 package io.github.kmplitert.tool
 
@@ -75,8 +76,12 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                 val pixelRange = alloc<vImage_YpCbCrPixelRange>().apply {
                     Yp_bias = 16
                     CbCr_bias = 128
-                    YpRange = 219u
-                    CbCrRange = 224u
+                    YpRangeMax = 235
+                    CbCrRangeMax = 240
+                    YpMax = 255
+                    YpMin = 0
+                    CbCrMax = 255
+                    CbCrMin = 0
                 }
 
                 vImageConvert_YpCbCrToARGB_GenerateConversion(
@@ -131,14 +136,6 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                     nativeHeap.free(backColor)
                 }
                 LiteRtRotation.ROTATION_180 -> {
-                    // Rotate 180 = Flip Vertical + Flip Horizontal
-                    vImageVerticalFlip_Planar8(argbBuffer.ptr, finalBuffer.ptr, kvImageNoFlags)
-                    // We need to adjust width/height for Planar8 interpretation if we use it for ARGB
-                    // But vImageVerticalFlip_Planar8 works byte-wise, so we can treat it as one big plane
-                    // if rowBytes is correct.
-                    // Actually, let's use a simpler way if possible, or just fix the unresolved references.
-                    // The user's code had vImageRotate180_ARGB8888 which is missing.
-                    // Let's use vImageRotate90 twice for now to ensure it compiles and works.
                     val backColor = nativeHeap.allocArray<UByteVar>(4)
                     val tempData = nativeHeap.allocArray<ByteVar>(width * height * 4)
                     val tempBuffer = alloc<vImage_Buffer>().apply {
@@ -180,29 +177,32 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
             }
             
             if (flip.horizontal || flip.vertical) {
-                // vImageVerticalFlip_ARGB8888 is missing, use vImageVerticalFlip_Planar8
-                // treating ARGB as Planar with width * 4
+                val dataPtr = finalBuffer.data!!.reinterpret<UByteVar>()
+                val rowBytes = finalBuffer.rowBytes.toInt()
+                val tempPixel = nativeHeap.allocArray<UByteVar>(4)
+                
                 if (flip.vertical) {
-                    val planarBuffer = alloc<vImage_Buffer>().apply {
-                        this.data = finalBuffer.data
-                        this.width = (targetWidth * 4).convert()
-                        this.height = targetHeight.convert()
-                        this.rowBytes = finalBuffer.rowBytes
+                    for (y in 0 until targetHeight / 2) {
+                        val topRowIdx = y * rowBytes
+                        val bottomRowIdx = (targetHeight - 1 - y) * rowBytes
+                        for (x in 0 until targetWidth) {
+                            val topIdx = topRowIdx + x * 4
+                            val bottomIdx = bottomRowIdx + x * 4
+                            for (c in 0 until 4) {
+                                tempPixel[c] = dataPtr[topIdx + c]
+                                dataPtr[topIdx + c] = dataPtr[bottomIdx + c]
+                                dataPtr[bottomIdx + c] = tempPixel[c]
+                            }
+                        }
                     }
-                    vImageVerticalFlip_Planar8(planarBuffer.ptr, planarBuffer.ptr, kvImageNoFlags)
                 }
+                
                 if (flip.horizontal) {
-                    // Horizontal flip is harder with Planar8 for ARGB because it flips bytes.
-                    // We'd need to flip 4-byte chunks.
-                    // For now, let's use the native implementation in LiteRtImage.native.kt if possible,
-                    // or just implement a simple loop here.
-                    val dataPtr = finalBuffer.data!!.reinterpret<UByteVar>()
-                    val rowBytes = finalBuffer.rowBytes.toInt()
-                    val tempPixel = nativeHeap.allocArray<UByteVar>(4)
                     for (y in 0 until targetHeight) {
+                        val rowIdx = y * rowBytes
                         for (x in 0 until targetWidth / 2) {
-                            val leftIdx = y * rowBytes + x * 4
-                            val rightIdx = y * rowBytes + (targetWidth - 1 - x) * 4
+                            val leftIdx = rowIdx + x * 4
+                            val rightIdx = rowIdx + (targetWidth - 1 - x) * 4
                             for (c in 0 until 4) {
                                 tempPixel[c] = dataPtr[leftIdx + c]
                                 dataPtr[leftIdx + c] = dataPtr[rightIdx + c]
@@ -210,8 +210,8 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                             }
                         }
                     }
-                    nativeHeap.free(tempPixel)
                 }
+                nativeHeap.free(tempPixel)
             }
 
             val resultData = ByteArray(targetWidth * targetHeight * 3)
