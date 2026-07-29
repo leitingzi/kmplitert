@@ -98,7 +98,8 @@ suspend fun testCelsiusToFahrenheit() {
 @Composable
 fun App() {
     LaunchedEffect(Unit) {
-        testMobilenet()
+        // testMobilenet()
+        testMobilenetWithTool()
     }
 }
 
