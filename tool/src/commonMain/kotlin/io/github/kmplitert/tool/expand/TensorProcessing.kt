@@ -112,7 +112,12 @@ fun FloatArray.pad(before: Int, after: Int, value: Float = 0f): FloatArray {
  * @throws IllegalArgumentException if the size does not match.
  */
 fun FloatArray.reshape(vararg dims: Int): FloatArray {
-    val expectedSize = dims.fold(1) { acc, d -> acc * d }
-    require(size == expectedSize) { "Size mismatch: current $size, expected $expectedSize" }
+    val expectedSize = dims.fold(1) {
+        acc, d -> acc * d
+    }
+
+    require(size == expectedSize) {
+        "Size mismatch: current $size, expected $expectedSize"
+    }
     return this
 }

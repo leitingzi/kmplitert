@@ -6,6 +6,7 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
 
     val inputStream = classLoader.getResourceAsStream(name)
         ?: throw IllegalArgumentException("Resource not found: $name")
+
     return inputStream.readBytes()
 }
 
