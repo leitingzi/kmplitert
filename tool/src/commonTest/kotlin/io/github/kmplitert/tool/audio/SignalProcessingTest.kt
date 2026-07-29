@@ -1,9 +1,11 @@
 package io.github.kmplitert.tool.audio
 
+import kotlin.math.PI
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.math.*
 
 class SignalProcessingTest {
 

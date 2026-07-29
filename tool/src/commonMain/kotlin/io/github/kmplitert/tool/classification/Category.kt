@@ -7,8 +7,4 @@ package io.github.kmplitert.tool.classification
  * @property score The confidence score (probability) for this category, typically in the range [0, 1].
  * @property index The index of this category in the model's output tensor.
  */
-data class Category(
-    val label: String,
-    val score: Float,
-    val index: Int
-)
+data class Category(val label: String, val score: Float, val index: Int)

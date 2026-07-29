@@ -42,12 +42,16 @@ actual class LiteRtAudio(
 
     actual companion object {
         actual fun fromRaw(data: FloatArray, sampleRate: Int, channels: Int): LiteRtAudio {
-            return LiteRtAudio(data, sampleRate, channels)
+            return LiteRtAudio(data = data, sampleRate = sampleRate, channels = channels)
         }
 
         actual fun fromWav(bytes: ByteArray): LiteRtAudio {
             val info = WavDecoder.decode(bytes)
-            return LiteRtAudio(info.data, info.sampleRate, info.channels)
+            return LiteRtAudio(
+                data = info.data,
+                sampleRate = info.sampleRate,
+                channels = info.channels
+            )
         }
     }
 }

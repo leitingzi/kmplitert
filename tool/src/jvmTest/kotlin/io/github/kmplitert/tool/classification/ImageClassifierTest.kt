@@ -36,14 +36,32 @@ class ImageClassifierTest {
         
         try {
             compiler.init()
+
+            // Define a handler for MobileNet
+            val handler = object : io.github.kmplitert.tool.LiteRTHandler<LiteRtImage, List<Category>> {
+                override suspend fun preprocess(
+                    input: LiteRtImage,
+                    compiler: LiteRTCompiler,
+                    inputBuffers: List<io.github.kmplitert.core.TFBuffer>
+                ) {
+                    val data = input.resize(224, 224).toFloatArray(127.5f, 127.5f)
+                    inputBuffers[0].writeFloat(data)
+                }
+
+                override suspend fun postprocess(
+                    outputBuffers: List<io.github.kmplitert.core.TFBuffer>,
+                    compiler: LiteRTCompiler
+                ): List<Category> {
+                    val scores = outputBuffers[0].readFloat()
+                    return scores.mapIndexed { index, score ->
+                        Category(index.toString(), score, index)
+                    }.sortedByDescending { it.score }.take(3)
+                }
+            }
             
             val classifier = ImageClassifier(
                 compiler = compiler,
-                options = ImageClassifierOptions(
-                    mean = 127.5f,
-                    std = 127.5f,
-                    topK = 3
-                )
+                handler = handler
             )
 
             // Create a dummy black image (224x224)

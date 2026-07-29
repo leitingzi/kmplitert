@@ -199,6 +199,7 @@ expect class LiteRtImage {
          * - On Android: Expects [android.media.Image] or [androidx.camera.core.ImageProxy].
          * - On iOS: Expects [platform.CoreVideo.CVPixelBufferRef].
          * - On JVM: Expects [java.awt.image.BufferedImage] or [java.nio.ByteBuffer].
+         * - On Web: Expects [org.w3c.dom.HTMLCanvasElement] or [org.w3c.dom.HTMLImageElement] or [org.w3c.dom.HTMLVideoElement].
          *
          * @param frame The platform-specific frame object.
          * @param rotation The rotation to apply.

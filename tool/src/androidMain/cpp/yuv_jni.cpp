@@ -4,7 +4,7 @@
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_io_github_kmplitert_tool_LiteRtImageKt_nativeConvertYUV(
+Java_io_github_kmplitert_tool_LiteRtImage_1androidKt_nativeConvertYUV(
     JNIEnv* env, jclass clazz,
     jobject y_buf, jint y_row_stride,
     jobject u_buf, jobject v_buf, jint uv_row_stride, jint uv_pixel_stride,

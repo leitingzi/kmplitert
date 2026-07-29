@@ -15,23 +15,23 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
     val paths = listOf(
         "/base/processedResources/wasmJs/test/$name",
         "/base/processedResources/js/test/$name",
-        "/base/library/kmplitert-core/build/processedResources/wasmJs/test/$name",
-        "/base/library/kmplitert-core/build/processedResources/js/test/$name",
-        "/base/library/kmplitert-core/src/commonTest/resources/$name",
+        "/base/library/core/build/processedResources/wasmJs/test/$name",
+        "/base/library/core/build/processedResources/js/test/$name",
+        "/base/library/core/src/commonTest/resources/$name",
         "/base/$name",
         name
     )
     
     for (url in paths) {
         try {
-            val response = window.fetch(url).await<org.w3c.fetch.Response>()
+            val response = window.fetch(url).await()
             if (response.ok) {
-                val buffer = response.arrayBuffer().await<ArrayBuffer>()
+                val buffer = response.arrayBuffer().await()
                 val int8Array = Int8Array(buffer)
                 return ByteArray(int8Array.length) { i -> int8Array[i] }
             }
         } catch (e: Throwable) {
-            // Ignore
+
         }
     }
     

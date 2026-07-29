@@ -25,10 +25,12 @@ actual object LiteRTFileUtils {
         return this.context.applicationContext
     }
 
+    private fun getCacheDir(): File {
+        return getContext()?.cacheDir ?: File(System.getProperty("java.io.tmpdir") ?: ".")
+    }
+
     actual fun createFileFromByteArray(data: ByteArray, fileName: String): String {
-        val cacheDir: File = getContext()?.cacheDir 
-            ?: File(System.getProperty("java.io.tmpdir") ?: ".")
-        val file = File(cacheDir, fileName)
+        val file = File(getCacheDir(), fileName)
 
         if (file.exists()) {
             file.delete()
@@ -36,6 +38,7 @@ actual object LiteRTFileUtils {
 
         file.parentFile?.mkdirs()
         file.writeBytes(array = data)
+
         return file.absolutePath
     }
 }

@@ -15,8 +15,8 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray = suspendCancell
     // Try multiple common Karma resource paths
     val paths = listOf(
         "/base/processedResources/js/test/$name",
-        "/base/library/kmplitert-core/build/processedResources/js/test/$name",
-        "/base/library/kmplitert-core/src/commonTest/resources/$name",
+        "/base/library/core/build/processedResources/js/test/$name",
+        "/base/library/core/src/commonTest/resources/$name",
         "/base/$name",
         name
     )
