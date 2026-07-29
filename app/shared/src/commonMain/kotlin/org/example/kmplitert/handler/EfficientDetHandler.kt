@@ -1,4 +1,4 @@
-package org.example.kmplitert
+package org.example.kmplitert.handler
 
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.TFBuffer
