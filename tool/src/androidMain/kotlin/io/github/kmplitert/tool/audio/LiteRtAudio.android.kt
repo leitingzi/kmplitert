@@ -7,29 +7,41 @@ actual class LiteRtAudio(
     actual val sampleRate: Int,
     actual val channels: Int
 ) {
-    actual fun toFloatArray(): FloatArray = data
+    actual fun toFloatArray(): FloatArray {
+        return data
+    }
 
     actual fun resample(targetSampleRate: Int): LiteRtAudio {
-        if (targetSampleRate == sampleRate) return this
+        if (targetSampleRate == sampleRate) {
+            return this
+        }
+
         val ratio = targetSampleRate.toDouble() / sampleRate
         val newSize = (data.size * ratio).toInt()
-        val newData = FloatArray(newSize)
+        val newData = FloatArray(size = newSize)
+
         for (i in 0 until newSize) {
             val originalIndex = i / ratio
             val index = originalIndex.toInt()
             val fraction = (originalIndex - index).toFloat()
+
             if (index + 1 < data.size) {
                 newData[i] = data[index] * (1 - fraction) + data[index + 1] * fraction
             } else {
                 newData[i] = data[index]
             }
         }
-        return LiteRtAudio(newData, targetSampleRate, channels)
+
+        return LiteRtAudio(data = newData, sampleRate = targetSampleRate, channels = channels)
     }
 
     actual fun toMono(): LiteRtAudio {
-        if (channels == 1) return this
+        if (channels == 1) {
+            return this
+        }
+
         val newData = FloatArray(data.size / channels)
+
         for (i in newData.indices) {
             var sum = 0f
             for (c in 0 until channels) {
@@ -37,17 +49,22 @@ actual class LiteRtAudio(
             }
             newData[i] = sum / channels
         }
-        return LiteRtAudio(newData, sampleRate, 1)
+
+        return LiteRtAudio(data = newData, sampleRate = sampleRate, channels = 1)
     }
 
     actual companion object {
         actual fun fromRaw(data: FloatArray, sampleRate: Int, channels: Int): LiteRtAudio {
-            return LiteRtAudio(data, sampleRate, channels)
+            return LiteRtAudio(data = data, sampleRate = sampleRate, channels = channels)
         }
 
         actual fun fromWav(bytes: ByteArray): LiteRtAudio {
-            val info = WavDecoder.decode(bytes)
-            return LiteRtAudio(info.data, info.sampleRate, info.channels)
+            val info = WavDecoder.decode(bytes = bytes)
+            return LiteRtAudio(
+                data = info.data,
+                sampleRate = info.sampleRate,
+                channels = info.channels
+            )
         }
     }
 }
