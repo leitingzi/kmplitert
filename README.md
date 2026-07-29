@@ -321,22 +321,6 @@ Contributions are what make the open-source community such an amazing place to l
 
 ---
 
-## 📄 License
-
-Distributed under the **Apache License, Version 2.0**. See `LICENSE` for more information.
-
-```text
-Copyright 2026 yebintang
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-```
-
----
-
 <p align="center">
   Built with ❤️ for the Kotlin Multiplatform community.
 </p>
