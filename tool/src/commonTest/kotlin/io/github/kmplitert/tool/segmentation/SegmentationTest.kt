@@ -6,10 +6,7 @@ class SegmentationTest {
 
     @Test
     fun testSegmentationMask() {
-        val data = floatArrayOf(
-            0.1f, 0.2f,
-            0.3f, 0.4f
-        )
+        val data = floatArrayOf(0.1f, 0.2f, 0.3f, 0.4f)
         val mask = SegmentationMask(2, 2, data)
         
         assertEquals(2, mask.width)

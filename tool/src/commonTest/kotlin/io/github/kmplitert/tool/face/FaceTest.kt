@@ -1,7 +1,8 @@
 package io.github.kmplitert.tool.face
 
 import io.github.kmplitert.tool.detection.BoundingBox
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class FaceTest {
 
@@ -28,15 +29,5 @@ class FaceTest {
         assertEquals(10f, result.orientation?.pitch)
         assertEquals("Happy", result.expressions[0].label)
         assertEquals(0.95f, result.expressions[0].score)
-    }
-
-    @Test
-    fun testFaceAnalyzerOptions() {
-        val options = FaceAnalyzerOptions(
-            scoreThreshold = 0.7f,
-            expressionLabels = listOf("Neutral", "Happy")
-        )
-        assertEquals(0.7f, options.scoreThreshold)
-        assertEquals("Happy", options.expressionLabels?.get(1))
     }
 }

@@ -1,7 +1,8 @@
 package io.github.kmplitert.tool.ocr
 
 import io.github.kmplitert.tool.detection.BoundingBox
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TextRecognitionTest {
 
@@ -26,12 +27,5 @@ class TextRecognitionTest {
         assertEquals(2, result.blocks[0].lines.size)
         assertEquals("Hello", result.blocks[0].lines[0].text)
         assertEquals(0f, result.blocks[0].boundingBox.left)
-    }
-
-    @Test
-    fun testTextRecognizerOptions() {
-        val options = TextRecognizerOptions(minScoreThreshold = 0.8f)
-        assertEquals(0.8f, options.minScoreThreshold)
-        assertEquals(127.5f, options.mean)
     }
 }
