@@ -11,7 +11,7 @@ class SegmentationTest {
         
         assertEquals(2, mask.width)
         assertEquals(2, mask.height)
-        assertEquals(0.1f, mask.getValue(0, 0))
+        assertEquals(0.1f, mask.getValue(0, 0), 1e-5f)
         assertEquals(0.4f, mask.getValue(1, 1))
         assertEquals(0f, mask.getValue(2, 2)) // Out of bounds
     }

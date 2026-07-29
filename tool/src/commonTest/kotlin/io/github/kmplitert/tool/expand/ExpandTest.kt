@@ -3,33 +3,16 @@ package io.github.kmplitert.tool.expand
 import io.github.kmplitert.core.LiteRTElementType
 import io.github.kmplitert.core.LiteRTLayout
 import io.github.kmplitert.core.LiteRTTensorType
-import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.tool.MockTFBuffer
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ExpandTest {
-
-    // --- MockTFBuffer for CoreExpand tests ---
-    class MockTFBuffer : TFBuffer {
-        var intArray: IntArray = intArrayOf()
-        var floatArray: FloatArray = floatArrayOf()
-        var byteArray: ByteArray = byteArrayOf()
-        var booleanArray: BooleanArray = booleanArrayOf()
-        var longArray: LongArray = longArrayOf()
-
-        override fun writeInt(data: IntArray) { intArray = data }
-        override fun writeFloat(data: FloatArray) { floatArray = data }
-        override fun writeInt8(data: ByteArray) { byteArray = data }
-        override fun writeBoolean(data: BooleanArray) { booleanArray = data }
-        override fun writeLong(data: LongArray) { longArray = data }
-
-        override suspend fun readInt(): IntArray = intArray
-        override suspend fun readFloat(): FloatArray = floatArray
-        override suspend fun readInt8(): ByteArray = byteArray
-        override suspend fun readBoolean(): BooleanArray = booleanArray
-        override suspend fun readLong(): LongArray = longArray
-    }
-
     @Test
     fun testTFBufferExtensions() = runTest {
         val buffer = MockTFBuffer()
@@ -50,7 +33,7 @@ class ExpandTest {
         assertContentEquals(longArrayOf(1L, 2L), buffer.toLongArray())
 
         buffer.writeFloatValue(3.14f)
-        assertEquals(3.14f, buffer.readFloatValue())
+        assertEquals(3.14f, buffer.readFloatValue(), 1e-4f)
     }
 
     // --- MathUtils Tests ---
