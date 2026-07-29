@@ -99,7 +99,8 @@ suspend fun testCelsiusToFahrenheit() {
 fun App() {
     LaunchedEffect(Unit) {
         // testMobilenet()
-        testMobilenetWithTool()
+//         testMobilenetWithTool()
+        testEfficientDet()
     }
 }
 
