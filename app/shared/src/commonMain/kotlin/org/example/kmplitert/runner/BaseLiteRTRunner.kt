@@ -15,7 +15,11 @@ abstract class BaseLiteRTRunner<I, O>(
     private var _compiler: LiteRTCompiler? = null
 
     override val compiler: LiteRTCompiler
-        get() = _compiler ?: throw IllegalStateException("Compiler not initialized. Call ensureInitialized() first.")
+        get() = _compiler ?: throw IllegalStateException("Compiler not initialized. Call init() first.")
+
+    override suspend fun init() {
+        ensureInitialized()
+    }
 
     protected suspend fun ensureInitialized() {
         if (_compiler == null) {
@@ -32,7 +36,7 @@ abstract class BaseLiteRTRunner<I, O>(
 
     override suspend fun run(input: I): Result<O> {
         return try {
-            ensureInitialized()
+            init()
             Result.success(runTask(input))
         } catch (e: Exception) {
             Result.failure(e)

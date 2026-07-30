@@ -18,6 +18,14 @@ abstract class LiteRTHandler<I, O> {
     protected abstract val compiler: LiteRTCompiler
 
     /**
+     * Initializes the handler and its underlying resources.
+     * This is an optional step that can be called before the first [runTask].
+     */
+    open suspend fun init() {
+        // Optional initialization
+    }
+
+    /**
      * Performs preprocessing on the input data and fills the input buffers.
      *
      * @param input The input data to process.

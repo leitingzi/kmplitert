@@ -12,12 +12,15 @@ class MobileNetRunner : BaseLiteRTRunner<LiteRtImage, List<Category>>(
 ) {
     private var labels: List<String> = emptyList()
 
-    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
+    override suspend fun init() {
+        super.init()
         if (labels.isEmpty()) {
             val labelsByte = Res.readBytes("files/mobilenet_v1_cn.txt")
             labels = labelsByte.decodeToString().lines()
         }
+    }
 
+    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
         val resized = input.resize(224, 224).toRgb()
         val data = resized.toInt8Array()
         inputBuffers[0].writeInt8(data)
