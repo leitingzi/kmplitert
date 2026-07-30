@@ -47,21 +47,13 @@ import org.example.kmplitert.viewmodel.MainViewModel
 fun MainScreen(
     viewModel: MainViewModel = viewModel { MainViewModel() }
 ) {
-    Scaffold(topBar = ::TopBar) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            MainScreenUI(
-                logs = viewModel.logs,
-                isProcessing = viewModel.isProcessing,
-                onRunMobileNet = viewModel::runMobileNet,
-                onRunEfficientDet = viewModel::runEfficientDet,
-                onClearLogs = viewModel::clearLogs
-            )
-        }
-    }
+    MainScreenUI(
+        logs = viewModel.logs,
+        isProcessing = viewModel.isProcessing,
+        onRunMobileNet = viewModel::runMobileNet,
+        onRunEfficientDet = viewModel::runEfficientDet,
+        onClearLogs = viewModel::clearLogs
+    )
 }
 
 @Composable
@@ -101,90 +93,101 @@ private fun MainScreenUI(
         scrollState.animateScrollTo(scrollState.maxValue)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
+    Scaffold(topBar = ::TopBar) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                Text(
-                    text = "Model Controls",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
                 ) {
-                    RunModelButton(
-                        onClick = onRunMobileNet,
-                        enabled = !isProcessing,
-                        text = "MobileNet"
-                    )
-
-                    RunModelButton(
-                        onClick = onRunEfficientDet,
-                        enabled = !isProcessing,
-                        text = "EfficientDet"
-                    )
-
-                    FilledIconButton(
-                        onClick = onClearLogs,
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        )
+                    Column(
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
+                        Text(
+                            text = "Model Controls",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.horizontalScroll(
+                                state = rememberScrollState()
+                            )
+                        ) {
+                            RunModelButton(
+                                onClick = onRunMobileNet,
+                                enabled = !isProcessing,
+                                text = "MobileNet"
+                            )
+
+                            RunModelButton(
+                                onClick = onRunEfficientDet,
+                                enabled = !isProcessing,
+                                text = "EfficientDet"
+                            )
+
+                            FilledIconButton(
+                                onClick = onClearLogs,
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (isProcessing) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                Text(
+                    "Output Console",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Console(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    scrollState = scrollState,
+                    logs = logs
+                )
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (isProcessing) {
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        } else {
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        Text(
-            "Output Console",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Console(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            scrollState = scrollState,
-            logs = logs
-        )
     }
+
 }
 
 @Composable

@@ -7,7 +7,7 @@ import platform.posix.*
 actual suspend fun loadResourceAsBytes(name: String): ByteArray {
     val paths = listOf(
         "src/commonTest/resources/$name",
-        "../library/kmplitert-core/src/commonTest/resources/$name",
+        "../library/core/src/commonTest/resources/$name",
         name
     )
     
