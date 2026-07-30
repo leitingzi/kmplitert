@@ -2,22 +2,21 @@ package org.example.kmplitert.runner
 
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.TFBuffer
-import io.github.kmplitert.tool.LiteRTHandler
-import io.github.kmplitert.tool.LiteRTFileUtils
-import io.github.kmplitert.tool.image.LiteRtImage
-import io.github.kmplitert.tool.Detection
-import io.github.kmplitert.tool.Category
 import io.github.kmplitert.tool.BoundingBox
+import io.github.kmplitert.tool.Category
+import io.github.kmplitert.tool.Detection
+import io.github.kmplitert.tool.LiteRTFileUtils
+import io.github.kmplitert.tool.LiteRTHandler
+import io.github.kmplitert.tool.image.LiteRtImage
 import kmplitert.app.shared.generated.resources.Res
 import kotlin.math.max
 import kotlin.math.min
 
-class EfficientDetRunner(
-    private val scoreThreshold: Float = 0.4f,
-    private val iouThreshold: Float = 0.5f,
-    private val labels: List<String>? = null,
-    private val accelerator: LiteRTAccelerator = LiteRTAccelerator.CPU
-) : LiteRTHandler<LiteRtImage, List<Detection>>() {
+class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
+
+    private val scoreThreshold = 0.4f
+    private val iouThreshold = 0.5f
+    private val labels: List<String>? = null
 
     override suspend fun init() {
         // Load model and setup compiler
@@ -26,7 +25,7 @@ class EfficientDetRunner(
         val modelName = modelResourcePath.substringAfterLast("/")
         val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, modelName)
 
-        setupCompiler(filePath, accelerator)
+        setupCompiler(filePath, LiteRTAccelerator.CPU)
     }
 
     suspend fun detect(image: LiteRtImage): Result<List<Detection>> {

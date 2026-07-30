@@ -2,15 +2,13 @@ package org.example.kmplitert.runner
 
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.TFBuffer
-import io.github.kmplitert.tool.LiteRTHandler
-import io.github.kmplitert.tool.LiteRTFileUtils
-import io.github.kmplitert.tool.image.LiteRtImage
 import io.github.kmplitert.tool.Category
+import io.github.kmplitert.tool.LiteRTFileUtils
+import io.github.kmplitert.tool.LiteRTHandler
+import io.github.kmplitert.tool.image.LiteRtImage
 import kmplitert.app.shared.generated.resources.Res
 
-class MobileNetRunner(
-    private val accelerator: LiteRTAccelerator = LiteRTAccelerator.CPU
-) : LiteRTHandler<LiteRtImage, List<Category>>() {
+class MobileNetRunner: LiteRTHandler<LiteRtImage, List<Category>>() {
     
     private var labels: List<String> = emptyList()
 
@@ -27,7 +25,7 @@ class MobileNetRunner(
         val modelName = modelResourcePath.substringAfterLast("/")
         val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, modelName)
 
-        setupCompiler(filePath, accelerator)
+        setupCompiler(filePath, LiteRTAccelerator.CPU)
     }
 
     suspend fun classify(image: LiteRtImage): Result<List<Category>> {
