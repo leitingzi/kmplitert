@@ -2,4 +2,4 @@
 
 package io.github.kmplitert.tool
 
-actual abstract class PlatformTest
+actual abstract class PlatformTest actual constructor()

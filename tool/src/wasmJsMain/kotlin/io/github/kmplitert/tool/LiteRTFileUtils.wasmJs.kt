@@ -11,14 +11,17 @@ import org.w3c.files.BlobPropertyBag
 
 actual object LiteRTFileUtils {
     actual fun createFileFromByteArray(data: ByteArray, fileName: String): String {
-        val uint8Array = Uint8Array(data.size)
+        val uint8Array = Uint8Array(length = data.size)
+
         for (i in data.indices) {
             uint8Array[i] = data[i]
         }
+
         val blob = Blob(
-            arrayOf<JsAny?>(uint8Array).toJsArray(),
-            BlobPropertyBag(type = "application/octet-stream")
+            blobParts = arrayOf<JsAny?>(uint8Array).toJsArray(),
+            options = BlobPropertyBag(type = "application/octet-stream")
         )
-        return URL.createObjectURL(blob)
+
+        return URL.createObjectURL(blob = blob)
     }
 }
