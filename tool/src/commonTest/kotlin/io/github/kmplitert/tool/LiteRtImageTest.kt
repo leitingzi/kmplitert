@@ -1,5 +1,8 @@
 package io.github.kmplitert.tool
 
+import io.github.kmplitert.tool.image.ImageFlip
+import io.github.kmplitert.tool.image.ImageRotation
+import io.github.kmplitert.tool.image.LiteRtImage
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -93,15 +96,15 @@ class LiteRtImageTest : PlatformTest() {
 
     @Test
     fun testRotationEnum() {
-        assertEquals(expected = 0, actual = LiteRtRotation.ROTATION_0.degrees)
-        assertEquals(expected = 90, actual = LiteRtRotation.ROTATION_90.degrees)
-        assertEquals(expected = 180, actual = LiteRtRotation.ROTATION_180.degrees)
-        assertEquals(expected = 270, actual = LiteRtRotation.ROTATION_270.degrees)
+        assertEquals(expected = 0, actual = ImageRotation.ROTATION_0.degrees)
+        assertEquals(expected = 90, actual = ImageRotation.ROTATION_90.degrees)
+        assertEquals(expected = 180, actual = ImageRotation.ROTATION_180.degrees)
+        assertEquals(expected = 270, actual = ImageRotation.ROTATION_270.degrees)
     }
 
     @Test
     fun testFlipDataClass() {
-        val flip = LiteRtFlip(horizontal = true, vertical = true)
+        val flip = ImageFlip(horizontal = true, vertical = true)
         assertTrue(actual = flip.horizontal)
         assertTrue(actual = flip.vertical)
     }

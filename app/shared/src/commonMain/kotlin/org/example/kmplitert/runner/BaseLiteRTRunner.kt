@@ -3,19 +3,22 @@ package org.example.kmplitert.runner
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.tool.LiteRTFileUtils
+import io.github.kmplitert.tool.LiteRTHandler
 import kmplitert.app.shared.generated.resources.Res
 
 
 abstract class BaseLiteRTRunner<I, O>(
     private val modelResourcePath: String,
     private val accelerator: LiteRTAccelerator = LiteRTAccelerator.CPU
-) : InferenceRunner<I, O> {
+) : LiteRTHandler<I, O>(), InferenceRunner<I, O> {
 
-    protected var compiler: LiteRTCompiler? = null
-        private set
+    private var _compiler: LiteRTCompiler? = null
+
+    override val compiler: LiteRTCompiler
+        get() = _compiler ?: throw IllegalStateException("Compiler not initialized. Call ensureInitialized() first.")
 
     protected suspend fun ensureInitialized() {
-        if (compiler == null) {
+        if (_compiler == null) {
             val modelData = Res.readBytes(modelResourcePath)
             val modelName = modelResourcePath.substringAfterLast("/")
             val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, modelName)
@@ -23,12 +26,21 @@ abstract class BaseLiteRTRunner<I, O>(
             val newCompiler = LiteRTCompiler(filePath = filePath, accelerator = accelerator)
             newCompiler.init()
 
-            compiler = newCompiler
+            _compiler = newCompiler
+        }
+    }
+
+    override suspend fun run(input: I): Result<O> {
+        return try {
+            ensureInitialized()
+            Result.success(runTask(input))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
     override suspend fun close() {
-        compiler?.close()
-        compiler = null
+        _compiler?.close()
+        _compiler = null
     }
 }

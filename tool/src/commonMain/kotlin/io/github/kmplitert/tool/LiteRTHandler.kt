@@ -4,28 +4,55 @@ import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.TFBuffer
 
 /**
- * A generic interface for model-specific preprocessing and postprocessing logic.
+ * A generic base class for model-specific preprocessing and postprocessing logic,
+ * combined with high-level task orchestration.
  *
  * @param I The type of the input data to be preprocessed (e.g., LiteRtImage).
  * @param O The type of the final result returned after postprocessing.
  */
-interface LiteRTHandler<I, O> {
+abstract class LiteRTHandler<I, O> {
+
+    /**
+     * The [LiteRTCompiler] instance used for inference.
+     */
+    protected abstract val compiler: LiteRTCompiler
 
     /**
      * Performs preprocessing on the input data and fills the input buffers.
      *
      * @param input The input data to process.
-     * @param compiler The [LiteRTCompiler] instance.
      * @param inputBuffers The list of input buffers to be filled.
      */
-    suspend fun preprocess(input: I, compiler: LiteRTCompiler, inputBuffers: List<TFBuffer>)
+    protected abstract suspend fun preprocess(input: I, inputBuffers: List<TFBuffer>)
 
     /**
      * Performs postprocessing on the output buffers and returns the inference results.
      *
      * @param outputBuffers The list of output buffers containing inference results.
-     * @param compiler The [LiteRTCompiler] instance.
      * @return The processed result of type [O].
      */
-    suspend fun postprocess(outputBuffers: List<TFBuffer>, compiler: LiteRTCompiler): O
+    protected abstract suspend fun postprocess(outputBuffers: List<TFBuffer>): O
+
+    /**
+     * Executes the full LiteRT task: preprocess -> run -> postprocess.
+     *
+     * @param input The input data to process.
+     * @return The final processed result.
+     */
+    suspend fun runTask(input: I): O {
+        val inputBuffers = compiler.getInputBuffers()
+        preprocess(input, inputBuffers)
+
+        val outputBuffers = compiler.getOutputBuffers()
+        compiler.run(inputBuffers, outputBuffers)
+
+        return postprocess(outputBuffers)
+    }
+
+    /**
+     * Closes the underlying [LiteRTCompiler].
+     */
+    open suspend fun close() {
+        compiler.close()
+    }
 }
