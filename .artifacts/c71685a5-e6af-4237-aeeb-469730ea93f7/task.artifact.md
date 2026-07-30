@@ -1,7 +1,0 @@
-- [x] Simplify App Inference Architecture
-    - [x] Refactor `LiteRTHandler.kt` to be inheritance-friendly
-    - [x] Update `BaseLiteRTRunner.kt` to implement `LiteRTHandler`
-    - [x] Consolidate `MobileNetRunner.kt`
-    - [x] Consolidate `EfficientDetRunner.kt`
-    - [x] Delete `EfficientDetHandler.kt`
-    - [x] Verify build and tests
