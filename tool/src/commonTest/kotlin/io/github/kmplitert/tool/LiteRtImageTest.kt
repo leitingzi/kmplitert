@@ -120,7 +120,7 @@ class LiteRtImageTest : PlatformTest() {
         image.writeFloatBuffer(buffer = mockBuffer, mean = 127.5f, std = 127.5f)
         assertContentEquals(
             expected = image.toFloatArray(mean = 127.5f, std = 127.5f),
-            actual = mockBuffer.floats
+            actual = mockBuffer.floats,
         )
     }
 }

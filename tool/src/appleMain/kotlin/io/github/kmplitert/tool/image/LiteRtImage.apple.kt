@@ -10,8 +10,8 @@ import platform.Accelerate.*
 
 internal actual fun fromVideoFrameNative(
     frame: Any,
-    rotation: LiteRtRotation,
-    flip: LiteRtFlip
+    rotation: ImageRotation,
+    flip: ImageFlip
 ): LiteRtImage {
     @Suppress("UNCHECKED_CAST")
     val ptr = frame as? CPointer<out CPointed>
@@ -23,8 +23,8 @@ internal actual fun fromVideoFrameNative(
 
 internal expect fun fromPlatformImage(
     frame: Any,
-    rotation: LiteRtRotation,
-    flip: LiteRtFlip
+    rotation: ImageRotation,
+    flip: ImageFlip
 ): LiteRtImage
 
 /**
@@ -34,8 +34,8 @@ internal expect fun fromPlatformImage(
  */
 fun LiteRtImage.Companion.fromIosPixelBuffer(
     pixelBuffer: CVPixelBufferRef,
-    rotation: LiteRtRotation = LiteRtRotation.ROTATION_0,
-    flip: LiteRtFlip = LiteRtFlip()
+    rotation: ImageRotation = ImageRotation.ROTATION_0,
+    flip: ImageFlip = ImageFlip()
 ): LiteRtImage {
     val pixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer)
     CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly)
@@ -119,8 +119,8 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                 throw IllegalArgumentException("Unsupported pixel format: $pixelFormat")
             }
 
-            val targetWidth = if (rotation == LiteRtRotation.ROTATION_90 || rotation == LiteRtRotation.ROTATION_270) height else width
-            val targetHeight = if (rotation == LiteRtRotation.ROTATION_90 || rotation == LiteRtRotation.ROTATION_270) width else height
+            val targetWidth = if (rotation == ImageRotation.ROTATION_90 || rotation == ImageRotation.ROTATION_270) height else width
+            val targetHeight = if (rotation == ImageRotation.ROTATION_90 || rotation == ImageRotation.ROTATION_270) width else height
             
             val finalData = nativeHeap.allocArray<ByteVar>(targetWidth * targetHeight * 4)
             val finalBuffer = alloc<vImage_Buffer>().apply {
@@ -131,10 +131,10 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
             }
 
             when (rotation) {
-                LiteRtRotation.ROTATION_90 -> {
+                ImageRotation.ROTATION_90 -> {
                     vImageRotate90_ARGB8888(argbBuffer.ptr, finalBuffer.ptr, 0u, null, kvImageNoFlags)
                 }
-                LiteRtRotation.ROTATION_180 -> {
+                ImageRotation.ROTATION_180 -> {
                     val tempData = nativeHeap.allocArray<ByteVar>(width * height * 4)
                     val tempBuffer = alloc<vImage_Buffer>().apply {
                         this.data = tempData
@@ -146,7 +146,7 @@ fun LiteRtImage.Companion.fromIosPixelBuffer(
                     vImageRotate90_ARGB8888(tempBuffer.ptr, finalBuffer.ptr, 0u, null, kvImageNoFlags)
                     nativeHeap.free(tempData)
                 }
-                LiteRtRotation.ROTATION_270 -> {
+                ImageRotation.ROTATION_270 -> {
                     // 270 = 90 * 3
                     val temp1Data = nativeHeap.allocArray<ByteVar>(targetWidth * targetHeight * 4)
                     val temp1Buffer = alloc<vImage_Buffer>().apply {

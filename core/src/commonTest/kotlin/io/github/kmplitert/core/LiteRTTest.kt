@@ -12,17 +12,12 @@ class LiteRTTest {
         val original = "Hello World"
         val base64 = "SGVsbG8gV29ybGQ="
         val decoded = decodeBase64(base64)
-        assertEquals(original, decoded.decodeToString())
+        assertContentEquals(original.encodeToByteArray(), decoded)
     }
 
     @Test
     fun verifyModelBytes() {
-        val bytes = try {
-            decodeBase64(CELSIUS_TO_FAHRENHEIT_MODEL_BASE64)
-        } catch (e: Throwable) {
-            println("Decode failed: ${e.message}")
-            return
-        }
+        val bytes = decodeBase64(CELSIUS_TO_FAHRENHEIT_MODEL_BASE64)
         println("Model bytes size: ${bytes.size}")
         // Print hex for debugging
         val hex = bytes.take(16).joinToString(" ") { it.toInt().and(0xFF).toString(16).padStart(2, '0') }
@@ -82,7 +77,10 @@ class LiteRTTest {
                 config.inputs.forEachIndexed { index, expect ->
                     when (val data = expect.testData) {
                         is FloatArray -> inputBuffers[index].writeFloat(data)
-                        // Add other types as needed
+                        is IntArray -> inputBuffers[index].writeInt(data)
+                        is ByteArray -> inputBuffers[index].writeInt8(data)
+                        is LongArray -> inputBuffers[index].writeLong(data)
+                        is BooleanArray -> inputBuffers[index].writeBoolean(data)
                     }
                 }
                 
@@ -97,6 +95,12 @@ class LiteRTTest {
                             for (i in expected.indices) {
                                 assertEquals(expected[i], actual[i], expect.tolerance, "Output ${expect.name} value mismatch at index $i")
                             }
+                        }
+                        is IntArray -> {
+                            assertContentEquals(expected, outputBuffers[index].readInt(), "Output ${expect.name} mismatch")
+                        }
+                        is ByteArray -> {
+                            assertContentEquals(expected, outputBuffers[index].readInt8(), "Output ${expect.name} mismatch")
                         }
                     }
                 }
@@ -128,7 +132,7 @@ class LiteRTTest {
                 TensorExpectation(
                     name = "input_c",
                     elementType = LiteRTElementType.FLOAT,
-                    testData = floatArrayOf(100f)
+                    testData = floatArrayOf(100f),
                 )
             ),
             outputs = listOf(

@@ -5,7 +5,7 @@ actual suspend fun loadResourceAsBytes(name: String): ByteArray {
         ?: throw IllegalStateException("Failed to obtain the ClassLoader for LiteRTCompiler.")
 
     val inputStream = classLoader.getResourceAsStream(name)
-        ?: throw IllegalArgumentException("Resource not found: $name")
+        ?: throw IllegalArgumentException("Resource not found: $name. Ensure it is in src/commonTest/resources or src/androidHostTest/resources.")
 
     return inputStream.readBytes()
 }

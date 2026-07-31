@@ -8,13 +8,13 @@ import platform.UIKit.*
 
 internal actual fun fromPlatformImage(
     frame: Any,
-    rotation: LiteRtRotation,
-    flip: LiteRtFlip
+    rotation: ImageRotation,
+    flip: ImageFlip
 ): LiteRtImage {
     if (frame is UIImage) {
         val bytes = frame.toRgbBytes() ?: throw IllegalArgumentException("Failed to get RGB bytes from UIImage")
         var image = LiteRtImage(bytes, frame.size.useContents { width.toInt() }, frame.size.useContents { height.toInt() }, 3)
-        if (rotation != LiteRtRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
+        if (rotation != ImageRotation.ROTATION_0) image = image.rotate(rotation.degrees.toFloat())
         if (flip.horizontal || flip.vertical) image = image.flip(flip.horizontal, flip.vertical)
         return image
     }
