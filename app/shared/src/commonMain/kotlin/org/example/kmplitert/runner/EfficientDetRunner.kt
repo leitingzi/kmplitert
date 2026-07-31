@@ -2,9 +2,7 @@ package org.example.kmplitert.runner
 
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.TFBuffer
-import io.github.kmplitert.tool.BoundingBox
-import io.github.kmplitert.tool.Category
-import io.github.kmplitert.tool.Detection
+import io.github.kmplitert.tool.LiteRTExt
 import io.github.kmplitert.tool.LiteRTFileUtils
 import io.github.kmplitert.tool.LiteRTHandler
 import io.github.kmplitert.tool.image.LiteRtImage
@@ -12,7 +10,7 @@ import kmplitert.app.shared.generated.resources.Res
 import kotlin.math.max
 import kotlin.math.min
 
-class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
+class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>() {
 
     private val scoreThreshold = 0.4f
     private val iouThreshold = 0.5f
@@ -28,7 +26,7 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
         setupCompiler(filePath, LiteRTAccelerator.CPU)
     }
 
-    suspend fun detect(image: LiteRtImage): Result<List<Detection>> {
+    suspend fun detect(image: LiteRtImage): Result<List<LiteRTExt.Detection>> {
         return try {
             Result.success(runTask(image))
         } catch (e: Exception) {
@@ -43,7 +41,7 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
         inputBuffers[0].writeInt8(data)
     }
 
-    override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<Detection> {
+    override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Detection> {
         val out0 = outputBuffers[0].readFloat()
         val out1 = outputBuffers[1].readFloat()
 
@@ -62,7 +60,7 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
         }
 
         val numAnchors = 19206
-        val candidates = mutableListOf<Detection>()
+        val candidates = mutableListOf<LiteRTExt.Detection>()
 
         for (i in 0 until numAnchors) {
             var maxScore = 0f
@@ -85,9 +83,9 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
                 val label = labels?.getOrNull(classIndex) ?: classIndex.toString()
                 
                 candidates.add(
-                    Detection(
-                        boundingBox = BoundingBox(xmin, ymin, xmax, ymax),
-                        categories = listOf(Category(label, maxScore, classIndex))
+                    LiteRTExt.Detection(
+                        boundingBox = LiteRTExt.BoundingBox(xmin, ymin, xmax, ymax),
+                        categories = listOf(LiteRTExt.Category(label, maxScore, classIndex))
                     )
                 )
             }
@@ -96,9 +94,9 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
         return performNms(candidates, iouThreshold)
     }
 
-    private fun performNms(detections: List<Detection>, iouThreshold: Float): List<Detection> {
+    private fun performNms(detections: List<LiteRTExt.Detection>, iouThreshold: Float): List<LiteRTExt.Detection> {
         val sortedDetections = detections.sortedByDescending { it.categories.first().score }.toMutableList()
-        val results = mutableListOf<Detection>()
+        val results = mutableListOf<LiteRTExt.Detection>()
 
         while (sortedDetections.isNotEmpty()) {
             val best = sortedDetections.removeAt(0)
@@ -116,7 +114,7 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<Detection>>() {
         return results
     }
 
-    private fun calculateIou(box1: BoundingBox, box2: BoundingBox): Float {
+    private fun calculateIou(box1: LiteRTExt.BoundingBox, box2: LiteRTExt.BoundingBox): Float {
         val x1 = max(box1.left, box2.left)
         val y1 = max(box1.top, box2.top)
         val x2 = min(box1.right, box2.right)
