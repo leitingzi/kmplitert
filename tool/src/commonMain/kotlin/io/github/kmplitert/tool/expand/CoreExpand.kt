@@ -104,4 +104,8 @@ val LiteRTTensorType.dimensions: List<Int>
  * Returns the total number of elements in the tensor layout.
  */
 val LiteRTLayout.totalElements: Int
-    get() = if (dimensions.isEmpty()) 0 else dimensions.fold(1) { acc, d -> acc * d }
+    get() = if (dimensions.isEmpty()) {
+        0
+    } else {
+        dimensions.fold(1) { acc, d -> acc * d }
+    }

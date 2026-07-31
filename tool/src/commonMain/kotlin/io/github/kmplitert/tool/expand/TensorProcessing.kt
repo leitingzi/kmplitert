@@ -44,7 +44,9 @@ fun ByteArray.toBooleanArray(): BooleanArray = BooleanArray(size) { this[it].toI
  * @throws IllegalArgumentException if [std] is zero.
  */
 fun FloatArray.normalize(mean: Float, std: Float): FloatArray {
-    require(std != 0f) { "std must not be zero." }
+    require(std != 0f) {
+        "std must not be zero."
+    }
     return FloatArray(size) { (this[it] - mean) / std }
 }
 
@@ -52,7 +54,9 @@ fun FloatArray.normalize(mean: Float, std: Float): FloatArray {
  * Clamps the values in the [FloatArray] within the range `[min, max]`.
  */
 fun FloatArray.clamp(min: Float, max: Float): FloatArray {
-    require(min <= max) { "min must be <= max." }
+    require(min <= max) {
+        "min must be <= max."
+    }
     return FloatArray(size) {
         when {
             this[it] < min -> min
@@ -68,7 +72,9 @@ fun FloatArray.clamp(min: Float, max: Float): FloatArray {
  * Formula: `round(value / scale + zeroPoint)` coerced to `[-128, 127]`.
  */
 fun FloatArray.quantize(scale: Float, zeroPoint: Int): ByteArray {
-    require(scale > 0f) { "scale must be > 0." }
+    require(scale > 0f) {
+        "scale must be > 0."
+    }
     return ByteArray(size) {
         val q = (this[it] / scale + zeroPoint).roundToInt().coerceIn(-128, 127)
         q.toByte()
@@ -81,7 +87,9 @@ fun FloatArray.quantize(scale: Float, zeroPoint: Int): ByteArray {
  * Formula: `(value - zeroPoint) * scale`
  */
 fun ByteArray.dequantize(scale: Float, zeroPoint: Int): FloatArray {
-    require(scale > 0f) { "scale must be > 0." }
+    require(scale > 0f) {
+        "scale must be > 0."
+    }
     return FloatArray(size) {
         (this[it].toInt() - zeroPoint) * scale
     }

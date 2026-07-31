@@ -11,7 +11,10 @@ import kotlin.math.min
  * Computes the Softmax probabilities for the [FloatArray].
  */
 fun FloatArray.softmax(): FloatArray {
-    if (isEmpty()) return floatArrayOf()
+    if (isEmpty()) {
+        return floatArrayOf()
+    }
+
     val max = this.maxOrNull() ?: 0f
     val exp = FloatArray(size) { exp(this[it] - max) }
     val sum = exp.sum()
@@ -102,11 +105,7 @@ fun calculateIou(box1: FloatArray, box2: FloatArray): Float {
  * @param iouThreshold The IoU threshold above which boxes are considered overlapping.
  * @return A list of indices of the selected boxes.
  */
-fun performNms(
-    boxes: Array<FloatArray>,
-    scores: FloatArray,
-    iouThreshold: Float
-): List<Int> {
+fun performNms(boxes: Array<FloatArray>, scores: FloatArray, iouThreshold: Float): List<Int> {
     val indices = scores.indices.sortedByDescending { scores[it] }.toMutableList()
     val selected = mutableListOf<Int>()
 

@@ -241,8 +241,7 @@ actual class LiteRtImage (val canvas: HTMLCanvasElement, private val _channels: 
             }
 
             throw UnsupportedOperationException(
-                "LiteRtImage.fromBytes currently only supports BMP synchronously on Web. " +
-                        "For PNG/JPEG, please use LiteRtImage.fromImageElement (async)."
+                "LiteRtImage.fromBytes currently only supports BMP synchronously on Web. For PNG/JPEG, please use LiteRtImage.fromImageElement (async)."
             )
         }
 
