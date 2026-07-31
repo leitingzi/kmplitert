@@ -23,14 +23,15 @@
 - [📦 Installation](#-installation)
 - [🍎 iOS & Native Setup (Critical)](#-ios--native-setup-critical)
 - [🚀 Quick Start (Real-world Examples)](#-quick-start-real-world-examples)
-  - [1. Numeric Regression (Celsius to Fahrenheit)](#1-numeric-regression-celsius-to-fahrenheit)
-  - [2. Vision Classification (MobileNet)](#2-vision-classification-mobilenet)
+  - [1. High-Level Inference (Recommended)](#1-high-level-inference-recommended)
+  - [2. Low-Level Inference](#2-low-level-inference)
 - [🛠️ Core API Reference](#️-core-api-reference)
   - [LiteRTCompiler](#litertcompiler)
   - [TFBuffer](#tfbuffer)
-  - [LiteRTFileUtils](#litertfileutils)
+  - [LiteRTExt (Data Models)](#literext-data-models)
 - [🖼️ Image Processing (LiteRtImage)](#️-image-processing-litertimage)
-- [⚡ Performance & Hardware Acceleration](#-performance--hardware-acceleration)
+- [🔊 Audio Processing (LiteRtAudio)](#-audio-processing-litertaudio)
+- [⚡ Extensions & Utilities](#-extensions--utilities)
 - [🛑 Troubleshooting & FAQ](#-troubleshooting--faq)
 - [🗺️ Roadmap](#️-roadmap)
 - [🤝 Contributing](#-contributing)
@@ -116,7 +117,7 @@ kotlin {
             // The core ML runtime engine
             implementation("io.github.leitingzi:kmplitert-core:$kmplitertVersion")
             
-            // Optional: Image processing & File utilities
+            // Optional: Image/Audio processing & File utilities
             implementation("io.github.leitingzi:kmplitert-tool:$kmplitertVersion")
         }
     }
@@ -175,7 +176,7 @@ kotlin {
 The `libLiteRt.dylib` must be physically present in your `.framework/Frameworks` directory. You can automate this via Gradle:
 
 ```kotlin
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink>().configureEach {
+tasks.withType<KotlinNativeLink>().configureEach {
     val target = binary.target.konanTarget
     if (target.isApple) {
         doLast {
@@ -208,61 +209,60 @@ The best way to implement a model is by inheriting from `LiteRTHandler`. It hand
 import io.github.kmplitert.core.*
 import io.github.kmplitert.tool.*
 import io.github.kmplitert.tool.image.LiteRtImage
+import io.github.kmplitert.tool.expand.*
 
-class MyClassifier : LiteRTHandler<LiteRtImage, List<Category>>() {
+class MyClassifier : LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
+    private val labels = listOf("Cat", "Dog", "Bird")
+
     override suspend fun init() {
-        // 1. Prepare model path (e.g. from resources)
-        val path = "path/to/model.tflite"
-        // 2. Setup compiler (automatically calls compiler.init())
-        setupCompiler(path, LiteRTAccelerator.CPU)
+        // Setup compiler with model path and accelerator
+        setupCompiler("path/to/model.tflite", LiteRTAccelerator.CPU)
     }
 
     override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
-        val data = input.resize(224, 224).toRgb().toInt8Array()
-        inputBuffers[0].writeInt8(data)
+        // 1. Resize, Normalize and write directly to native buffer
+        input.resize(224, 224)
+             .toRgb()
+             .writeFloatBuffer(inputBuffers[0], mean = 127.5f, std = 127.5f)
     }
 
-    override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<Category> {
-        val scores = outputBuffers[0].readInt8()
-        // ... transform scores to List<Category>
-        return listOf(Category("Example", 0.9f, 0))
+    override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Category> {
+        // 2. Read output and convert to high-level Category models using extension
+        val scores = outputBuffers[0].readFloat()
+        return scores.toCategories(labels, threshold = 0.5f)
     }
     
-    // Custom friendly entry point
     suspend fun classify(image: LiteRtImage) = runTask(image)
 }
 ```
 
 ### 2. Low-Level Inference
 
-For manual control, you can use `LiteRTCompiler` and `TFBuffer` directly.
+For manual control, use `LiteRTCompiler` and extensions for idiomatic Kotlin.
 
 ```kotlin
 import io.github.kmplitert.core.*
-import io.github.kmplitert.tool.LiteRTFileUtils
+import io.github.kmplitert.tool.expand.*
 
-suspend fun simpleInference(modelBytes: ByteArray) {
-    // 1. Prepare model file
-    val filePath = LiteRTFileUtils.createFileFromByteArray(modelBytes, "temp_model.tflite")
-    
-    // 2. Initialize Compiler
-    val compiler = LiteRTCompiler(filePath, LiteRTAccelerator.CPU)
-    compiler.init()
+suspend fun simpleInference(modelPath: String) {
+    // 1. Initialize Compiler with DSL-like 'use' block for auto-cleanup
+    LiteRTCompiler(modelPath, LiteRTAccelerator.CPU).use { compiler ->
+        compiler.init()
 
-    // 3. Prepare I/O
-    val inputs = compiler.getInputBuffers()
-    val outputs = compiler.getOutputBuffers()
+        // 2. Prepare I/O Buffers
+        val inputs = compiler.getInputBuffers()
+        val outputs = compiler.getOutputBuffers()
 
-    // 4. Input & Run
-    inputs[0].writeFloat(floatArrayOf(100f))
-    compiler.run(inputs, outputs)
+        // 3. Write input data using extensions
+        floatArrayOf(1.0f, 2.0f, 3.0f).writeTo(inputs[0])
 
-    // 5. Output result
-    val result = outputs[0].readFloat()
-    println("Result: ${result[0]}")
+        // 4. Run inference
+        compiler.run(inputs, outputs)
 
-    // 6. Cleanup
-    compiler.close()
+        // 5. Read result directly
+        val result = outputs[0].readFloat()
+        println("Inference result: ${result.joinToString()}")
+    }
 }
 ```
 
@@ -271,42 +271,67 @@ suspend fun simpleInference(modelBytes: ByteArray) {
 ## 🛠️ Core API Reference
 
 ### `LiteRTHandler<I, O>`
-The primary base class for model implementation.
-- `init()`: Initialize resources and call `setupCompiler`.
+Primary base class for model implementation.
 - `runTask(input)`: Orchestrates `preprocess -> run -> postprocess`.
 - `setupCompiler(path, accel)`: Thread-safe, automated compiler setup.
-- `close()`: Safely releases the underlying compiler.
+- `close()`: Safely releases resources.
 
 ### `LiteRTCompiler`
-The low-level engine managing the native model.
+The engine managing the native model.
 - `run(inputs, outputs)`: Executes raw inference.
 - `getInputBuffers()` / `getOutputBuffers()`: Pre-allocates native buffers.
 
-### 🖼️ Image Processing (`LiteRtImage`)
-Located in `io.github.kmplitert.tool.image`, provides a fluent API for vision models:
-```kotlin
-import io.github.kmplitert.tool.image.*
+### `LiteRTExt` (Common Models)
+Foundational data structures in `io.github.kmplitert.tool`:
+- **General**: `Category`, `BoundingBox`, `Detection`.
+- **Vision**: `Face.Result`, `Hand.Gesture`, `Pose.Result`.
+- **Segmentation**: `Segmentation.Mask`.
+- **NLP**: `Nlp.Tokenizer` interface.
+- **OCR**: `Text.Result`, `Text.Block`, `Text.Line`.
+- **Video**: `Video.Frame`.
 
-val data = LiteRtImage.fromBytes(bytes)
+---
+
+## 🖼️ Image Processing (`LiteRtImage`)
+Located in `io.github.kmplitert.tool.image`, provides a fluent API:
+```kotlin
+val processedImage = LiteRtImage.fromBytes(bytes)
     .resize(320, 320)
-    .rotate(ImageRotation.ROTATION_90)
-    .flip(ImageFlip(horizontal = true))
+    .rotate(90f) // Degrees as Float
+    .flip(horizontal = true, vertical = false)
     .toRgb()
-    .toInt8Array()
+
+// Efficiently write to buffer
+processedImage.writeFloatBuffer(buffer, mean = 0f, std = 255f)
 ```
 
-### 📊 Foundational Data Types
-Standardized structures for common ML tasks:
-- `Category`: Label, score, and index.
-- `BoundingBox`: Normalized or pixel coordinates.
-- `Detection`: A `BoundingBox` coupled with a list of `Category`.
-- `SegmentationMask`: Raw mask data with accessors.
+---
+
+## 🔊 Audio Processing (`LiteRtAudio`)
+New in `io.github.kmplitert.tool.audio`, simplifies audio tasks:
+```kotlin
+import io.github.kmplitert.tool.audio.*
+
+// Decode WAV file
+val audio = WavDecoder.decode(wavBytes)
+val pcmData = audio.data // FloatArray
+
+// Basic signal processing
+val normalized = SignalProcessing.normalize(pcmData)
+```
+
+---
+
+## ⚡ Extensions & Utilities
+The `io.github.kmplitert.tool.expand` package provides powerful extensions:
+
+- **Core Extensions**: `TFBuffer.writeTo(array)`, `TFBuffer.toFloatArray()`, `LiteRTCompiler.use { ... }`.
+- **PostProcessing**: `FloatArray.argmax()`, `FloatArray.softmax()`, `FloatArray.toCategories(...)`.
+- **NMS**: `performNms(boxes, scores, threshold)` for object detection.
 
 ---
 
 ## 🤝 Contributing
-
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -319,16 +344,6 @@ Contributions are what make the open-source community such an amazing place to l
 ## 📄 License
 
 Distributed under the **Apache License, Version 2.0**. See `LICENSE` for more information.
-
-```text
-Copyright 2026 yebintang
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-```
 
 ---
 

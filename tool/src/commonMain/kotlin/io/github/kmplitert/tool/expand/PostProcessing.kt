@@ -1,5 +1,6 @@
 package io.github.kmplitert.tool.expand
 
+import io.github.kmplitert.tool.LiteRTExt
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
@@ -49,6 +50,24 @@ fun FloatArray.topK(k: Int): List<Pair<Int, Float>> {
     return indices.map { it to this[it] }
         .sortedByDescending { it.second }
         .take(k)
+}
+
+/**
+ * Converts the [FloatArray] scores into a list of [LiteRTExt.Category].
+ *
+ * @param labels The labels corresponding to each index.
+ * @param threshold The minimum score to include a category.
+ * @return A sorted list of categories.
+ */
+fun FloatArray.toCategories(labels: List<String>, threshold: Float = 0f): List<LiteRTExt.Category> {
+    return mapIndexed { index, score ->
+        LiteRTExt.Category(
+            label = labels.getOrElse(index) { "Unknown" },
+            score = score,
+            index = index
+        )
+    }.filter { it.score >= threshold }
+        .sortedByDescending { it.score }
 }
 
 /* ---------- Detection Post-processing ---------- */
