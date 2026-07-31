@@ -42,12 +42,17 @@ abstract class LiteRTHandler<I, O> {
      * @param accelerator The hardware accelerator to use.
      */
     protected suspend fun setupCompiler(filePath: String, accelerator: LiteRTAccelerator) {
-        if (_compiler != null) return
+        if (_compiler != null) {
+            return
+        }
         initLock.withLock {
-            if (_compiler != null) return@withLock
+            if (_compiler != null) {
+                return@withLock
+            }
             val newCompiler = LiteRTCompiler(filePath = filePath, accelerator = accelerator)
             newCompiler.init()
-            _compiler = newCompiler
+
+            setCompiler(compiler = newCompiler)
         }
     }
 
@@ -57,7 +62,7 @@ abstract class LiteRTHandler<I, O> {
      * Subclasses should initialize the compiler here using [setupCompiler] or [setCompiler].
      */
     open suspend fun init() {
-        // Optional initialization
+
     }
 
     /**
@@ -94,12 +99,12 @@ abstract class LiteRTHandler<I, O> {
         }
         
         val inputBuffers = compiler.getInputBuffers()
-        preprocess(input, inputBuffers)
+        preprocess(input = input, inputBuffers = inputBuffers)
 
         val outputBuffers = compiler.getOutputBuffers()
-        compiler.run(inputBuffers, outputBuffers)
+        compiler.run(inputs = inputBuffers, outputs = outputBuffers)
 
-        return postprocess(outputBuffers)
+        return postprocess(outputBuffers = outputBuffers)
     }
 
     /**

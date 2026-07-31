@@ -39,6 +39,9 @@ actual class LiteRTCompiler actual constructor(
     }
 
     actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType {
+        val a = compiledModel.getOutputDetails().toKotlinList()
+        println(a.map { it?.name }.toString())
+
         val details = compiledModel.getOutputDetails().toKotlinList().find { it?.name == outputName }
             ?: throw IllegalArgumentException("Output tensor $outputName not found")
         return details.toPlatform()
