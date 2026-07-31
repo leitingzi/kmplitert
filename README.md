@@ -109,7 +109,7 @@ graph TD
 Add KMPLiteRT to your `commonMain` source set in `build.gradle.kts`.
 
 ```kotlin
-val kmplitertVersion = "0.1.4" // Replace with latest
+val kmplitertVersion = "0.2.0" // Replace with latest
 
 kotlin {
     sourceSets {
