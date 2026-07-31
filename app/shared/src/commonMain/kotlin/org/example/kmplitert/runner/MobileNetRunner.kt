@@ -9,7 +9,8 @@ import io.github.kmplitert.tool.image.LiteRtImage
 import kmplitert.app.shared.generated.resources.Res
 
 class MobileNetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
-    
+
+    val compilerInstance get() = compiler
     private var labels: List<String> = emptyList()
 
     override suspend fun init() {

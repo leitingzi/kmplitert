@@ -12,6 +12,7 @@ import kotlin.math.min
 
 class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>() {
 
+    val compilerInstance get() = compiler
     private val scoreThreshold = 0.4f
     private val iouThreshold = 0.5f
     private val labels: List<String>? = null
