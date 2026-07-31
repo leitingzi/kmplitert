@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.kmplitert.tool.LiteRtImage
+import io.github.kmplitert.tool.image.LiteRtImage
 import kmplitert.app.shared.generated.resources.Res
 import kotlinx.coroutines.launch
 import org.example.kmplitert.runner.EfficientDetRunner
@@ -28,7 +28,7 @@ class MainViewModel : ViewModel() {
             try {
                 val dogData = Res.readBytes("files/pic/elephant.bmp")
                 val image = LiteRtImage.fromBytes(dogData)
-                mobileNetRunner.run(image).onSuccess { results ->
+                mobileNetRunner.classify(image).onSuccess { results ->
                     results.forEachIndexed { index, category ->
                         addLog("Top ${index + 1}: ${category.label} (${category.score})")
                     }
@@ -50,7 +50,7 @@ class MainViewModel : ViewModel() {
             try {
                 val picData = Res.readBytes("files/pic/elephant.bmp")
                 val image = LiteRtImage.fromBytes(picData)
-                efficientDetRunner.run(image).onSuccess { results ->
+                efficientDetRunner.detect(image).onSuccess { results ->
                     if (results.isEmpty()) {
                         addLog("No objects detected.")
                     } else {

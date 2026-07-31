@@ -50,26 +50,21 @@ const val CELSIUS_TO_FAHRENHEIT_EX_MODEL_BASE64 =
 
 fun decodeBase64(base64: String): ByteArray {
     val table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    val clean = base64.replace("\n", "")
-        .replace("\r", "")
-        .replace(" ", "")
-        .replace("=", "")
+    val clean = base64.filter { it in table || it == '=' }
+    val data = clean.takeWhile { it != '=' }
 
     val output = mutableListOf<Byte>()
     var bitBuffer = 0
     var bitCount = 0
 
-    for (char in clean) {
+    for (char in data) {
         val value = table.indexOf(char)
         if (value == -1) continue
         bitBuffer = (bitBuffer shl 6) or value
         bitCount += 6
         if (bitCount >= 8) {
             bitCount -= 8
-
-            val byte = ((bitBuffer shr bitCount) and 0xFF).toByte()
-            output.add(byte)
-            bitBuffer = bitBuffer and ((1 shl bitCount) - 1)
+            output.add(((bitBuffer shr bitCount) and 0xFF).toByte())
         }
     }
     return output.toByteArray()

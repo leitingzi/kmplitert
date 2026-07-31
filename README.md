@@ -200,16 +200,49 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink>().configureEa
 
 ## 🚀 Quick Start (Real-world Examples)
 
-### 1. Numeric Regression (Celsius to Fahrenheit)
+### 1. High-Level Inference (Recommended)
 
-A simple example showing low-level buffer manipulation.
+The best way to implement a model is by inheriting from `LiteRTHandler`. It handles the orchestration and lifecycle for you.
+
+```kotlin
+import io.github.kmplitert.core.*
+import io.github.kmplitert.tool.*
+import io.github.kmplitert.tool.image.LiteRtImage
+
+class MyClassifier : LiteRTHandler<LiteRtImage, List<Category>>() {
+    override suspend fun init() {
+        // 1. Prepare model path (e.g. from resources)
+        val path = "path/to/model.tflite"
+        // 2. Setup compiler (automatically calls compiler.init())
+        setupCompiler(path, LiteRTAccelerator.CPU)
+    }
+
+    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
+        val data = input.resize(224, 224).toRgb().toInt8Array()
+        inputBuffers[0].writeInt8(data)
+    }
+
+    override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<Category> {
+        val scores = outputBuffers[0].readInt8()
+        // ... transform scores to List<Category>
+        return listOf(Category("Example", 0.9f, 0))
+    }
+    
+    // Custom friendly entry point
+    suspend fun classify(image: LiteRtImage) = runTask(image)
+}
+```
+
+### 2. Low-Level Inference
+
+For manual control, you can use `LiteRTCompiler` and `TFBuffer` directly.
 
 ```kotlin
 import io.github.kmplitert.core.*
 import io.github.kmplitert.tool.LiteRTFileUtils
 
 suspend fun simpleInference(modelBytes: ByteArray) {
-    // 1. Prepare model file (cross-platform helper)
+    // 1. Prepare model file
     val filePath = LiteRTFileUtils.createFileFromByteArray(modelBytes, "temp_model.tflite")
     
     // 2. Initialize Compiler
@@ -220,54 +253,15 @@ suspend fun simpleInference(modelBytes: ByteArray) {
     val inputs = compiler.getInputBuffers()
     val outputs = compiler.getOutputBuffers()
 
-    // 4. Input 100°C
+    // 4. Input & Run
     inputs[0].writeFloat(floatArrayOf(100f))
-
-    // 5. Run
     compiler.run(inputs, outputs)
 
-    // 6. Output result
+    // 5. Output result
     val result = outputs[0].readFloat()
-    println("Result: ${result[0]}°F")
+    println("Result: ${result[0]}")
 
-    // 7. Cleanup
-    compiler.close()
-}
-```
-
-### 2. Vision Classification (MobileNet)
-
-A complete vision pipeline example, inspired by the project's `:app` module.
-
-```kotlin
-import io.github.kmplitert.core.*
-import io.github.kmplitert.tool.*
-
-suspend fun classifyImage(imageBytes: ByteArray, modelBytes: ByteArray) {
-    val filePath = LiteRTFileUtils.createFileFromByteArray(modelBytes, "mobilenet.tflite")
-    val compiler = LiteRTCompiler(filePath, LiteRTAccelerator.GPU)
-    compiler.init()
-
-    // Image Preprocessing Pipeline
-    val processedData = LiteRtImage.fromBytes(imageBytes)
-        .resize(224, 224) // Resize to model requirement
-        .toRgb()          // Ensure RGB format
-        .toInt8Array()    // Convert to Quantized Int8
-
-    val inputs = compiler.getInputBuffers()
-    val outputs = compiler.getOutputBuffers()
-
-    // Write to native buffer
-    inputs[0].writeInt8(processedData)
-
-    // Inference
-    compiler.run(inputs, outputs)
-
-    // Post-processing
-    val scores = outputs[0].readInt8()
-    val topIndex = scores.indices.maxBy { scores[it] }
-    
-    println("Top Class Index: $topIndex")
+    // 6. Cleanup
     compiler.close()
 }
 ```
@@ -276,36 +270,37 @@ suspend fun classifyImage(imageBytes: ByteArray, modelBytes: ByteArray) {
 
 ## 🛠️ Core API Reference
 
+### `LiteRTHandler<I, O>`
+The primary base class for model implementation.
+- `init()`: Initialize resources and call `setupCompiler`.
+- `runTask(input)`: Orchestrates `preprocess -> run -> postprocess`.
+- `setupCompiler(path, accel)`: Thread-safe, automated compiler setup.
+- `close()`: Safely releases the underlying compiler.
+
 ### `LiteRTCompiler`
-The heart of the library. It manages the native model lifecycle.
-- `init()`: Allocates native resources. Must be called before `run()`.
-- `run(inputs, outputs)`: Executes inference.
-- `close()`: Releases native memory. **CRITICAL** for preventing leaks.
-- `getInputBufferRequirements(name)`: Returns tensor metadata (shape, type, size).
+The low-level engine managing the native model.
+- `run(inputs, outputs)`: Executes raw inference.
+- `getInputBuffers()` / `getOutputBuffers()`: Pre-allocates native buffers.
 
-### `TFBuffer`
-A type-safe wrapper around native `DirectByteBuffer`.
-- `writeFloat(array)` / `writeInt8(array)`: Fast copy to native memory.
-- `readFloat()` / `readInt8()`: Fetch results back to Kotlin.
-- `byteSize`: The exact capacity of the native buffer.
-
-### `LiteRTFileUtils`
-Utility to bridge the gap between KMP resources and LiteRT's file-based requirements.
-- `createFileFromByteArray`: Saves bytes to a temporary local file (platform-specific location).
-
----
-
-## 🖼️ Image Processing (LiteRtImage)
-
-The `kmplitert-tool` module provides a fluent API for image transformation.
-
+### 🖼️ Image Processing (`LiteRtImage`)
+Located in `io.github.kmplitert.tool.image`, provides a fluent API for vision models:
 ```kotlin
-val buffer = LiteRtImage.fromBytes(bytes)
-    .resize(width, height)
-    .toRgb() // or toGrayscale()
-    .normalize(mean = 127.5f, std = 127.5f) // For float models
-    .toFloatArray() // or writeInt8Buffer(tfBuffer)
+import io.github.kmplitert.tool.image.*
+
+val data = LiteRtImage.fromBytes(bytes)
+    .resize(320, 320)
+    .rotate(ImageRotation.ROTATION_90)
+    .flip(ImageFlip(horizontal = true))
+    .toRgb()
+    .toInt8Array()
 ```
+
+### 📊 Foundational Data Types
+Standardized structures for common ML tasks:
+- `Category`: Label, score, and index.
+- `BoundingBox`: Normalized or pixel coordinates.
+- `Detection`: A `BoundingBox` coupled with a list of `Category`.
+- `SegmentationMask`: Raw mask data with accessors.
 
 ---
 

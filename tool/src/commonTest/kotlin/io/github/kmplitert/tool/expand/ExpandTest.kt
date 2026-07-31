@@ -125,7 +125,7 @@ class ExpandTest {
         val boxes = arrayOf(
             floatArrayOf(0f, 0f, 10f, 10f),
             floatArrayOf(1f, 1f, 11f, 11f), // High overlap with box 0
-            floatArrayOf(20f, 20f, 30f, 30f)
+            floatArrayOf(20f, 20f, 30f, 30f),
         )
         val scores = floatArrayOf(0.9f, 0.8f, 0.7f)
         val selected = performNms(boxes, scores, 0.5f)

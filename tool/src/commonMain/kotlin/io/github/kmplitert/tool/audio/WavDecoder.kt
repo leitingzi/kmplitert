@@ -5,11 +5,7 @@ package io.github.kmplitert.tool.audio
  */
 object WavDecoder {
 
-    class WavInfo(
-        val data: FloatArray,
-        val sampleRate: Int,
-        val channels: Int
-    )
+    class WavInfo(val data: FloatArray, val sampleRate: Int, val channels: Int)
 
     fun decode(bytes: ByteArray): WavInfo {
         // Simple RIFF WAV parser
@@ -53,7 +49,7 @@ object WavDecoder {
                         data[i] = when (bitsPerSample) {
                             16 -> readShort(bytes, sampleOffset).toFloat() / 32768f
                             8 -> (bytes[sampleOffset].toInt() and 0xFF - 128).toFloat() / 128f
-                            32 -> readInt(bytes, sampleOffset).toFloat() / 2147483648f
+                            32 -> readInt(bytes, sampleOffset).toFloat() / 2.1474836E9f
                             else -> 0f
                         }
                     }
