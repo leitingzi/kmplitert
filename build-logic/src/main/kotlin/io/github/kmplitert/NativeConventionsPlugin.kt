@@ -100,7 +100,8 @@ internal fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
                 setEnvironment("PATH", ";")
             }
 
-            KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64 -> {
+            KonanTarget.LINUX_X64, KonanTarget.LINUX_ARM64,
+            KonanTarget.ANDROID_X64, KonanTarget.ANDROID_ARM64 -> {
                 setEnvironment("LD_LIBRARY_PATH", ":")
             }
 
