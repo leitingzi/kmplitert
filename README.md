@@ -10,6 +10,7 @@
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
   <a href="http://kotlinlang.org"><img src="https://img.shields.io/badge/kotlin-2.1.0-purple.svg?logo=kotlin" alt="Kotlin"></a>
   <a href="https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core"><img src="https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core" alt="Maven Central"></a>
+  <a href="https://leitingzi.github.io/kmplitert/"><img src="https://img.shields.io/badge/docs-dokka-brightgreen.svg" alt="API Docs"></a>
   <a href="https://github.com/leitingzi/kmplitert/actions"><img src="https://img.shields.io/github/actions/workflow/status/leitingzi/kmplitert/core-ci.yml?branch=master" alt="CI Status"></a>
 </p>
 
@@ -18,6 +19,7 @@
 ## 📖 Table of Contents
 
 - [🌟 Introduction](#-introduction)
+- [📚 API Documentation](#-api-documentation)
 - [🏗️ Architecture](#️-architecture)
 - [📊 Platform Support & Acceleration](#-platform-support--acceleration)
 - [📦 Installation](#-installation)
@@ -48,6 +50,14 @@ KMPLiteRT solves these problems by providing:
 - **Zero-Copy Performance**: Direct native memory access via `TFBuffer` ensures minimal overhead.
 - **Hardware First**: Seamless integration with **Metal (Apple)**, **NNAPI (Android)**, and **WebGPU (Web)**.
 - **Developer Friendly**: Type-safe APIs, coroutine support, and high-level image processing tools.
+
+---
+
+## 📚 API Documentation
+
+Detailed API documentation, including module structures and function references, is available via Dokka:
+
+👉 **[KMPLiteRT Dokka API Reference](https://leitingzi.github.io/kmplitert/)**
 
 ---
 
