@@ -157,23 +157,6 @@ kotlin {
     }
 
     sourceSets {
-        val nativeMain = sourceSets.maybeCreate("nativeMain").apply {
-            dependsOn(commonMain.get())
-        }
-        val nativeTest = sourceSets.maybeCreate("nativeTest").apply {
-            dependsOn(commonTest.get())
-        }
-        val androidNativeMain by creating {
-            dependsOn(nativeMain)
-        }
-        val androidNativeTest by creating {
-            dependsOn(nativeTest)
-        }
-        androidNativeArm64Main.get().dependsOn(androidNativeMain)
-        androidNativeArm64Test.get().dependsOn(androidNativeTest)
-        androidNativeX64Main.get().dependsOn(androidNativeMain)
-        androidNativeX64Test.get().dependsOn(androidNativeTest)
-
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
         }
