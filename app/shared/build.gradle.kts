@@ -3,13 +3,13 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.konan.target.HostManager
-import org.jetbrains.kotlin.konan.target.KonanTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    id("kmplitert.native-conventions")
 }
 
 kotlin {
@@ -36,44 +36,7 @@ kotlin {
         ).forEach { iosTarget ->
             iosTarget.binaries.framework {
                 baseName = "AppCore"
-                isStatic = false // Changed too false to allow better dynamic linking with LiteRT
-
-                // Redefine libDir mapping for LiteRT paths
-                val targetDir = when (iosTarget.konanTarget) {
-                    KonanTarget.IOS_ARM64 -> "ios/arm64"
-                    KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
-                    else -> null
-                } ?: return@framework
-
-                val libPath = "$projectDir/src/nativeInterop/lib/litert/$targetDir"
-                linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
-
-                // Add portable rpath for the framework itself
-                linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
-                linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
-
-                // Copy the dylibs into the framework output directory using a dedicated task to be configuration-cache friendly
-                val bundleTaskName = "bundleLiteRtTo${iosTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
-                val bundleTask = tasks.register<Copy>(bundleTaskName) {
-                    description = "Package the dynamic library built from Litert's iOS C++ code into the framework."
-                    dependsOn(linkTaskProvider)
-                    from(libPath)
-                    include("*.dylib")
-                    into(linkTaskProvider.flatMap {
-                        it.destinationDirectory.map { dir ->
-                            dir.asFile.resolve("${baseName}.framework/Frameworks")
-                        }
-                    })
-                }
-
-                // Ensure the Xcode assembly and embedding tasks depend on our bundling task
-                tasks.matching {
-                    (it.name.startsWith("assemble") || it.name.startsWith("embedAndSign")) && 
-                    it.name.contains(iosTarget.name, ignoreCase = true) &&
-                    it.name.contains("AppleFrameworkForXcode")
-                }.configureEach {
-                    dependsOn(bundleTask)
-                }
+                isStatic = false // Changed to false to allow better dynamic linking with LiteRT
             }
         }
     }
@@ -87,6 +50,8 @@ kotlin {
     wasmJs {
         browser()
     }
+
+    LiteRT.configureNativeBundling(":core")
 
     sourceSets {
         androidMain.dependencies {
