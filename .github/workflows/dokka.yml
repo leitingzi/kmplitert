@@ -24,10 +24,16 @@ jobs:
       - name: Generate Dokka
         run: ./gradlew :dokkaGenerateHtml --no-configuration-cache --no-daemon
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Copy Dokka to docs
+        run: |
+          rm -rf docs
+          mkdir -p docs
+          cp -a build/dokka/html/. docs/
+
+      - name: Commit documentation
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/dokka/html
-          publish_branch: gh-pages
           commit_message: "docs: update Dokka documentation [skip ci]"
+          branch: ${{ github.ref_name }}
+          # 允许在推送前尝试 rebase，减少冲突
+          push_options: '--force' 
