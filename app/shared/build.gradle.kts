@@ -70,6 +70,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.material.icons.extended)
+            implementation(libs.kotlinx.datetime)
 
             api(projects.core)
             api(projects.tool)

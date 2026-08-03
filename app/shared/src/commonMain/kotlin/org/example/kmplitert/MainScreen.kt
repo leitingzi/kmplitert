@@ -49,8 +49,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -62,6 +62,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.kmplitert.tool.LiteRTHandler
 import org.example.kmplitert.viewmodel.MainViewModel
 
 @Composable
@@ -69,6 +70,7 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel { MainViewModel() }
 ) {
     val scrollState = rememberScrollState()
+    val status by viewModel.currentStatus.collectAsState()
 
     LaunchedEffect(viewModel.logs) {
         scrollState.animateScrollTo(scrollState.maxValue)
@@ -96,7 +98,7 @@ fun MainScreen(
             // Right Panel: Details and Controls
             ModelDetail(
                 model = viewModel.selectedModel,
-                isInitialized = viewModel.initializedModels[viewModel.selectedModel?.id ?: ""] ?: false,
+                status = status,
                 isProcessing = viewModel.isProcessing,
                 onInitialize = viewModel::initializeSelectedModel,
                 onClose = viewModel::closeSelectedModel,
@@ -162,7 +164,7 @@ private fun ModelList(
 @Composable
 private fun ModelDetail(
     model: ModelItem?,
-    isInitialized: Boolean,
+    status: LiteRTHandler.Status,
     isProcessing: Boolean,
     onInitialize: () -> Unit,
     onClose: () -> Unit,
@@ -183,6 +185,22 @@ private fun ModelDetail(
     val inputNames = remember(model.id) { model.defaultInputNames.toMutableStateList() }
     val outputNames = remember(model.id) { model.defaultOutputNames.toMutableStateList() }
 
+    val isInitialized = status !is LiteRTHandler.Status.Idle && status !is LiteRTHandler.Status.Initializing && status !is LiteRTHandler.Status.Error
+    val statusText = when (status) {
+        LiteRTHandler.Status.Idle -> "Status: Idle"
+        LiteRTHandler.Status.Initializing -> "Status: Initializing..."
+        LiteRTHandler.Status.Ready -> "Status: Ready"
+        LiteRTHandler.Status.Running -> "Status: Running Inference..."
+        LiteRTHandler.Status.Closing -> "Status: Closing..."
+        is LiteRTHandler.Status.Error -> "Status: Error"
+    }
+    val statusColor = when (status) {
+        LiteRTHandler.Status.Ready -> Color(0xFF4CAF50)
+        LiteRTHandler.Status.Running -> MaterialTheme.colorScheme.primary
+        is LiteRTHandler.Status.Error -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -197,9 +215,9 @@ private fun ModelDetail(
             Column {
                 Text(model.name, style = MaterialTheme.typography.headlineSmall)
                 Text(
-                    if (isInitialized) "Status: Ready" else "Status: Not Initialized",
+                    statusText,
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (isInitialized) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+                    color = statusColor
                 )
             }
 

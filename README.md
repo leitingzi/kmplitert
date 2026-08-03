@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="http://kotlinlang.org"><img src="https://img.shields.io/badge/kotlin-2.1.0-purple.svg?logo=kotlin" alt="Kotlin"></a>
+  <a href="http://kotlinlang.org"><img src="https://img.shields.io/badge/kotlin-2.4.0-purple.svg?logo=kotlin" alt="Kotlin"></a>
   <a href="https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core"><img src="https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core" alt="Maven Central"></a>
   <a href="https://leitingzi.github.io/kmplitert/"><img src="https://img.shields.io/badge/docs-dokka-brightgreen.svg" alt="API Docs"></a>
   <a href="https://github.com/leitingzi/kmplitert/actions"><img src="https://img.shields.io/github/actions/workflow/status/leitingzi/kmplitert/core-ci.yml?branch=master" alt="CI Status"></a>
@@ -35,7 +35,6 @@
 - [🔊 Audio Processing (LiteRtAudio)](#-audio-processing-litertaudio)
 - [⚡ Extensions & Utilities](#-extensions--utilities)
 - [🛑 Troubleshooting & FAQ](#-troubleshooting--faq)
-- [🗺️ Roadmap](#️-roadmap)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 
@@ -293,10 +292,13 @@ suspend fun simpleInference(modelPath: String) {
 ## 🛠️ Core API Reference
 
 ### `LiteRTHandler<I, O>`
-Primary base class for model implementation.
-- `runTask(input)`: Orchestrates `preprocess -> run -> postprocess`.
-- `setupCompiler(path, accel)`: Thread-safe, automated compiler setup.
-- `close()`: Safely releases resources.
+Primary base class for model implementation, providing orchestration, lifecycle management, and interceptor support.
+
+- **Status Tracking**: Monitor the lifecycle via the `status: StateFlow<Status>` property. States include `Idle`, `Initializing`, `Ready`, `Running`, `Closing`, and `Error`.
+- **Threading Control**: Use `setDispatcher(CoroutineDispatcher)` to specify the execution context (default is `Dispatchers.Default`).
+- **Interceptor Chain**: Extend functionality (logging, caching, etc.) using `addInterceptor`, `removeInterceptor`, and `clearInterceptors`.
+- **Execution**: `runTask(input)` orchestrates `preprocess -> run -> postprocess` through all registered interceptors.
+- **Lifecycle**: `close()` safely releases native resources and resets the state.
 
 ### `LiteRTCompiler`
 The engine managing the native model.
@@ -345,10 +347,31 @@ val normalized = SignalProcessing.normalize(pcmData)
 ---
 
 ## ⚡ Extensions & Utilities
-The `io.github.kmplitert.tool.expand` package provides powerful extensions:
+The `io.github.kmplitert.tool.expand` and `io.github.kmplitert.tool.interceptor` packages provide powerful tools:
 
-- **Core Extensions**: `TFBuffer.writeTo(array)`, `TFBuffer.toFloatArray()`, `LiteRTCompiler.use { ... }`.
-- **PostProcessing**: `FloatArray.argmax()`, `FloatArray.softmax()`, `FloatArray.toCategories(...)`.
+### Middleware & Interceptors
+You can inject logic into the inference pipeline using interceptors:
+
+```kotlin
+val handler = MyClassifier().apply {
+    // 1. Result Caching: Skip inference if input fingerprint matches last result
+    addInterceptor(LiteRTResultCache(
+        onCacheHit = { input, result -> println("Cache hit!") },
+        calculateFingerprint = { it.hashCode() }
+    ))
+
+    // 2. Logging: Measure and log execution time
+    addInterceptor(LiteRTLoggingInterceptor(
+        tag = "MyModel",
+        logger = { msg -> println(msg) },
+        clock = { Clock.System.now().toEpochMilliseconds() }
+    ))
+}
+```
+
+### Core Extensions
+- **Buffer Ops**: `TFBuffer.writeTo(array)`, `TFBuffer.toFloatArray()`.
+- **Post-processing**: `FloatArray.argmax()`, `FloatArray.softmax()`, `FloatArray.toCategories(...)`.
 - **NMS**: `performNms(boxes, scores, threshold)` for object detection.
 
 ---
