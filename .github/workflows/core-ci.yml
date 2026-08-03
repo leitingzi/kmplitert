@@ -27,11 +27,31 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew :core:assemble \
+                    :core:linkDebugTestAndroidNativeArm64 \
+                    :core:linkDebugTestAndroidNativeX64 \
                     :core:linuxX64Test \
                     :core:testAndroidHostTest \
                     :core:jsBrowserTest \
                     :core:wasmJsBrowserTest \
                     --stacktrace --info --no-daemon
+
+  android-native:
+    name: Android Native (Link Only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Link Android Native Tests
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:linkDebugTestAndroidNativeArm64 \
+                    :core:linkDebugTestAndroidNativeX64 \
+                    --no-daemon
 
   macos-ios:
     name: MacOS & iOS
