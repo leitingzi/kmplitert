@@ -144,53 +144,65 @@ class MyApp : Application() {
 
 Dynamic linking is **mandatory** for iOS and Apple targets to support hardware delegates like Metal and to ensure binary compatibility.
 
-### 1. Framework Configuration
+### 0. Download Prebuilt Binaries
 
-In your `shared` module's `build.gradle.kts`, configure your framework to be **dynamic** and set the linker search paths.
+Before configuring your project, you need the native LiteRT dynamic libraries (`.dylib` for iOS/macOS, `.so` for Linux, `.dll` for Windows).
+
+You can download the official prebuilt C++ libraries from the **Google AI Edge LiteRT** repository:
+👉 **[LiteRT Prebuilt Binaries](https://github.com/google-ai-edge/LiteRT/tree/main/litert/prebuilt)**
+
+### 1. Framework Configuration & Binary Bundling
+
+In your `shared` module's `build.gradle.kts`, configure your framework to be **dynamic**, link against the LiteRT binaries, and automate the bundling of `.dylib` files into the framework.
+
+Place your LiteRT `.dylib` files in `src/nativeInterop/lib/litert/ios/arm64` and `src/nativeInterop/lib/litert/ios/sim-arm64`.
 
 ```kotlin
 kotlin {
-    val iosTargets = listOf(iosArm64(), iosSimulatorArm64())
-    
-    iosTargets.forEach { target ->
-        target.binaries.framework {
-            baseName = "SharedLib"
-            isStatic = false // MUST BE FALSE
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "AppCore"
+            isStatic = false // MUST BE FALSE to allow dynamic linking with LiteRT
+
+            // Resolve path to the LiteRT binaries based on the target architecture
+            val targetDir = when (iosTarget.konanTarget) {
+                KonanTarget.IOS_ARM64 -> "ios/arm64"
+                KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
+                else -> null
+            } ?: return@framework
+
+            val libPath = "$projectDir/src/nativeInterop/lib/litert/$targetDir"
             
             // Link against the LiteRT dynamic library
-            linkerOpts("-lLiteRt", "-lc++")
-            
+            linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
+
             // Configure rpath for the system to find the dylib inside the framework
-            linkerOpts(
-                "-Wl,-rpath,@executable_path/Frameworks",
-                "-Wl,-rpath,@loader_path/Frameworks",
-                "-Wl,-rpath,@loader_path/../../Frameworks"
-            )
-        }
-    }
-}
-```
+            linkerOpts("-Wl,-rpath,@executable_path/Frameworks")
+            linkerOpts("-Wl,-rpath,@loader_path/Frameworks")
 
-### 2. Automatic Binary Bundling
-
-The `libLiteRt.dylib` must be physically present in your `.framework/Frameworks` directory. You can automate this via Gradle:
-
-```kotlin
-tasks.withType<KotlinNativeLink>().configureEach {
-    val target = binary.target.konanTarget
-    if (target.isApple) {
-        doLast {
-            val destination = destinationDirectory.get().asFile
-            val frameworkDir = File(destination, "${binary.baseName}.framework")
-            val frameworksFolder = File(frameworkDir, "Frameworks").apply { mkdirs() }
-            
-            // Path to where you store the prebuilt LiteRT binaries
-            val libPath = File(project.rootDir, "native-libs/ios/${target.name}")
-            
-            copy {
+            // Copy the dylibs into the framework output directory using a dedicated Copy task
+            val bundleTaskName = "bundleLiteRtTo${iosTarget.name.replaceFirstChar { it.uppercase() }}${name.replaceFirstChar { it.uppercase() }}"
+            val bundleTask = tasks.register<Copy>(bundleTaskName) {
+                description = "Package LiteRT dynamic libraries into the framework."
                 from(libPath)
                 include("*.dylib")
-                into(frameworksFolder)
+                into(linkTaskProvider.flatMap {
+                    it.destinationDirectory.map { dir ->
+                        dir.asFile.resolve("${baseName}.framework/Frameworks")
+                    }
+                })
+            }
+
+            // Ensure Xcode assembly tasks depend on our bundling task
+            tasks.matching {
+                (it.name.startsWith("assemble") || it.name.startsWith("embedAndSign")) && 
+                it.name.contains(iosTarget.name, ignoreCase = true) &&
+                it.name.contains("AppleFrameworkForXcode")
+            }.configureEach {
+                dependsOn(bundleTask)
             }
         }
     }

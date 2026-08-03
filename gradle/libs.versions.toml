@@ -15,6 +15,7 @@ kotlin = "2.4.0"
 kotlin-wrappers = "2026.7.7"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
+materialIconsExtended = "1.7.3"
 robolectric = "4.16.1"
 java-jna = "5.19.1"
 kmplitert = "0.2.0"
@@ -40,6 +41,7 @@ compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-previ
 kotlinx-coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 java-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
 java-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }

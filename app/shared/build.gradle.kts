@@ -43,14 +43,9 @@ kotlin {
                     KonanTarget.IOS_ARM64 -> "ios/arm64"
                     KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
                     else -> null
-                }
+                } ?: return@framework
 
-                if (targetDir == null) {
-                    return@framework
-                }
-
-                val coreProjectDir = project(":core").projectDir
-                val libPath = "$coreProjectDir/src/nativeInterop/lib/litert/$targetDir"
+                val libPath = "$projectDir/src/nativeInterop/lib/litert/$targetDir"
                 linkerOpts("-L$libPath", "-lLiteRt", "-lc++")
 
                 // Add portable rpath for the framework itself
@@ -60,6 +55,7 @@ kotlin {
                 // Copy the dylibs into the framework output directory using a dedicated task to be configuration-cache friendly
                 val bundleTaskName = "bundleLiteRtTo${iosTarget.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
                 val bundleTask = tasks.register<Copy>(bundleTaskName) {
+                    description = "Package the dynamic library built from Litert's iOS C++ code into the framework."
                     dependsOn(linkTaskProvider)
                     from(libPath)
                     include("*.dylib")
@@ -108,7 +104,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            implementation(libs.material.icons.extended)
 
             api(projects.core)
             api(projects.tool)
