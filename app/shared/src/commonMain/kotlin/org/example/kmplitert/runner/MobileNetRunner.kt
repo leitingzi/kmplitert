@@ -37,10 +37,14 @@ class MobileNetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
         }
     }
 
-    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
-        val resized = input.resize(224, 224).toRgb()
-        val data = resized.toInt8Array()
-        inputBuffers[0].writeInt8(data)
+    override suspend fun transform(input: LiteRtImage): Any? {
+        return input.resize(224, 224).toRgb()
+    }
+
+    override suspend fun feed(data: Any?, inputBuffers: List<TFBuffer>) {
+        if (data is LiteRtImage) {
+            inputBuffers[0].writeInt8(data.toInt8Array())
+        }
     }
 
     override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Category> {

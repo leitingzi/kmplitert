@@ -1,14 +1,33 @@
 package io.github.kmplitert.tool.interceptor
 
+import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.tool.LiteRTPhase
+
 /**
  * Interface for intercepting LiteRT task execution.
- * Interceptors can be used for logging, caching, data transformation, etc.
  */
-interface LiteRTInterceptor<I, O> {
+fun interface LiteRTInterceptor<I, O> {
     suspend fun intercept(chain: Chain<I, O>): O
 
     interface Chain<I, O> {
+        /** The original input data. */
         val input: I
-        suspend fun proceed(input: I): O
+
+        /** The current phase of the chain. */
+        val phase: LiteRTPhase
+
+        /** The data produced by the TRANSFORM phase. Available in FEED, INFERENCE, and POSTPROCESS. */
+        val transformedData: Any?
+
+        /** The input buffers. Available in FEED, INFERENCE, and POSTPROCESS. */
+        val inputBuffers: List<TFBuffer>?
+
+        /** The output buffers. Available after inference. */
+        val outputBuffers: List<TFBuffer>?
+
+        /**
+         * Continues the execution of the chain.
+         */
+        suspend fun proceed(input: I, transformedData: Any? = this.transformedData): O
     }
 }

@@ -35,11 +35,14 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>(
         }
     }
 
-    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
-        // EfficientDet-Lite0 expects 320x320 RGB uint8 input
-        val resized = input.resize(320, 320).toRgb()
-        val data = resized.toInt8Array()
-        inputBuffers[0].writeInt8(data)
+    override suspend fun transform(input: LiteRtImage): Any? {
+        return input.resize(320, 320).toRgb()
+    }
+
+    override suspend fun feed(data: Any?, inputBuffers: List<TFBuffer>) {
+        if (data is LiteRtImage) {
+            inputBuffers[0].writeInt8(data.toInt8Array())
+        }
     }
 
     override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Detection> {

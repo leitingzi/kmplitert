@@ -3,7 +3,12 @@ package io.github.kmplitert.tool
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.tool.expand.proceed
+import io.github.kmplitert.tool.image.LiteRtImage
+import io.github.kmplitert.tool.interceptor.LiteRTInputShapeInterceptor
 import io.github.kmplitert.tool.interceptor.LiteRTInterceptor
+import io.github.kmplitert.tool.interceptor.LiteRTLoggingInterceptor
+import io.github.kmplitert.tool.interceptor.LiteRTResultCacheInterceptor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,10 +43,12 @@ abstract class LiteRTHandler<I, O> {
     private val initLock = Mutex()
     private val taskLock = Mutex()
 
-    private var dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private var dispatcher = Dispatchers.Default
     private val _status = MutableStateFlow<Status>(Status.Idle)
     
-    private val interceptors = mutableListOf<LiteRTInterceptor<I, O>>()
+    private val interceptors = LiteRTPhase.entries.associateWith { 
+        mutableListOf<LiteRTInterceptor<I, O>>() 
+    }
 
     /**
      * A [StateFlow] that tracks the current [Status] of the handler.
@@ -56,24 +63,24 @@ abstract class LiteRTHandler<I, O> {
     }
 
     /**
-     * Adds an interceptor to the task execution chain.
+     * Adds an interceptor to the task execution chain at the specified phase.
      */
-    fun addInterceptor(interceptor: LiteRTInterceptor<I, O>) {
-        interceptors.add(interceptor)
+    fun addInterceptor(interceptor: LiteRTInterceptor<I, O>, phase: LiteRTPhase = LiteRTPhase.TASK) {
+        interceptors[phase]?.add(interceptor)
     }
 
     /**
      * Removes an interceptor from the task execution chain.
      */
     fun removeInterceptor(interceptor: LiteRTInterceptor<I, O>) {
-        interceptors.remove(interceptor)
+        interceptors.values.forEach { it.remove(interceptor) }
     }
 
     /**
      * Clears all interceptors from the task execution chain.
      */
     fun clearInterceptors() {
-        interceptors.clear()
+        interceptors.values.forEach { it.clear() }
     }
 
     protected fun updateStatus(status: Status) {
@@ -84,110 +91,206 @@ abstract class LiteRTHandler<I, O> {
         _compiler = compiler
     }
 
-    protected suspend fun setupCompiler(filePath: String, accelerator: LiteRTAccelerator) = withContext(dispatcher) {
-        if (_compiler != null) return@withContext
-        initLock.withLock {
-            if (_compiler != null) return@withLock
-            updateStatus(Status.Initializing)
-            try {
-                val newCompiler = LiteRTCompiler(filePath = filePath, accelerator = accelerator)
-                newCompiler.init()
-                setCompiler(compiler = newCompiler)
-                updateStatus(Status.Ready)
-            } catch (e: Exception) {
-                updateStatus(Status.Error(e))
-                throw e
+    protected suspend fun setupCompiler(filePath: String, accelerator: LiteRTAccelerator) {
+        withContext(context = dispatcher) {
+            if (_compiler != null) {
+                return@withContext
+            }
+
+            initLock.withLock {
+                if (_compiler != null) {
+                    return@withLock
+                }
+
+                updateStatus(Status.Initializing)
+
+                try {
+                    val newCompiler = LiteRTCompiler(filePath = filePath, accelerator = accelerator)
+                    newCompiler.init()
+                    setCompiler(compiler = newCompiler)
+                    updateStatus(status = Status.Ready)
+                } catch (e: Exception) {
+                    updateStatus(status = Status.Error(throwable = e))
+                    throw e
+                }
             }
         }
     }
 
-    open suspend fun init() {}
+    open suspend fun init() {
 
-    protected abstract suspend fun preprocess(input: I, inputBuffers: List<TFBuffer>)
+    }
 
+    /**
+     * Transforms the input into an intermediate format (e.g., resizing an image).
+     */
+    protected abstract suspend fun transform(input: I): Any?
+
+    /**
+     * Feeds the transformed data into the model's input buffers.
+     */
+    protected abstract suspend fun feed(data: Any?, inputBuffers: List<TFBuffer>)
+
+    /**
+     * Postprocesses the output buffers to produce the final result.
+     */
     protected abstract suspend fun postprocess(outputBuffers: List<TFBuffer>): O
 
     /**
      * Executes the full LiteRT task through the interceptor chain.
      */
-    suspend fun runTask(input: I): O = withContext(dispatcher) {
-        val allInterceptors = interceptors.toMutableList()
-        allInterceptors.add(BaseInferenceInterceptor())
-        
-        val chain = RealInterceptorChain(0, input, allInterceptors)
-        chain.proceed(input)
-    }
-
-    private inner class BaseInferenceInterceptor : LiteRTInterceptor<I, O> {
-        override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
-            return performDirectInference(chain.input)
-        }
-    }
-
-    private suspend fun performDirectInference(input: I): O {
-        return taskLock.withLock {
-            if (_compiler == null) {
-                initLock.withLock {
-                    if (_compiler == null) {
-                        updateStatus(Status.Initializing)
-                        try {
-                            init()
-                            if (_compiler != null && _status.value == Status.Initializing) {
-                                updateStatus(Status.Ready)
-                            }
-                        } catch (e: Exception) {
-                            updateStatus(Status.Error(e))
-                            throw e
-                        }
-                    }
-                }
-            }
-
-            updateStatus(Status.Running)
+    suspend fun runTask(input: I): O {
+        return withContext(context = dispatcher) {
+            updateStatus(status = Status.Running)
             try {
-                val inputBuffers = compiler.getInputBuffers()
-                preprocess(input = input, inputBuffers = inputBuffers)
+                taskLock.withLock {
+                    ensureInitialized()
+                    val inputBuffers = compiler.getInputBuffers()
+                    val outputBuffers = compiler.getOutputBuffers()
 
-                val outputBuffers = compiler.getOutputBuffers()
-                compiler.run(inputs = inputBuffers, outputs = outputBuffers)
+                    val chainList = buildFlattenedChain(
+                        inputBuffers = inputBuffers,
+                        outputBuffers = outputBuffers
+                    )
 
-                val result = postprocess(outputBuffers = outputBuffers)
-                updateStatus(Status.Ready)
-                result
+                    val rootChain = RealInterceptorChain(
+                        phase = LiteRTPhase.TASK,
+                        interceptors = chainList,
+                        index = 0,
+                        input = input,
+                        transformedData = null,
+                        inputBuffers = inputBuffers,
+                        outputBuffers = outputBuffers
+                    )
+
+                    val result = rootChain.proceed(input = input)
+                    updateStatus(status = Status.Ready)
+                    result
+                }
             } catch (e: Exception) {
-                updateStatus(Status.Error(e))
+                if (_compiler != null) {
+                    updateStatus(status = Status.Ready)
+                } else {
+                    updateStatus(status = Status.Error(throwable = e))
+                }
                 throw e
             }
         }
     }
 
+    private fun buildFlattenedChain(
+        inputBuffers: List<TFBuffer>,
+        outputBuffers: List<TFBuffer>
+    ): List<LiteRTInterceptor<I, O>> {
+        return buildList {
+            // 1. TASK phase
+            addAll(elements = interceptors[LiteRTPhase.TASK]!!)
+
+            // 2. TRANSFORM phase
+            add(element = PhaseBoundaryInterceptor(newPhase = LiteRTPhase.TRANSFORM))
+            addAll(elements = interceptors[LiteRTPhase.TRANSFORM]!!)
+            add { chain ->
+                val data = transform(input = chain.input)
+                chain.proceed(input = chain.input, transformedData = data)
+            }
+
+            // 3. FEED phase
+            add(element = PhaseBoundaryInterceptor(newPhase = LiteRTPhase.FEED))
+            addAll(elements = interceptors[LiteRTPhase.FEED]!!)
+            add { chain ->
+                feed(data = chain.transformedData, inputBuffers = inputBuffers)
+                chain.proceed()
+            }
+
+            // 4. INFERENCE phase
+            add(element = PhaseBoundaryInterceptor(LiteRTPhase.INFERENCE))
+            addAll(elements = interceptors[LiteRTPhase.INFERENCE]!!)
+            add { chain ->
+                compiler.run(inputs = inputBuffers, outputs = outputBuffers)
+                chain.proceed()
+            }
+
+            // 5. POSTPROCESS phase
+            add(element = PhaseBoundaryInterceptor(newPhase = LiteRTPhase.POSTPROCESS))
+            addAll(elements = interceptors[LiteRTPhase.POSTPROCESS]!!)
+            add {
+                postprocess(outputBuffers = outputBuffers)
+            }
+        }
+    }
+
+    private suspend fun ensureInitialized() {
+        if (_compiler == null) {
+            initLock.withLock {
+                if (_compiler == null) {
+                    updateStatus(status = Status.Initializing)
+                    try {
+                        init()
+                        if (_compiler != null && _status.value == Status.Initializing) {
+                            updateStatus(status = Status.Ready)
+                            updateStatus(status = Status.Running)
+                        }
+                    } catch (e: Exception) {
+                        updateStatus(status = Status.Error(throwable = e))
+                        throw e
+                    }
+                }
+            }
+        }
+    }
+
+    private inner class PhaseBoundaryInterceptor(val newPhase: LiteRTPhase) : LiteRTInterceptor<I, O> {
+        override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
+            return chain.proceed(input = chain.input, transformedData = chain.transformedData)
+        }
+    }
+
     private inner class RealInterceptorChain(
+        override val phase: LiteRTPhase,
+        private val interceptors: List<LiteRTInterceptor<I, O>>,
         private val index: Int,
         override val input: I,
-        private val interceptors: List<LiteRTInterceptor<I, O>>
+        override val transformedData: Any?,
+        override val inputBuffers: List<TFBuffer>? = null,
+        override val outputBuffers: List<TFBuffer>? = null
     ) : LiteRTInterceptor.Chain<I, O> {
         
-        override suspend fun proceed(input: I): O {
-            if (index >= interceptors.size) throw AssertionError("Chain reached end without base execution")
-            
-            val next = RealInterceptorChain(index + 1, input, interceptors)
+        override suspend fun proceed(input: I, transformedData: Any?): O {
+            if (index >= interceptors.size) {
+                throw AssertionError("Chain reached end without base execution")
+            }
             val interceptor = interceptors[index]
+            val nextPhase = if (interceptor is LiteRTHandler<*, *>.PhaseBoundaryInterceptor) {
+                interceptor.newPhase
+            } else {
+                phase
+            }
             
+            val next = RealInterceptorChain(
+                phase = nextPhase,
+                interceptors = interceptors,
+                index = index + 1,
+                input = input,
+                transformedData = transformedData,
+                inputBuffers = inputBuffers,
+                outputBuffers = outputBuffers
+            )
             return interceptor.intercept(next)
         }
     }
 
     open suspend fun close() = withContext(dispatcher) {
         initLock.withLock {
-            updateStatus(Status.Closing)
+            updateStatus(status = Status.Closing)
             try {
                 _compiler?.close()
                 _compiler = null
-                updateStatus(Status.Idle)
+                updateStatus(status = Status.Idle)
             } catch (e: Exception) {
-                updateStatus(Status.Error(e))
+                updateStatus(status = Status.Error(throwable = e))
                 throw e
             }
         }
     }
 }
+

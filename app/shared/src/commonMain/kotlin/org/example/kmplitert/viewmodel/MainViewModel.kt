@@ -6,10 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.kmplitert.core.LiteRTCompiler
-import io.github.kmplitert.tool.LiteRTHandler
+import io.github.kmplitert.tool.*
 import io.github.kmplitert.tool.image.LiteRtImage
-import io.github.kmplitert.tool.interceptor.LiteRTLoggingInterceptor
-import io.github.kmplitert.tool.interceptor.LiteRTResultCache
+import io.github.kmplitert.tool.interceptor.LiteRTInterceptionException
 import kmplitert.app.shared.generated.resources.Res
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +18,6 @@ import kotlinx.coroutines.launch
 import org.example.kmplitert.ModelItem
 import org.example.kmplitert.runner.EfficientDetRunner
 import org.example.kmplitert.runner.MobileNetRunner
-import kotlin.time.Clock
 
 class MainViewModel : ViewModel() {
     var logs by mutableStateOf("Ready.\n")
@@ -37,15 +35,13 @@ class MainViewModel : ViewModel() {
             name = "MobileNet V1",
             description = "Image classification model.",
             runner = MobileNetRunner().apply {
-                addInterceptor(LiteRTResultCache(
-                    onCacheHit = { _, _ -> addLog("[MobileNet] Cache Hit!") },
-                    calculateFingerprint = { it.hashCode() }
-                ))
-                addInterceptor(LiteRTLoggingInterceptor(
-                    tag = "MobileNet", 
-                    logger = ::addLog, 
-                    clock = { Clock.System.now().toEpochMilliseconds() }
-                ))
+                addImageShapeValidator(
+                    expectedShape = intArrayOf(224, 228, 3),
+                    onValidated = { shape -> addLog("[MobileNet] Shape validated: ${shape.contentToString()}") },
+                    onInvalidated = { expected, actual -> addLog("[MobileNet] Shape check failed! Expected: ${expected.contentToString()}, Actual: ${actual.contentToString()}") }
+                )
+                addCache(onCacheHit = { _, _ -> addLog("[MobileNet] Cache Hit!") })
+                addLogging(tag = "MobileNet", logger = ::addLog)
             },
             defaultInputNames = listOf("input"),
             defaultOutputNames = listOf("MobilenetV1/Predictions/Reshape_1")
@@ -55,15 +51,13 @@ class MainViewModel : ViewModel() {
             name = "EfficientDet Lite0",
             description = "Object detection model.",
             runner = EfficientDetRunner().apply {
-                addInterceptor(LiteRTResultCache(
-                    onCacheHit = { _, _ -> addLog("[EfficientDet] Cache Hit!") },
-                    calculateFingerprint = { it.hashCode() }
-                ))
-                addInterceptor(LiteRTLoggingInterceptor(
-                    tag = "EfficientDet", 
-                    logger = ::addLog, 
-                    clock = { Clock.System.now().toEpochMilliseconds() }
-                ))
+                addImageShapeValidator(
+                    expectedShape = intArrayOf(320, 320, 3),
+                    onValidated = { shape -> addLog("[EfficientDet] Shape validated: ${shape.contentToString()}") },
+                    onInvalidated = { expected, actual -> addLog("[EfficientDet] Shape check failed! Expected: ${expected.contentToString()}, Actual: ${actual.contentToString()}") }
+                )
+                addCache(onCacheHit = { _, _ -> addLog("[EfficientDet] Cache Hit!") })
+                addLogging(tag = "EfficientDet", logger = ::addLog)
             },
             defaultInputNames = listOf("images"),
             defaultOutputNames = listOf("output_0", "output_1")
@@ -192,7 +186,11 @@ class MainViewModel : ViewModel() {
                             results.forEachIndexed { index, category ->
                                 addLog("Top ${index + 1}: ${category.label} (${category.score})")
                             }
-                        }.onFailure { throw it }
+                        }.onFailure { 
+                            if (it !is LiteRTInterceptionException) {
+                                addLog("Error: ${it.message}")
+                            }
+                        }
                     }
                     is EfficientDetRunner -> {
                         runner.detect(image).onSuccess { results ->
@@ -204,7 +202,11 @@ class MainViewModel : ViewModel() {
                                     addLog("Obj ${index + 1}: ${category.label} (${category.score})")
                                 }
                             }
-                        }.onFailure { throw it }
+                        }.onFailure { 
+                            if (it !is LiteRTInterceptionException) {
+                                addLog("Error: ${it.message}")
+                            }
+                        }
                     }
                 }
             } catch (_: Exception) {

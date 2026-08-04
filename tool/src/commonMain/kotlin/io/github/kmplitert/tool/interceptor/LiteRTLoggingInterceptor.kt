@@ -1,5 +1,7 @@
 package io.github.kmplitert.tool.interceptor
 
+import io.github.kmplitert.tool.expand.proceed
+
 /**
  * A simple interceptor that logs the execution time and basic info of a LiteRT task.
  *
@@ -14,24 +16,27 @@ class LiteRTLoggingInterceptor<I, O>(
 ) : LiteRTInterceptor<I, O> {
 
     override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
-        logger("[$tag] Starting task...")
+        val phasePrefix = "[$tag][${chain.phase}]"
+        logger("$phasePrefix Starting...")
         val startTime = clock()
         
         return try {
-            val result = chain.proceed(chain.input)
+            val result = chain.proceed()
             val duration = clock() - startTime
             if (startTime != 0L) {
-                logger("[$tag] Task completed in ${duration}ms")
+                logger("$phasePrefix Completed in ${duration}ms")
             } else {
-                logger("[$tag] Task completed.")
+                logger("$phasePrefix Completed.")
             }
             result
         } catch (e: Exception) {
-            val duration = clock() - startTime
-            if (startTime != 0L) {
-                logger("[$tag] Task failed after ${duration}ms: ${e.message}")
-            } else {
-                logger("[$tag] Task failed: ${e.message}")
+            if (e !is LiteRTInterceptionException) {
+                val duration = clock() - startTime
+                if (startTime != 0L) {
+                    logger("$phasePrefix Failed after ${duration}ms: ${e.message}")
+                } else {
+                    logger("$phasePrefix Failed: ${e.message}")
+                }
             }
             throw e
         }
