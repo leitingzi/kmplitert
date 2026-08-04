@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.tool.*
+import io.github.kmplitert.tool.expand.addCache
+import io.github.kmplitert.tool.expand.addImageShapeValidator
+import io.github.kmplitert.tool.expand.addLogging
 import io.github.kmplitert.tool.image.LiteRtImage
 import io.github.kmplitert.tool.interceptor.LiteRTInterceptionException
 import kmplitert.app.shared.generated.resources.Res
@@ -36,7 +39,7 @@ class MainViewModel : ViewModel() {
             description = "Image classification model.",
             runner = MobileNetRunner().apply {
                 addImageShapeValidator(
-                    expectedShape = intArrayOf(224, 228, 3),
+                    expectedShape = intArrayOf(224, 224, 3),
                     onValidated = { shape -> addLog("[MobileNet] Shape validated: ${shape.contentToString()}") },
                     onInvalidated = { expected, actual -> addLog("[MobileNet] Shape check failed! Expected: ${expected.contentToString()}, Actual: ${actual.contentToString()}") }
                 )

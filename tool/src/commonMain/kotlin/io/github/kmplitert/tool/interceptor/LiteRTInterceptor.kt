@@ -28,6 +28,9 @@ fun interface LiteRTInterceptor<I, O> {
         /**
          * Continues the execution of the chain.
          */
-        suspend fun proceed(input: I, transformedData: Any? = this.transformedData): O
+        suspend fun proceed(
+            input: I = this.input,
+            transformedData: Any? = this.transformedData
+        ): O
     }
 }

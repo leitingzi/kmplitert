@@ -3,12 +3,15 @@ package io.github.kmplitert.tool
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.TFBuffer
-import io.github.kmplitert.tool.expand.proceed
-import io.github.kmplitert.tool.image.LiteRtImage
-import io.github.kmplitert.tool.interceptor.LiteRTInputShapeInterceptor
+import io.github.kmplitert.tool.interceptor.FeedInterceptor
+import io.github.kmplitert.tool.interceptor.InferenceInterceptor
 import io.github.kmplitert.tool.interceptor.LiteRTInterceptor
 import io.github.kmplitert.tool.interceptor.LiteRTLoggingInterceptor
 import io.github.kmplitert.tool.interceptor.LiteRTResultCacheInterceptor
+import io.github.kmplitert.tool.interceptor.PhaseBoundaryInterceptor
+import io.github.kmplitert.tool.interceptor.PostprocessInterceptor
+import io.github.kmplitert.tool.interceptor.RealInterceptorChain
+import io.github.kmplitert.tool.interceptor.TransformInterceptor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,10 +151,7 @@ abstract class LiteRTHandler<I, O> {
                     val inputBuffers = compiler.getInputBuffers()
                     val outputBuffers = compiler.getOutputBuffers()
 
-                    val chainList = buildFlattenedChain(
-                        inputBuffers = inputBuffers,
-                        outputBuffers = outputBuffers
-                    )
+                    val chainList = buildFlattenedChain()
 
                     val rootChain = RealInterceptorChain(
                         phase = LiteRTPhase.TASK,
@@ -178,44 +178,30 @@ abstract class LiteRTHandler<I, O> {
         }
     }
 
-    private fun buildFlattenedChain(
-        inputBuffers: List<TFBuffer>,
-        outputBuffers: List<TFBuffer>
-    ): List<LiteRTInterceptor<I, O>> {
+    private fun buildFlattenedChain(): List<LiteRTInterceptor<I, O>> {
         return buildList {
             // 1. TASK phase
-            addAll(elements = interceptors[LiteRTPhase.TASK]!!)
+            addAll(interceptors[LiteRTPhase.TASK]!!)
 
             // 2. TRANSFORM phase
-            add(element = PhaseBoundaryInterceptor(newPhase = LiteRTPhase.TRANSFORM))
-            addAll(elements = interceptors[LiteRTPhase.TRANSFORM]!!)
-            add { chain ->
-                val data = transform(input = chain.input)
-                chain.proceed(input = chain.input, transformedData = data)
-            }
+            add(PhaseBoundaryInterceptor(LiteRTPhase.TRANSFORM))
+            addAll(interceptors[LiteRTPhase.TRANSFORM]!!)
+            add(TransformInterceptor(::transform))
 
             // 3. FEED phase
-            add(element = PhaseBoundaryInterceptor(newPhase = LiteRTPhase.FEED))
-            addAll(elements = interceptors[LiteRTPhase.FEED]!!)
-            add { chain ->
-                feed(data = chain.transformedData, inputBuffers = inputBuffers)
-                chain.proceed()
-            }
+            add(PhaseBoundaryInterceptor(LiteRTPhase.FEED))
+            addAll(interceptors[LiteRTPhase.FEED]!!)
+            add(FeedInterceptor(::feed))
 
             // 4. INFERENCE phase
-            add(element = PhaseBoundaryInterceptor(LiteRTPhase.INFERENCE))
-            addAll(elements = interceptors[LiteRTPhase.INFERENCE]!!)
-            add { chain ->
-                compiler.run(inputs = inputBuffers, outputs = outputBuffers)
-                chain.proceed()
-            }
+            add(PhaseBoundaryInterceptor(LiteRTPhase.INFERENCE))
+            addAll(interceptors[LiteRTPhase.INFERENCE]!!)
+            add(InferenceInterceptor(compiler::run))
 
             // 5. POSTPROCESS phase
-            add(element = PhaseBoundaryInterceptor(newPhase = LiteRTPhase.POSTPROCESS))
-            addAll(elements = interceptors[LiteRTPhase.POSTPROCESS]!!)
-            add {
-                postprocess(outputBuffers = outputBuffers)
-            }
+            add(PhaseBoundaryInterceptor(LiteRTPhase.POSTPROCESS))
+            addAll(interceptors[LiteRTPhase.POSTPROCESS]!!)
+            add(PostprocessInterceptor(::postprocess))
         }
     }
 
@@ -236,46 +222,6 @@ abstract class LiteRTHandler<I, O> {
                     }
                 }
             }
-        }
-    }
-
-    private inner class PhaseBoundaryInterceptor(val newPhase: LiteRTPhase) : LiteRTInterceptor<I, O> {
-        override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
-            return chain.proceed(input = chain.input, transformedData = chain.transformedData)
-        }
-    }
-
-    private inner class RealInterceptorChain(
-        override val phase: LiteRTPhase,
-        private val interceptors: List<LiteRTInterceptor<I, O>>,
-        private val index: Int,
-        override val input: I,
-        override val transformedData: Any?,
-        override val inputBuffers: List<TFBuffer>? = null,
-        override val outputBuffers: List<TFBuffer>? = null
-    ) : LiteRTInterceptor.Chain<I, O> {
-        
-        override suspend fun proceed(input: I, transformedData: Any?): O {
-            if (index >= interceptors.size) {
-                throw AssertionError("Chain reached end without base execution")
-            }
-            val interceptor = interceptors[index]
-            val nextPhase = if (interceptor is LiteRTHandler<*, *>.PhaseBoundaryInterceptor) {
-                interceptor.newPhase
-            } else {
-                phase
-            }
-            
-            val next = RealInterceptorChain(
-                phase = nextPhase,
-                interceptors = interceptors,
-                index = index + 1,
-                input = input,
-                transformedData = transformedData,
-                inputBuffers = inputBuffers,
-                outputBuffers = outputBuffers
-            )
-            return interceptor.intercept(next)
         }
     }
 
