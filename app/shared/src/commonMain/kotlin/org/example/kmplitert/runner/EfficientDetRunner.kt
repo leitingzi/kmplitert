@@ -20,18 +20,20 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>(
     override suspend fun init() {
         // Load model and setup compiler
         val modelResourcePath = "files/efficientdet_lite0.tflite"
-        val modelData = Res.readBytes(modelResourcePath)
-        val modelName = modelResourcePath.substringAfterLast("/")
-        val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, modelName)
+        val modelData = Res.readBytes(path = modelResourcePath)
+        val filePath = LiteRTFileUtils.createFileFromByteArray(
+            data = modelData,
+            fileName = modelResourcePath.substringAfterLast("/")
+        )
 
-        setupCompiler(filePath, LiteRTAccelerator.CPU)
+        setupCompiler(filePath = filePath, accelerator = LiteRTAccelerator.CPU)
     }
 
     suspend fun detect(image: LiteRtImage): Result<List<LiteRTExt.Detection>> {
         return try {
-            Result.success(runTask(image))
+            Result.success(value = runTask(image))
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(exception = e)
         }
     }
 
@@ -98,7 +100,10 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>(
         return performNms(candidates, iouThreshold)
     }
 
-    private fun performNms(detections: List<LiteRTExt.Detection>, iouThreshold: Float): List<LiteRTExt.Detection> {
+    private fun performNms(
+        detections: List<LiteRTExt.Detection>,
+        iouThreshold: Float
+    ): List<LiteRTExt.Detection> {
         val sortedDetections = detections.sortedByDescending { it.categories.first().score }.toMutableList()
         val results = mutableListOf<LiteRTExt.Detection>()
 

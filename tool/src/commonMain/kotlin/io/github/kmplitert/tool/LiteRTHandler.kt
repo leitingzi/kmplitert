@@ -68,7 +68,10 @@ abstract class LiteRTHandler<I, O> {
     /**
      * Adds an interceptor to the task execution chain at the specified phase.
      */
-    fun addInterceptor(interceptor: LiteRTInterceptor<I, O>, phase: LiteRTPhase = LiteRTPhase.TASK) {
+    fun addInterceptor(
+        interceptor: LiteRTInterceptor<I, O>,
+        phase: LiteRTPhase = LiteRTPhase.TASK
+    ) {
         interceptors[phase]?.add(interceptor)
     }
 
