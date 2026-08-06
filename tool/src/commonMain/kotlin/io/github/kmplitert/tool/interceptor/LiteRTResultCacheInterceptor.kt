@@ -12,16 +12,16 @@ import kotlinx.coroutines.sync.withLock
  * @param onCacheHit Optional callback invoked when a cache hit occurs.
  * @param calculateFingerprint A function to calculate a unique key or fingerprint for the input.
  */
-class LiteRTResultCacheInterceptor<I, O>(
+class LiteRTResultCacheInterceptor<I, T, O>(
     private val onCacheHit: ((I, O) -> Unit)? = null,
     private val calculateFingerprint: (I) -> Any
-) : LiteRTInterceptor<I, O> {
+) : LiteRTInterceptor<I, T, O> {
 
     private var lastFingerprint: Any? = null
     private var lastResult: O? = null
     private val mutex = Mutex()
 
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
         if (chain.phase != LiteRTPhase.TASK) {
             return chain.proceed()
         }

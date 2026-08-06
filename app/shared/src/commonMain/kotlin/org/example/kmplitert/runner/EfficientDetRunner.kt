@@ -10,7 +10,7 @@ import kmplitert.app.shared.generated.resources.Res
 import kotlin.math.max
 import kotlin.math.min
 
-class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>() {
+class EfficientDetRunner: LiteRTHandler<LiteRtImage, LiteRtImage, List<LiteRTExt.Detection>>() {
 
     val compilerInstance get() = compiler
     private val scoreThreshold = 0.4f
@@ -37,14 +37,12 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>(
         }
     }
 
-    override suspend fun transform(input: LiteRtImage): Any? {
+    override suspend fun transform(input: LiteRtImage): LiteRtImage {
         return input.resize(320, 320).toRgb()
     }
 
-    override suspend fun feed(data: Any?, inputBuffers: List<TFBuffer>) {
-        if (data is LiteRtImage) {
-            inputBuffers[0].writeInt8(data.toInt8Array())
-        }
+    override suspend fun feed(data: LiteRtImage, inputBuffers: List<TFBuffer>) {
+        inputBuffers[0].writeInt8(data.toInt8Array())
     }
 
     override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Detection> {

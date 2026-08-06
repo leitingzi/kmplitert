@@ -232,7 +232,8 @@ import io.github.kmplitert.tool.*
 import io.github.kmplitert.tool.image.LiteRtImage
 import io.github.kmplitert.tool.expand.*
 
-class MyClassifier : LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
+// I: Input, T: Transformed, O: Output
+class MyClassifier : LiteRTHandler<LiteRtImage, LiteRtImage, List<LiteRTExt.Category>>() {
     private val labels = listOf("Cat", "Dog", "Bird")
 
     override suspend fun init() {
@@ -240,15 +241,18 @@ class MyClassifier : LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
         setupCompiler("path/to/model.tflite", LiteRTAccelerator.CPU)
     }
 
-    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
-        // 1. Resize, Normalize and write directly to native buffer
-        input.resize(224, 224)
-             .toRgb()
-             .writeFloatBuffer(inputBuffers[0], mean = 127.5f, std = 127.5f)
+    override suspend fun transform(input: LiteRtImage): LiteRtImage {
+        // 1. Resize and transform image format
+        return input.resize(224, 224).toRgb()
+    }
+
+    override suspend fun feed(data: LiteRtImage, inputBuffers: List<TFBuffer>) {
+        // 2. Normalize and write directly to native buffer
+        data.writeFloatBuffer(inputBuffers[0], mean = 127.5f, std = 127.5f)
     }
 
     override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Category> {
-        // 2. Read output and convert to high-level Category models using extension
+        // 3. Read output and convert to high-level Category models
         val scores = outputBuffers[0].readFloat()
         return scores.toCategories(labels, threshold = 0.5f)
     }
@@ -291,13 +295,13 @@ suspend fun simpleInference(modelPath: String) {
 
 ## 🛠️ Core API Reference
 
-### `LiteRTHandler<I, O>`
+### `LiteRTHandler<I, T, O>`
 Primary base class for model implementation, providing orchestration, lifecycle management, and interceptor support.
 
 - **Status Tracking**: Monitor the lifecycle via the `status: StateFlow<Status>` property. States include `Idle`, `Initializing`, `Ready`, `Running`, `Closing`, and `Error`.
 - **Threading Control**: Use `setDispatcher(CoroutineDispatcher)` to specify the execution context (default is `Dispatchers.Default`).
 - **Interceptor Chain**: Extend functionality (logging, caching, etc.) using `addInterceptor`, `removeInterceptor`, and `clearInterceptors`.
-- **Execution**: `runTask(input)` orchestrates `preprocess -> run -> postprocess` through all registered interceptors.
+- **Execution**: `runTask(input)` orchestrates `transform -> feed -> run -> postprocess` through all registered interceptors.
 - **Lifecycle**: `close()` safely releases native resources and resets the state.
 
 ### `LiteRTCompiler`
@@ -350,24 +354,53 @@ val normalized = SignalProcessing.normalize(pcmData)
 The `io.github.kmplitert.tool.expand` and `io.github.kmplitert.tool.interceptor` packages provide powerful tools:
 
 ### Middleware & Interceptors
-You can inject logic into the inference pipeline using interceptors:
 
+You can inject logic into the inference pipeline using interceptors. This is ideal for logging, caching, performance monitoring, or result filtering.
+
+#### Using Built-in Interceptors
 ```kotlin
 val handler = MyClassifier().apply {
     // 1. Result Caching: Skip inference if input fingerprint matches last result
-    addInterceptor(LiteRTResultCache(
-        onCacheHit = { input, result -> println("Cache hit!") },
-        calculateFingerprint = { it.hashCode() }
-    ))
+    addCache(onCacheHit = { input, result -> println("Cache hit!") })
 
-    // 2. Logging: Measure and log execution time
-    addInterceptor(LiteRTLoggingInterceptor(
-        tag = "MyModel",
-        logger = { msg -> println(msg) },
-        clock = { Clock.System.now().toEpochMilliseconds() }
-    ))
+    // 2. Logging: Measure and log execution time for each phase
+    addLogging(tag = "MyModel", phase = LiteRTPhase.TASK)
 }
 ```
+
+#### Creating Custom Interceptors
+Interceptors are type-safe and allow you to wrap the execution at different phases.
+
+```kotlin
+class MyCustomInterceptor : LiteRTInterceptor<LiteRtImage, LiteRtImage, List<Category>> {
+    override suspend fun intercept(
+        chain: LiteRTInterceptor.Chain<LiteRtImage, LiteRtImage, List<Category>>
+    ): List<Category> {
+        // 1. Pre-processing logic (e.g., validate input)
+        if (chain.input.width < 100) throw Exception("Image too small")
+
+        // 2. Proceed to the next interceptor or the actual task
+        val startTime = currentTimeMillis()
+        val results = chain.proceed()
+        val duration = currentTimeMillis() - startTime
+
+        // 3. Post-processing logic (e.g., filter results)
+        println("Task took ${duration}ms")
+        return results.filter { it.score > 0.5f }
+    }
+}
+
+// Add to your handler
+handler.addInterceptor(MyCustomInterceptor(), phase = LiteRTPhase.TASK)
+```
+
+#### LiteRTPhases
+You can attach interceptors to specific execution stages:
+- **`TASK`**: Wraps the entire process (default).
+- **`TRANSFORM`**: Wraps the data transformation (`transform` method).
+- **`FEED`**: Wraps the data loading into native buffers (`feed` method).
+- **`INFERENCE`**: Wraps the actual model execution.
+- **`POSTPROCESS`**: Wraps the result parsing (`postprocess` method).
 
 ### Core Extensions
 - **Buffer Ops**: `TFBuffer.writeTo(array)`, `TFBuffer.toFloatArray()`.

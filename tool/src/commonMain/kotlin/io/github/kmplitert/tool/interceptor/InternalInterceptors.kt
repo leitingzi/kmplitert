@@ -1,41 +1,36 @@
 package io.github.kmplitert.tool.interceptor
 
 import io.github.kmplitert.core.TFBuffer
-import io.github.kmplitert.tool.LiteRTPhase
 
 /**
  * Internal interceptors to encapsulate core LiteRT task steps.
  */
-internal class PhaseBoundaryInterceptor<I, O>(
-    val newPhase: LiteRTPhase
-) : LiteRTInterceptor<I, O> {
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
-        return chain.proceed()
-    }
-}
-
-internal class TransformInterceptor<I, O>(
-    private val transform: suspend (I) -> Any?
-) : LiteRTInterceptor<I, O> {
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
+internal class TransformInterceptor<I, T, O>(
+    private val transform: suspend (I) -> T
+) : LiteRTInterceptor<I, T, O> {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
         val data = transform(chain.input)
         return chain.proceed(transformedData = data)
     }
 }
 
-internal class FeedInterceptor<I, O>(
-    private val feed: suspend (Any?, List<TFBuffer>) -> Unit
-) : LiteRTInterceptor<I, O> {
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
-        chain.inputBuffers?.let { feed(chain.transformedData, it) }
+internal class FeedInterceptor<I, T, O>(
+    private val feed: suspend (T, List<TFBuffer>) -> Unit
+) : LiteRTInterceptor<I, T, O> {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
+        val buffers = chain.inputBuffers
+        val data = chain.transformedData
+        if (buffers != null && data != null) {
+            feed(data, buffers)
+        }
         return chain.proceed()
     }
 }
 
-internal class InferenceInterceptor<I, O>(
+internal class InferenceInterceptor<I, T, O>(
     private val inference: suspend (List<TFBuffer>, List<TFBuffer>) -> Unit
-) : LiteRTInterceptor<I, O> {
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
+) : LiteRTInterceptor<I, T, O> {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
         if (chain.inputBuffers != null && chain.outputBuffers != null) {
             inference(chain.inputBuffers!!, chain.outputBuffers!!)
         }
@@ -43,10 +38,10 @@ internal class InferenceInterceptor<I, O>(
     }
 }
 
-internal class PostprocessInterceptor<I, O>(
+internal class PostprocessInterceptor<I, T, O>(
     private val postprocess: suspend (List<TFBuffer>) -> O
-) : LiteRTInterceptor<I, O> {
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
+) : LiteRTInterceptor<I, T, O> {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
         return postprocess(chain.outputBuffers ?: emptyList())
     }
 }

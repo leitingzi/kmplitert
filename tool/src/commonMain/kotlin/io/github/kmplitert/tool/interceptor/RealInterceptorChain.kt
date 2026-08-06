@@ -3,32 +3,24 @@ package io.github.kmplitert.tool.interceptor
 import io.github.kmplitert.core.TFBuffer
 import io.github.kmplitert.tool.LiteRTPhase
 
-internal class RealInterceptorChain<I, O>(
-    override val phase: LiteRTPhase,
-    private val interceptors: List<LiteRTInterceptor<I, O>>,
+internal class RealInterceptorChain<I, T, O>(
+    private val interceptors: List<Pair<LiteRTPhase, LiteRTInterceptor<I, T, O>>>,
     private val index: Int,
     override val input: I,
-    override val transformedData: Any?,
+    override val transformedData: T?,
     override val inputBuffers: List<TFBuffer>? = null,
     override val outputBuffers: List<TFBuffer>? = null
-) : LiteRTInterceptor.Chain<I, O> {
+) : LiteRTInterceptor.Chain<I, T, O> {
 
-    override suspend fun proceed(input: I, transformedData: Any?): O {
+    override val phase: LiteRTPhase
+        get() = if (index < interceptors.size) interceptors[index].first else LiteRTPhase.POSTPROCESS
+
+    override suspend fun proceed(input: I, transformedData: T?): O {
         if (index >= interceptors.size) {
             throw AssertionError("Chain reached end without base execution")
         }
 
-        val interceptor = interceptors[index]
-        
-        // Auto-update phase if we hit a boundary
-        val nextPhase = if (interceptor is PhaseBoundaryInterceptor<*, *>) {
-            interceptor.newPhase
-        } else {
-            phase
-        }
-
         val next = RealInterceptorChain(
-            phase = nextPhase,
             interceptors = interceptors,
             index = index + 1,
             input = input,
@@ -37,6 +29,6 @@ internal class RealInterceptorChain<I, O>(
             outputBuffers = outputBuffers
         )
         
-        return interceptor.intercept(next)
+        return interceptors[index].second.intercept(next)
     }
 }

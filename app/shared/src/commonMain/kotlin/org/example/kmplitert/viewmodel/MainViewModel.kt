@@ -6,10 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.kmplitert.core.LiteRTCompiler
-import io.github.kmplitert.tool.*
+import io.github.kmplitert.tool.LiteRTHandler
+import io.github.kmplitert.tool.LiteRTPhase
 import io.github.kmplitert.tool.expand.addCache
-import io.github.kmplitert.tool.expand.addImageShapeValidator
 import io.github.kmplitert.tool.expand.addLogging
+import io.github.kmplitert.tool.expand.proceed
 import io.github.kmplitert.tool.image.LiteRtImage
 import io.github.kmplitert.tool.interceptor.LiteRTInterceptionException
 import kmplitert.app.shared.generated.resources.Res
@@ -38,11 +39,6 @@ class MainViewModel : ViewModel() {
             name = "MobileNet V1",
             description = "Image classification model.",
             runner = MobileNetRunner().apply {
-                addImageShapeValidator(
-                    expectedShape = intArrayOf(224, 224, 3),
-                    onValidated = { shape -> addLog("[MobileNet] Shape validated: ${shape.contentToString()}") },
-                    onInvalidated = { expected, actual -> addLog("[MobileNet] Shape check failed! Expected: ${expected.contentToString()}, Actual: ${actual.contentToString()}") }
-                )
                 addCache(onCacheHit = { _, _ -> addLog("[MobileNet] Cache Hit!") })
                 addLogging(tag = "MobileNet", logger = ::addLog)
             },
@@ -54,11 +50,6 @@ class MainViewModel : ViewModel() {
             name = "EfficientDet Lite0",
             description = "Object detection model.",
             runner = EfficientDetRunner().apply {
-                addImageShapeValidator(
-                    expectedShape = intArrayOf(320, 320, 3),
-                    onValidated = { shape -> addLog("[EfficientDet] Shape validated: ${shape.contentToString()}") },
-                    onInvalidated = { expected, actual -> addLog("[EfficientDet] Shape check failed! Expected: ${expected.contentToString()}, Actual: ${actual.contentToString()}") }
-                )
                 addCache(onCacheHit = { _, _ -> addLog("[EfficientDet] Cache Hit!") })
                 addLogging(tag = "EfficientDet", logger = ::addLog)
             },
