@@ -10,7 +10,7 @@ import kmplitert.app.shared.generated.resources.Res
 import kotlin.math.max
 import kotlin.math.min
 
-class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>() {
+class EfficientDetRunner: LiteRTHandler<LiteRtImage, LiteRtImage, List<LiteRTExt.Detection>>() {
 
     val compilerInstance get() = compiler
     private val scoreThreshold = 0.4f
@@ -20,26 +20,29 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>(
     override suspend fun init() {
         // Load model and setup compiler
         val modelResourcePath = "files/efficientdet_lite0.tflite"
-        val modelData = Res.readBytes(modelResourcePath)
-        val modelName = modelResourcePath.substringAfterLast("/")
-        val filePath = LiteRTFileUtils.createFileFromByteArray(modelData, modelName)
+        val modelData = Res.readBytes(path = modelResourcePath)
+        val filePath = LiteRTFileUtils.createFileFromByteArray(
+            data = modelData,
+            fileName = modelResourcePath.substringAfterLast("/")
+        )
 
-        setupCompiler(filePath, LiteRTAccelerator.CPU)
+        setupCompiler(filePath = filePath, accelerator = LiteRTAccelerator.CPU)
     }
 
     suspend fun detect(image: LiteRtImage): Result<List<LiteRTExt.Detection>> {
         return try {
-            Result.success(runTask(image))
+            Result.success(value = runTask(image))
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(exception = e)
         }
     }
 
-    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
-        // EfficientDet-Lite0 expects 320x320 RGB uint8 input
-        val resized = input.resize(320, 320).toRgb()
-        val data = resized.toInt8Array()
-        inputBuffers[0].writeInt8(data)
+    override suspend fun transform(input: LiteRtImage): LiteRtImage {
+        return input.resize(320, 320).toRgb()
+    }
+
+    override suspend fun feed(data: LiteRtImage, inputBuffers: List<TFBuffer>) {
+        inputBuffers[0].writeInt8(data.toInt8Array())
     }
 
     override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Detection> {
@@ -95,7 +98,10 @@ class EfficientDetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Detection>>(
         return performNms(candidates, iouThreshold)
     }
 
-    private fun performNms(detections: List<LiteRTExt.Detection>, iouThreshold: Float): List<LiteRTExt.Detection> {
+    private fun performNms(
+        detections: List<LiteRTExt.Detection>,
+        iouThreshold: Float
+    ): List<LiteRTExt.Detection> {
         val sortedDetections = detections.sortedByDescending { it.categories.first().score }.toMutableList()
         val results = mutableListOf<LiteRTExt.Detection>()
 

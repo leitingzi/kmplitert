@@ -8,7 +8,7 @@ import io.github.kmplitert.tool.LiteRTHandler
 import io.github.kmplitert.tool.image.LiteRtImage
 import kmplitert.app.shared.generated.resources.Res
 
-class MobileNetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
+class MobileNetRunner: LiteRTHandler<LiteRtImage, LiteRtImage, List<LiteRTExt.Category>>() {
 
     val compilerInstance get() = compiler
     private var labels: List<String> = emptyList()
@@ -37,10 +37,12 @@ class MobileNetRunner: LiteRTHandler<LiteRtImage, List<LiteRTExt.Category>>() {
         }
     }
 
-    override suspend fun preprocess(input: LiteRtImage, inputBuffers: List<TFBuffer>) {
-        val resized = input.resize(224, 224).toRgb()
-        val data = resized.toInt8Array()
-        inputBuffers[0].writeInt8(data)
+    override suspend fun transform(input: LiteRtImage): LiteRtImage {
+        return input.resize(224, 224).toRgb()
+    }
+
+    override suspend fun feed(data: LiteRtImage, inputBuffers: List<TFBuffer>) {
+        inputBuffers[0].writeInt8(data.toInt8Array())
     }
 
     override suspend fun postprocess(outputBuffers: List<TFBuffer>): List<LiteRTExt.Category> {

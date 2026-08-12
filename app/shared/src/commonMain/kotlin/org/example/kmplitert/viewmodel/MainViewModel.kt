@@ -1,14 +1,23 @@
 package org.example.kmplitert.viewmodel
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.kmplitert.core.LiteRTCompiler
+import io.github.kmplitert.tool.LiteRTHandler
+import io.github.kmplitert.tool.LiteRTPhase
+import io.github.kmplitert.tool.expand.addCache
+import io.github.kmplitert.tool.expand.addLogging
+import io.github.kmplitert.tool.expand.proceed
 import io.github.kmplitert.tool.image.LiteRtImage
+import io.github.kmplitert.tool.interceptor.LiteRTInterceptionException
 import kmplitert.app.shared.generated.resources.Res
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.kmplitert.ModelItem
 import org.example.kmplitert.runner.EfficientDetRunner
@@ -18,6 +27,9 @@ class MainViewModel : ViewModel() {
     var logs by mutableStateOf("Ready.\n")
         private set
 
+    private val _currentStatus = MutableStateFlow<LiteRTHandler.Status>(LiteRTHandler.Status.Idle)
+    val currentStatus: StateFlow<LiteRTHandler.Status> = _currentStatus.asStateFlow()
+
     var isProcessing by mutableStateOf(false)
         private set
 
@@ -26,7 +38,10 @@ class MainViewModel : ViewModel() {
             id = "mobilenet",
             name = "MobileNet V1",
             description = "Image classification model.",
-            runner = MobileNetRunner(),
+            runner = MobileNetRunner().apply {
+                addCache(onCacheHit = { _, _ -> addLog("[MobileNet] Cache Hit!") })
+                addLogging(tag = "MobileNet", logger = ::addLog)
+            },
             defaultInputNames = listOf("input"),
             defaultOutputNames = listOf("MobilenetV1/Predictions/Reshape_1")
         ),
@@ -34,60 +49,81 @@ class MainViewModel : ViewModel() {
             id = "efficientdet",
             name = "EfficientDet Lite0",
             description = "Object detection model.",
-            runner = EfficientDetRunner(),
+            runner = EfficientDetRunner().apply {
+                addCache(onCacheHit = { _, _ -> addLog("[EfficientDet] Cache Hit!") })
+                addLogging(tag = "EfficientDet", logger = ::addLog)
+            },
             defaultInputNames = listOf("images"),
             defaultOutputNames = listOf("output_0", "output_1")
         )
     )
 
     var selectedModel by mutableStateOf<ModelItem?>(models.first())
-    
-    // Track initialization state for each model
-    var initializedModels = mutableStateMapOf<String, Boolean>()
+
+    private var statusJob: Job? = null
+    private var testImage: LiteRtImage? = null // Cache the test image for result caching demo
+
+    init {
+        // Initial setup for the first model
+        observeModelStatus(models.first())
+    }
 
     fun selectModel(model: ModelItem) {
         selectedModel = model
+        observeModelStatus(model)
+    }
+
+    private fun observeModelStatus(model: ModelItem) {
+        statusJob?.cancel()
+        statusJob = viewModelScope.launch {
+            model.runner.status.collect { status ->
+                _currentStatus.value = status
+                when (status) {
+                    is LiteRTHandler.Status.Error -> {
+                        addLog("Error: ${status.throwable.message}")
+                        isProcessing = false
+                    }
+                    is LiteRTHandler.Status.Ready -> {
+                        isProcessing = false
+                    }
+                    is LiteRTHandler.Status.Running -> isProcessing = true
+                    is LiteRTHandler.Status.Initializing -> isProcessing = true
+                    is LiteRTHandler.Status.Closing -> isProcessing = true
+                    is LiteRTHandler.Status.Idle -> isProcessing = false
+                }
+            }
+        }
     }
 
     fun initializeSelectedModel() {
         val model = selectedModel ?: return
         viewModelScope.launch {
-            isProcessing = true
             addLog("Initializing ${model.name}...")
             try {
                 model.runner.init()
-                initializedModels[model.id] = true
                 addLog("${model.name} initialized successfully.")
-            } catch (e: Exception) {
-                addLog("Initialization failed: ${e.message}")
-            } finally {
-                isProcessing = false
+            } catch (_: Exception) {
+                // Error status is updated via flow
             }
         }
     }
 
     fun closeSelectedModel() {
         val model = selectedModel ?: return
-        if (initializedModels[model.id] != true) return
-
         viewModelScope.launch {
-            isProcessing = true
             addLog("Closing ${model.name}...")
             try {
                 model.runner.close()
-                initializedModels.remove(model.id)
                 addLog("${model.name} closed successfully.")
-            } catch (e: Exception) {
-                addLog("Closing failed: ${e.message}")
-            } finally {
-                isProcessing = false
+            } catch (_: Exception) {
+                // Error status is updated via flow
             }
         }
     }
 
     fun getTensorInfo(inputNames: List<String>, outputNames: List<String>) {
         val model = selectedModel ?: return
-        if (initializedModels[model.id] != true) {
+        if (currentStatus.value !is LiteRTHandler.Status.Ready) {
             addLog("Error: Model must be initialized first.")
             return
         }
@@ -130,11 +166,13 @@ class MainViewModel : ViewModel() {
     fun runInference() {
         val model = selectedModel ?: return
         viewModelScope.launch {
-            isProcessing = true
             addLog("--- Running ${model.name} ---")
             try {
-                val picData = Res.readBytes("files/pic/elephant.bmp")
-                val image = LiteRtImage.fromBytes(picData)
+                if (testImage == null) {
+                    val picData = Res.readBytes("files/pic/elephant.bmp")
+                    testImage = LiteRtImage.fromBytes(picData)
+                }
+                val image = testImage!!
                 
                 when (val runner = model.runner) {
                     is MobileNetRunner -> {
@@ -142,7 +180,11 @@ class MainViewModel : ViewModel() {
                             results.forEachIndexed { index, category ->
                                 addLog("Top ${index + 1}: ${category.label} (${category.score})")
                             }
-                        }.onFailure { throw it }
+                        }.onFailure { 
+                            if (it !is LiteRTInterceptionException) {
+                                addLog("Error: ${it.message}")
+                            }
+                        }
                     }
                     is EfficientDetRunner -> {
                         runner.detect(image).onSuccess { results ->
@@ -154,13 +196,15 @@ class MainViewModel : ViewModel() {
                                     addLog("Obj ${index + 1}: ${category.label} (${category.score})")
                                 }
                             }
-                        }.onFailure { throw it }
+                        }.onFailure { 
+                            if (it !is LiteRTInterceptionException) {
+                                addLog("Error: ${it.message}")
+                            }
+                        }
                     }
                 }
-            } catch (e: Exception) {
-                addLog("Execution Error: ${e.message}")
-            } finally {
-                isProcessing = false
+            } catch (_: Exception) {
+                // Error status is updated via flow
             }
         }
     }

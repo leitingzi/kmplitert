@@ -3,117 +3,241 @@ package io.github.kmplitert.tool
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.tool.interceptor.FeedInterceptor
+import io.github.kmplitert.tool.interceptor.InferenceInterceptor
+import io.github.kmplitert.tool.interceptor.LiteRTInterceptor
+import io.github.kmplitert.tool.interceptor.PostprocessInterceptor
+import io.github.kmplitert.tool.interceptor.RealInterceptorChain
+import io.github.kmplitert.tool.interceptor.TransformInterceptor
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * A generic base class for model-specific preprocessing and postprocessing logic,
- * combined with high-level task orchestration.
+ * combined with high-level task orchestration and interceptor support.
  *
  * @param I The type of the input data to be preprocessed (e.g., LiteRtImage).
+ * @param T The type of the transformed data (e.g., FloatArray).
  * @param O The type of the final result returned after postprocessing.
  */
-abstract class LiteRTHandler<I, O> {
+abstract class LiteRTHandler<I, T, O> {
+
+    /**
+     * Represents the current status of the [LiteRTHandler].
+     */
+    sealed interface Status {
+        data object Idle : Status
+        data object Initializing : Status
+        data object Ready : Status
+        data object Running : Status
+        data object Closing : Status
+        data class Error(val throwable: Throwable) : Status
+    }
 
     private var _compiler: LiteRTCompiler? = null
     private val initLock = Mutex()
+    private val taskLock = Mutex()
+
+    private var dispatcher = Dispatchers.Default
+    private val _status = MutableStateFlow<Status>(Status.Idle)
+    
+    private val interceptors = LiteRTPhase.entries.associateWith {
+        mutableListOf<LiteRTInterceptor<I, T, O>>()
+    }
+
+    private var cachedChain: List<Pair<LiteRTPhase, LiteRTInterceptor<I, T, O>>>? = null
 
     /**
-     * The [LiteRTCompiler] instance used for inference.
-     * Accessing this before [init] or after [close] will throw an error.
+     * A [StateFlow] that tracks the current [Status] of the handler.
      */
+    val status: StateFlow<Status> = _status.asStateFlow()
+
     protected val compiler: LiteRTCompiler
         get() = _compiler ?: error("Compiler not initialized. Call init() first.")
 
+    fun setDispatcher(dispatcher: CoroutineDispatcher) {
+        this.dispatcher = dispatcher
+    }
+
     /**
-     * Sets the internal [LiteRTCompiler] instance.
-     * Should be called within the [init] method of a subclass.
+     * Adds an interceptor to the task execution chain at the specified phase.
      */
+    fun addInterceptor(
+        interceptor: LiteRTInterceptor<I, T, O>,
+        phase: LiteRTPhase = LiteRTPhase.TASK
+    ) {
+        interceptors[phase]?.add(interceptor)
+        cachedChain = null
+    }
+
+    /**
+     * Removes an interceptor from the task execution chain.
+     */
+    fun removeInterceptor(interceptor: LiteRTInterceptor<I, T, O>) {
+        interceptors.values.forEach { it.remove(interceptor) }
+        cachedChain = null
+    }
+
+    /**
+     * Clears all interceptors from the task execution chain.
+     */
+    fun clearInterceptors() {
+        interceptors.values.forEach { it.clear() }
+        cachedChain = null
+    }
+
+    protected fun updateStatus(status: Status) {
+        _status.value = status
+    }
+
     protected fun setCompiler(compiler: LiteRTCompiler) {
         _compiler = compiler
     }
 
-    /**
-     * Helper method to initialize the [LiteRTCompiler] in a thread-safe manner.
-     * This method creates the compiler instance, calls its [LiteRTCompiler.init] method,
-     * and sets it as the internal compiler.
-     *
-     * @param filePath The absolute path to the .tflite model file.
-     * @param accelerator The hardware accelerator to use.
-     */
     protected suspend fun setupCompiler(filePath: String, accelerator: LiteRTAccelerator) {
-        if (_compiler != null) {
-            return
-        }
-        initLock.withLock {
+        withContext(context = dispatcher) {
             if (_compiler != null) {
-                return@withLock
+                return@withContext
             }
-            val newCompiler = LiteRTCompiler(filePath = filePath, accelerator = accelerator)
-            newCompiler.init()
 
-            setCompiler(compiler = newCompiler)
+            initLock.withLock {
+                if (_compiler != null) {
+                    return@withLock
+                }
+
+                updateStatus(Status.Initializing)
+
+                try {
+                    val newCompiler = LiteRTCompiler(filePath = filePath, accelerator = accelerator)
+                    newCompiler.init()
+                    setCompiler(compiler = newCompiler)
+                    updateStatus(status = Status.Ready)
+                } catch (e: Exception) {
+                    updateStatus(status = Status.Error(throwable = e))
+                    throw e
+                }
+            }
         }
     }
 
-    /**
-     * Initializes the handler and its underlying resources.
-     * This is an optional step that can be called before the first [runTask].
-     * Subclasses should initialize the compiler here using [setupCompiler] or [setCompiler].
-     */
     open suspend fun init() {
 
     }
 
     /**
-     * Performs preprocessing on the input data and fills the input buffers.
-     *
-     * @param input The input data to process.
-     * @param inputBuffers The list of input buffers to be filled.
+     * Transforms the input into an intermediate format (e.g., resizing an image).
      */
-    protected abstract suspend fun preprocess(input: I, inputBuffers: List<TFBuffer>)
+    protected abstract suspend fun transform(input: I): T
 
     /**
-     * Performs postprocessing on the output buffers and returns the inference results.
-     *
-     * @param outputBuffers The list of output buffers containing inference results.
-     * @return The processed result of type [O].
+     * Feeds the transformed data into the model's input buffers.
+     */
+    protected abstract suspend fun feed(data: T, inputBuffers: List<TFBuffer>)
+
+    /**
+     * Postprocesses the output buffers to produce the final result.
      */
     protected abstract suspend fun postprocess(outputBuffers: List<TFBuffer>): O
 
     /**
-     * Executes the full LiteRT task: preprocess -> run -> postprocess.
-     *
-     * This method automatically calls [init] if the compiler is not yet initialized.
-     *
-     * @param input The input data to process.
-     * @return The final processed result.
+     * Executes the full LiteRT task through the interceptor chain.
      */
     suspend fun runTask(input: I): O {
+        return withContext(context = dispatcher) {
+            updateStatus(status = Status.Running)
+            try {
+                taskLock.withLock {
+                    ensureInitialized()
+                    val inputBuffers = compiler.getInputBuffers()
+                    val outputBuffers = compiler.getOutputBuffers()
+
+                    val chainList = cachedChain ?: buildFlattenedChain().also { cachedChain = it }
+
+                    val rootChain = RealInterceptorChain(
+                        interceptors = chainList,
+                        index = 0,
+                        input = input,
+                        transformedData = null,
+                        inputBuffers = inputBuffers,
+                        outputBuffers = outputBuffers
+                    )
+
+                    val result = rootChain.proceed(input = input)
+                    updateStatus(status = Status.Ready)
+                    result
+                }
+            } catch (e: Exception) {
+                if (_compiler != null) {
+                    updateStatus(status = Status.Ready)
+                } else {
+                    updateStatus(status = Status.Error(throwable = e))
+                }
+                throw e
+            }
+        }
+    }
+
+    private fun buildFlattenedChain(): List<Pair<LiteRTPhase, LiteRTInterceptor<I, T, O>>> {
+        return buildList {
+            // 1. TASK phase
+            addAll(interceptors[LiteRTPhase.TASK]!!.map { LiteRTPhase.TASK to it })
+
+            // 2. TRANSFORM phase
+            addAll(interceptors[LiteRTPhase.TRANSFORM]!!.map { LiteRTPhase.TRANSFORM to it })
+            add(LiteRTPhase.TRANSFORM to TransformInterceptor(::transform))
+
+            // 3. FEED phase
+            addAll(interceptors[LiteRTPhase.FEED]!!.map { LiteRTPhase.FEED to it })
+            add(LiteRTPhase.FEED to FeedInterceptor(::feed))
+
+            // 4. INFERENCE phase
+            addAll(interceptors[LiteRTPhase.INFERENCE]!!.map { LiteRTPhase.INFERENCE to it })
+            add(LiteRTPhase.INFERENCE to InferenceInterceptor(compiler::run))
+
+            // 5. POSTPROCESS phase
+            addAll(interceptors[LiteRTPhase.POSTPROCESS]!!.map { LiteRTPhase.POSTPROCESS to it })
+            add(LiteRTPhase.POSTPROCESS to PostprocessInterceptor(::postprocess))
+        }
+    }
+
+    private suspend fun ensureInitialized() {
         if (_compiler == null) {
             initLock.withLock {
                 if (_compiler == null) {
-                    init()
+                    updateStatus(status = Status.Initializing)
+                    try {
+                        init()
+                        if (_compiler != null && _status.value == Status.Initializing) {
+                            updateStatus(status = Status.Ready)
+                            updateStatus(status = Status.Running)
+                        }
+                    } catch (e: Exception) {
+                        updateStatus(status = Status.Error(throwable = e))
+                        throw e
+                    }
                 }
             }
         }
-        
-        val inputBuffers = compiler.getInputBuffers()
-        preprocess(input = input, inputBuffers = inputBuffers)
-
-        val outputBuffers = compiler.getOutputBuffers()
-        compiler.run(inputs = inputBuffers, outputs = outputBuffers)
-
-        return postprocess(outputBuffers = outputBuffers)
     }
 
-    /**
-     * Closes the underlying [LiteRTCompiler].
-     */
-    open suspend fun close() {
+    open suspend fun close() = withContext(dispatcher) {
         initLock.withLock {
-            _compiler?.close()
-            _compiler = null
+            updateStatus(status = Status.Closing)
+            try {
+                _compiler?.close()
+                _compiler = null
+                updateStatus(status = Status.Idle)
+            } catch (e: Exception) {
+                updateStatus(status = Status.Error(throwable = e))
+                throw e
+            }
         }
     }
 }
+
