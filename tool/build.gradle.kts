@@ -119,9 +119,6 @@ kotlin {
         linuxArm64()
     }
 
-    androidNativeArm64()
-    androidNativeX64()
-
     LiteRT.configureNativeBundling(":core")
 
     jvm()
