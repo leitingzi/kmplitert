@@ -7,23 +7,19 @@ import io.github.kmplitert.tool.LiteRTPhase
  * Interface for intercepting LiteRT task execution.
  *
  * @param I The type of the input data.
- * @param T The type of the transformed data.
  * @param O The type of the final result.
  */
-fun interface LiteRTInterceptor<I, T, O> {
-    suspend fun intercept(chain: Chain<I, T, O>): O
+fun interface LiteRTInterceptor<I, O> {
+    suspend fun intercept(chain: Chain<I, O>): O
 
-    interface Chain<I, T, O> {
+    interface Chain<I, O> {
         /** The original input data. */
         val input: I
 
         /** The current phase of the chain. */
         val phase: LiteRTPhase
 
-        /** The data produced by the TRANSFORM phase. Available in FEED, INFERENCE, and POSTPROCESS. */
-        val transformedData: T?
-
-        /** The input buffers. Available in FEED, INFERENCE, and POSTPROCESS. */
+        /** The input buffers. Available in PREPROCESS, INFERENCE, and POSTPROCESS. */
         val inputBuffers: List<TFBuffer>?
 
         /** The output buffers. Available after inference. */
@@ -32,9 +28,6 @@ fun interface LiteRTInterceptor<I, T, O> {
         /**
          * Continues the execution of the chain.
          */
-        suspend fun proceed(
-            input: I = this.input,
-            transformedData: T? = this.transformedData
-        ): O
+        suspend fun proceed(input: I = this.input): O
     }
 }

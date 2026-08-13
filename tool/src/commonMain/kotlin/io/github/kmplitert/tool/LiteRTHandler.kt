@@ -3,12 +3,11 @@ package io.github.kmplitert.tool
 import io.github.kmplitert.core.LiteRTAccelerator
 import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.TFBuffer
-import io.github.kmplitert.tool.interceptor.FeedInterceptor
 import io.github.kmplitert.tool.interceptor.InferenceInterceptor
 import io.github.kmplitert.tool.interceptor.LiteRTInterceptor
 import io.github.kmplitert.tool.interceptor.PostprocessInterceptor
+import io.github.kmplitert.tool.interceptor.PreprocessInterceptor
 import io.github.kmplitert.tool.interceptor.RealInterceptorChain
-import io.github.kmplitert.tool.interceptor.TransformInterceptor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,10 +22,9 @@ import kotlinx.coroutines.withContext
  * combined with high-level task orchestration and interceptor support.
  *
  * @param I The type of the input data to be preprocessed (e.g., LiteRtImage).
- * @param T The type of the transformed data (e.g., FloatArray).
  * @param O The type of the final result returned after postprocessing.
  */
-abstract class LiteRTHandler<I, T, O> {
+abstract class LiteRTHandler<I, O> {
 
     /**
      * Represents the current status of the [LiteRTHandler].
@@ -48,10 +46,10 @@ abstract class LiteRTHandler<I, T, O> {
     private val _status = MutableStateFlow<Status>(Status.Idle)
     
     private val interceptors = LiteRTPhase.entries.associateWith {
-        mutableListOf<LiteRTInterceptor<I, T, O>>()
+        mutableListOf<LiteRTInterceptor<I, O>>()
     }
 
-    private var cachedChain: List<Pair<LiteRTPhase, LiteRTInterceptor<I, T, O>>>? = null
+    private var cachedChain: List<Pair<LiteRTPhase, LiteRTInterceptor<I, O>>>? = null
 
     /**
      * A [StateFlow] that tracks the current [Status] of the handler.
@@ -69,7 +67,7 @@ abstract class LiteRTHandler<I, T, O> {
      * Adds an interceptor to the task execution chain at the specified phase.
      */
     fun addInterceptor(
-        interceptor: LiteRTInterceptor<I, T, O>,
+        interceptor: LiteRTInterceptor<I, O>,
         phase: LiteRTPhase = LiteRTPhase.TASK
     ) {
         interceptors[phase]?.add(interceptor)
@@ -79,7 +77,7 @@ abstract class LiteRTHandler<I, T, O> {
     /**
      * Removes an interceptor from the task execution chain.
      */
-    fun removeInterceptor(interceptor: LiteRTInterceptor<I, T, O>) {
+    fun removeInterceptor(interceptor: LiteRTInterceptor<I, O>) {
         interceptors.values.forEach { it.remove(interceptor) }
         cachedChain = null
     }
@@ -131,14 +129,10 @@ abstract class LiteRTHandler<I, T, O> {
     }
 
     /**
-     * Transforms the input into an intermediate format (e.g., resizing an image).
+     * Preprocesses the input data and feeds it into the model's input buffers.
+     * This may include resizing, normalization, and byte-buffer conversion.
      */
-    protected abstract suspend fun transform(input: I): T
-
-    /**
-     * Feeds the transformed data into the model's input buffers.
-     */
-    protected abstract suspend fun feed(data: T, inputBuffers: List<TFBuffer>)
+    protected abstract suspend fun preprocess(input: I, inputBuffers: List<TFBuffer>)
 
     /**
      * Postprocesses the output buffers to produce the final result.
@@ -163,7 +157,6 @@ abstract class LiteRTHandler<I, T, O> {
                         interceptors = chainList,
                         index = 0,
                         input = input,
-                        transformedData = null,
                         inputBuffers = inputBuffers,
                         outputBuffers = outputBuffers
                     )
@@ -183,24 +176,20 @@ abstract class LiteRTHandler<I, T, O> {
         }
     }
 
-    private fun buildFlattenedChain(): List<Pair<LiteRTPhase, LiteRTInterceptor<I, T, O>>> {
+    private fun buildFlattenedChain(): List<Pair<LiteRTPhase, LiteRTInterceptor<I, O>>> {
         return buildList {
             // 1. TASK phase
             addAll(interceptors[LiteRTPhase.TASK]!!.map { LiteRTPhase.TASK to it })
 
-            // 2. TRANSFORM phase
-            addAll(interceptors[LiteRTPhase.TRANSFORM]!!.map { LiteRTPhase.TRANSFORM to it })
-            add(LiteRTPhase.TRANSFORM to TransformInterceptor(::transform))
+            // 2. PREPROCESS phase
+            addAll(interceptors[LiteRTPhase.PREPROCESS]!!.map { LiteRTPhase.PREPROCESS to it })
+            add(LiteRTPhase.PREPROCESS to PreprocessInterceptor(::preprocess))
 
-            // 3. FEED phase
-            addAll(interceptors[LiteRTPhase.FEED]!!.map { LiteRTPhase.FEED to it })
-            add(LiteRTPhase.FEED to FeedInterceptor(::feed))
-
-            // 4. INFERENCE phase
+            // 3. INFERENCE phase
             addAll(interceptors[LiteRTPhase.INFERENCE]!!.map { LiteRTPhase.INFERENCE to it })
             add(LiteRTPhase.INFERENCE to InferenceInterceptor(compiler::run))
 
-            // 5. POSTPROCESS phase
+            // 4. POSTPROCESS phase
             addAll(interceptors[LiteRTPhase.POSTPROCESS]!!.map { LiteRTPhase.POSTPROCESS to it })
             add(LiteRTPhase.POSTPROCESS to PostprocessInterceptor(::postprocess))
         }
@@ -240,4 +229,3 @@ abstract class LiteRTHandler<I, T, O> {
         }
     }
 }
-

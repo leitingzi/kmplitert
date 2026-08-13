@@ -1,7 +1,6 @@
 package io.github.kmplitert.tool.interceptor
 
 import io.github.kmplitert.tool.LiteRTPhase
-import io.github.kmplitert.tool.expand.proceed
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -12,16 +11,16 @@ import kotlinx.coroutines.sync.withLock
  * @param onCacheHit Optional callback invoked when a cache hit occurs.
  * @param calculateFingerprint A function to calculate a unique key or fingerprint for the input.
  */
-class LiteRTResultCacheInterceptor<I, T, O>(
+class LiteRTResultCacheInterceptor<I, O>(
     private val onCacheHit: ((I, O) -> Unit)? = null,
     private val calculateFingerprint: (I) -> Any
-) : LiteRTInterceptor<I, T, O> {
+) : LiteRTInterceptor<I, O> {
 
     private var lastFingerprint: Any? = null
     private var lastResult: O? = null
     private val mutex = Mutex()
 
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
         if (chain.phase != LiteRTPhase.TASK) {
             return chain.proceed()
         }

@@ -9,13 +9,13 @@ import io.github.kmplitert.tool.expand.proceed
  * @param logger A function to handle the log messages. Defaults to println.
  * @param clock A function that returns the current time in milliseconds.
  */
-class LiteRTLoggingInterceptor<I, T, O>(
+class LiteRTLoggingInterceptor<I, O>(
     private val tag: String = "LiteRT",
     private val logger: (String) -> Unit = { println(it) },
     private val clock: () -> Long = { 0L }
-) : LiteRTInterceptor<I, T, O> {
+) : LiteRTInterceptor<I, O> {
 
-    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, T, O>): O {
+    override suspend fun intercept(chain: LiteRTInterceptor.Chain<I, O>): O {
         val phasePrefix = "[$tag][${chain.phase}]"
         logger("$phasePrefix Starting...")
         val startTime = clock()
