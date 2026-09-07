@@ -109,7 +109,7 @@ kotlin {
         linuxArm64()
     }
 
-    LiteRT.configureNativeBundling(":core")
+    LiteRT.configureNativeBundling()
 
     jvm()
 

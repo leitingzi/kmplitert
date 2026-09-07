@@ -24,10 +24,10 @@ class NativeConventionsPlugin : Plugin<Project> {
     }
 }
 
-internal fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
-    val coreProject = project(coreProjectPath)
-    val kotlin = extensions.getByType<KotlinMultiplatformExtension>()
+internal fun Project.configureNativeLiteRTBundling() {
+    val project = project(":library:core")
     val cInteropPath = "src/nativeInterop"
+    val kotlin = extensions.getByType<KotlinMultiplatformExtension>()
 
     kotlin.targets.withType<KotlinNativeTarget>().configureEach {
         if (konanTarget.isApple) {
@@ -45,13 +45,13 @@ internal fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
 
         compilations.getByName("main").cinterops {
             create("litert") {
-                definitionFile.set(coreProject.layout.projectDirectory.file("$cInteropPath/cinterop/litert.def"))
-                includeDirs(coreProject.layout.projectDirectory.dir("$cInteropPath/include"))
+                definitionFile.set(project.layout.projectDirectory.file("$cInteropPath/cinterop/litert.def"))
+                includeDirs(project.layout.projectDirectory.dir("$cInteropPath/include"))
             }
         }
 
         binaries.all {
-            val libPathFile = liteRtLibDir(coreProject, cInteropPath, konanTarget) ?: return@all
+            val libPathFile = liteRtLibDir(project, cInteropPath, konanTarget) ?: return@all
             val path = libPathFile.asFile.absolutePath
 
             linkerOpts("-L$path", "-lLiteRt")
@@ -87,7 +87,7 @@ internal fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
 
     tasks.withType<KotlinNativeTest>().configureEach {
         val target = targetName?.toKonanTarget() ?: return@configureEach
-        val libPathFile = liteRtLibDir(coreProject, cInteropPath, target) ?: return@configureEach
+        val libPathFile = liteRtLibDir(project, cInteropPath, target) ?: return@configureEach
         val libPathAbs = libPathFile.asFile.absolutePath
 
         fun setEnvironment(envPath: String, sep: String) {

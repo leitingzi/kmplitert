@@ -51,7 +51,7 @@ kotlin {
         browser()
     }
 
-    LiteRT.configureNativeBundling(":core")
+    LiteRT.configureNativeBundling()
 
     sourceSets {
         androidMain.dependencies {

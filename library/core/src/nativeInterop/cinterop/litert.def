@@ -1,0 +1,90 @@
+package = litert
+headers = litert/c/litert_common.h litert/c/litert_environment.h litert/c/litert_model.h litert/c/litert_compiled_model.h litert/c/litert_tensor_buffer.h litert/c/litert_options.h litert/c/litert_layout.h litert/c/litert_tensor_buffer_requirements.h
+linkerOpts = -lLiteRt
+
+---
+
+struct LiteRtTensorBufferT {};
+struct LiteRtCompiledModelT {};
+struct LiteRtEnvironmentT {};
+struct LiteRtModelT {};
+struct LiteRtSignatureT {};
+struct LiteRtTensorT {};
+struct LiteRtTensorBufferRequirementsT {};
+struct LiteRtOptionsT {};
+struct LiteRtWeightsT {};
+struct LiteRtOpT {};
+struct LiteRtSubgraphT {};
+struct LiteRtOpListT {};
+struct LiteRtBuilderT {};
+struct LiteRtOpaqueOptionsT {};
+struct LiteRtProfilerT {};
+
+#include "litert/c/litert_layout.h"
+#include "litert/c/litert_tensor_buffer_requirements.h"
+
+static inline int LiteRtGetLayoutRank(const LiteRtLayout* layout) {
+  return layout->rank;
+}
+
+static inline bool LiteRtGetLayoutHasStrides(const LiteRtLayout* layout) {
+  return layout->has_strides;
+}
+
+static inline int LiteRtGetTensorBufferRequirementsNumSupportedTypesSafe(LiteRtTensorBufferRequirements requirements) {
+    int num_types = 0;
+    if (LiteRtGetNumTensorBufferRequirementsSupportedBufferTypes(requirements, &num_types) == kLiteRtStatusOk) {
+        return num_types;
+    }
+    return 0;
+}
+
+static inline LiteRtTensorBufferType LiteRtGetTensorBufferRequirementsSupportedTypeSafe(LiteRtTensorBufferRequirements requirements, int index) {
+    LiteRtTensorBufferType type = kLiteRtTensorBufferTypeUnknown;
+    LiteRtGetTensorBufferRequirementsSupportedTensorBufferType(requirements, index, &type);
+    return type;
+}
+
+static inline size_t LiteRtGetTensorBufferRequirementsBufferSizeSafe(LiteRtTensorBufferRequirements requirements) {
+    size_t size = 0;
+    LiteRtGetTensorBufferRequirementsBufferSize(requirements, &size);
+    return size;
+}
+
+static inline int LiteRtGetTensorBufferRequirementsNumStridesSafe(LiteRtTensorBufferRequirements requirements) {
+    int num_strides = 0;
+    const uint32_t* strides = NULL;
+    LiteRtGetTensorBufferRequirementsStrides(requirements, &num_strides, &strides);
+    return num_strides;
+}
+
+static inline const uint32_t* LiteRtGetTensorBufferRequirementsStridesSafe(LiteRtTensorBufferRequirements requirements) {
+    int num_strides = 0;
+    const uint32_t* strides = NULL;
+    LiteRtGetTensorBufferRequirementsStrides(requirements, &num_strides, &strides);
+    return strides;
+}
+
+static inline const char* LiteRtGetSignatureInputNameSafe(LiteRtSignature signature, int index) {
+  const char* name = NULL;
+  if (LiteRtGetSignatureInputName(signature, index, &name) == kLiteRtStatusOk) {
+    return name;
+  }
+  return NULL;
+}
+
+static inline const char* LiteRtGetSignatureOutputNameSafe(LiteRtSignature signature, int index) {
+  const char* name = NULL;
+  if (LiteRtGetSignatureOutputName(signature, index, &name) == kLiteRtStatusOk) {
+    return name;
+  }
+  return NULL;
+}
+
+static inline const char* LiteRtGetTensorNameSafe(LiteRtTensor tensor) {
+  const char* name = NULL;
+  if (LiteRtGetTensorName(tensor, &name) == kLiteRtStatusOk) {
+    return name;
+  }
+  return NULL;
+}

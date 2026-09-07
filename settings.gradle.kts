@@ -45,3 +45,6 @@ include(":app:shared")
 
 include(":core")
 include(":tool")
+
+include(":library:core")
+include(":library:metadata")
