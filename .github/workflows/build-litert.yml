@@ -1,4 +1,4 @@
-name: Build LiteRT Native Libraries
+name: Sync LiteRT Native Dependencies
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ permissions:
   contents: write
 
 jobs:
-  copy-headers:
-    name: Copy LiteRT Headers
+  sync-headers:
+    name: Sync LiteRT C Headers
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
         with:
           lfs: true
 
-      - name: Checkout LiteRT
+      - name: Checkout LiteRT Upstream
         uses: actions/checkout@v4
         with:
           repository: google-ai-edge/LiteRT
@@ -27,7 +27,7 @@ jobs:
             litert
           sparse-checkout-cone-mode: false
 
-      - name: Copy headers
+      - name: Sync C Headers
         run: |
           DEST_ROOT="core/src/nativeInterop/include"
           rm -rf "$DEST_ROOT/litert"
@@ -72,14 +72,14 @@ jobs:
           #endif  // LITERT_BUILD_COMMON_BUILD_CONFIG_H_
           EOF
 
-      - name: Commit and push
+      - name: Commit Dependency Updates
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT headers"
           add: "core/src/nativeInterop/include"
 
-  copy-libraries:
-    needs: copy-headers
+  sync-prebuilt-libraries:
+    needs: sync-headers
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -131,14 +131,14 @@ jobs:
             src: android_x86_64
             dest: android/x86-64
 
-    name: LiteRT (${{ matrix.platform }}-${{ matrix.arch }})
+    name: Sync LiteRT (${{ matrix.platform }}-${{ matrix.arch }})
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Checkout LiteRT
+      - name: Checkout LiteRT Upstream
         uses: actions/checkout@v4
         with:
           repository: google-ai-edge/LiteRT
@@ -149,7 +149,7 @@ jobs:
             litert/prebuilt
           sparse-checkout-cone-mode: false
 
-      - name: Prepare Artifacts
+      - name: Sync Prebuilt Libraries
         run: |
           DEST_PATH="core/src/nativeInterop/lib/litert/${{ matrix.dest }}"
           rm -rf "$DEST_PATH"
@@ -159,7 +159,7 @@ jobs:
           cp -vL LiteRT-repo/litert/prebuilt/${{ matrix.src }}/* "$DEST_PATH"
           rm -rf LiteRT-repo
 
-      - name: Commit and push
+      - name: Commit Dependency Updates
         uses: ./.github/actions/commit-and-push
         with:
           message: "Update LiteRT prebuilt: ${{ matrix.platform }} ${{ matrix.arch }}"
