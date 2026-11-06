@@ -13,8 +13,8 @@ plugins {
 }
 
 dependencies {
-    dokka(projects.core)
-    dokka(projects.tool)
+//    dokka(projects.core)
+//    dokka(projects.tool)
 }
 
 rootProject.plugins.withType<YarnPlugin> {
