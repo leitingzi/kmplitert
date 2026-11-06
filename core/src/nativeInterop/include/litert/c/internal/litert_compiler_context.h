@@ -18,8 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <cstdint>
-
+#include "litert/c/internal/litert_abi_header.h"
 #include "litert/c/litert_any.h"
 #include "litert/c/litert_common.h"
 #include "litert/c/litert_environment_options.h"
@@ -34,7 +33,10 @@ extern "C" {
 ///
 /// @note This struct is shared with LiteRT runtime and Compiler Plugins. So it
 /// must be ABI stable.
+// LINT.IfChange(compiler_context_table)
 typedef struct LiteRtCompilerContext {
+  LiteRtAbiHeader abi_header;
+
   // Model inspection
   LiteRtStatus (*get_num_model_subgraphs)(LiteRtModel model,
                                           LiteRtParamIndex* num_subgraphs);
@@ -366,7 +368,180 @@ typedef struct LiteRtCompilerContext {
       LiteRtModel model, uint8_t** buf, size_t* size, size_t* offset,
       bool share_weights, char** signature_keys, size_t num_signatures,
       LiteRtModelSerializationOptions options);
+
+  // Added in version 1.1.0
+  // Builder (graph mutation)
+  LiteRtStatus (*build_tensor)(
+      LiteRtBuilder builder, LiteRtTensorTypeId tensor_type_id,
+      LiteRtRankedTensorType ranked_tensor_type,
+      LiteRtUnrankedTensorType unranked_tensor_type, LiteRtWeights weights,
+      LiteRtQuantizationTypeId quantization_type_id,
+      LiteRtQuantizationPerTensor per_tensor_quantization,
+      LiteRtQuantizationPerChannel per_channel_quantization,
+      LiteRtQuantizationBlockWise block_wise_quantization, const char* name,
+      LiteRtTensor* new_tensor);
+  LiteRtStatus (*build_weights)(LiteRtBuilder builder, const uint8_t* data,
+                                LiteRtParamIndex size, LiteRtTensor tensor,
+                                LiteRtWeights* new_weights);
+  LiteRtStatus (*build_op)(LiteRtBuilder builder, LiteRtOpCode op_code,
+                           LiteRtParamIndex num_inputs, LiteRtTensor* inputs,
+                           LiteRtParamIndex num_outputs, LiteRtTensor* outputs,
+                           LiteRtOp* new_op);
+  LiteRtStatus (*erase_op)(LiteRtBuilder builder, LiteRtOp op_to_erase);
+  LiteRtStatus (*build_add_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                      uint32_t* fused_activation);
+  LiteRtStatus (*build_batch_matmul_op_option)(LiteRtBuilder builder,
+                                               LiteRtOp op, bool* adj_x,
+                                               bool* adj_y,
+                                               bool* asymmetric_quantize_input);
+  LiteRtStatus (*get_block_wise_quantization)(
+      LiteRtTensor tensor,
+      LiteRtQuantizationBlockWise* block_wise_quantization);
+  // Added in version 1.2.0
+  LiteRtStatus (*build_shlo_composite_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, const char* name,
+      const int32_t* decomposition_subgraph_index, const int32_t* version,
+      const uint8_t* attributes, LiteRtParamIndex attributes_size);
+  // Added in version 1.3.0
+  LiteRtStatus (*build_average_pool_2d_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* padding, int32_t* stride_w,
+      int32_t* stride_h, int32_t* filter_width, int32_t* filter_height,
+      uint32_t* fused_activation_function);
+  LiteRtStatus (*build_concatenation_op_option)(LiteRtBuilder builder,
+                                                LiteRtOp op,
+                                                uint32_t* fused_activation,
+                                                int32_t* axis);
+  LiteRtStatus (*build_conv_2d_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          uint32_t* padding, int32_t* stride_w,
+                                          int32_t* stride_h,
+                                          int32_t* dilation_w_factor,
+                                          int32_t* dilation_h_factor,
+                                          uint32_t* fused_activation_function);
+  LiteRtStatus (*build_conv_3d_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          uint32_t* padding, int32_t* stride_w,
+                                          int32_t* stride_h, int32_t* stride_d,
+                                          int32_t* dilation_w_factor,
+                                          int32_t* dilation_h_factor,
+                                          int32_t* dilation_d_factor,
+                                          uint32_t* fused_activation_function);
+  LiteRtStatus (*build_cumsum_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                         bool* exclusive, bool* reverse);
+  LiteRtStatus (*build_depth_to_space_op_option)(LiteRtBuilder builder,
+                                                 LiteRtOp op,
+                                                 int32_t* block_size);
+  LiteRtStatus (*build_depthwise_conv_2d_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* padding, int32_t* stride_w,
+      int32_t* stride_h, int32_t* depth_multiplier,
+      uint32_t* fused_activation_function, int32_t* dilation_w_factor,
+      int32_t* dilation_h_factor);
+  LiteRtStatus (*build_div_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                      uint32_t* fused_activation);
+  LiteRtStatus (*build_fully_connected_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* fused_activation,
+      uint32_t* weights_format, bool* keep_num_dims,
+      uint32_t* quantized_bias_type, bool* asymmetric_quantize_input);
+  LiteRtStatus (*build_gather_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                         int32_t* axis, int32_t* batch_dims);
+  LiteRtStatus (*build_gelu_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                       bool* approximate);
+  LiteRtStatus (*build_l2_pool_2d_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* padding, int32_t* stride_w,
+      int32_t* stride_h, int32_t* filter_width, int32_t* filter_height,
+      uint32_t* fused_activation_function);
+  LiteRtStatus (*build_leaky_relu_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                             float* alpha);
+  LiteRtStatus (*build_max_pool_2d_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* padding, int32_t* stride_w,
+      int32_t* stride_h, int32_t* filter_width, int32_t* filter_height,
+      uint32_t* fused_activation_function);
+  LiteRtStatus (*build_mean_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                       bool* keepdims);
+  LiteRtStatus (*build_mirror_pad_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                             uint32_t* mode);
+  LiteRtStatus (*build_mul_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                      uint32_t* fused_activation);
+  LiteRtStatus (*build_one_hot_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          int32_t* axis);
+  LiteRtStatus (*build_pack_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                       int32_t* axis, int32_t* values_count);
+  LiteRtStatus (*build_reduce_all_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                             bool* keepdims);
+  LiteRtStatus (*build_reduce_any_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                             bool* keepdims);
+  LiteRtStatus (*build_reduce_max_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                             bool* keepdims);
+  LiteRtStatus (*build_reduce_min_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                             bool* keepdims);
+  LiteRtStatus (*build_reshape_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          int32_t* new_shape,
+                                          int32_t new_shape_size);
+  LiteRtStatus (*build_resize_bilinear_op_option)(LiteRtBuilder builder,
+                                                  LiteRtOp op,
+                                                  bool* align_corners,
+                                                  bool* half_pixel_centers);
+  LiteRtStatus (*build_resize_nearest_neighbor_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, bool* align_corners,
+      bool* half_pixel_centers);
+  LiteRtStatus (*build_softmax_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          float* beta);
+  LiteRtStatus (*build_space_to_depth_op_option)(LiteRtBuilder builder,
+                                                 LiteRtOp op,
+                                                 int32_t* block_size);
+  LiteRtStatus (*build_split_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                        int32_t* num_splits);
+  LiteRtStatus (*build_split_v_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          int32_t* num_splits);
+  LiteRtStatus (*build_squeeze_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                          const int32_t* squeeze_dims,
+                                          int32_t num_squeeze_dims);
+  LiteRtStatus (*build_strided_slice_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, int32_t* begin_mask,
+      int32_t* end_mask, int32_t* ellipsis_mask, int32_t* new_axis_mask,
+      int32_t* shrink_axis_mask, bool* offset);
+  LiteRtStatus (*build_sub_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                      uint32_t* fused_activation);
+  LiteRtStatus (*build_sum_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                      bool* keepdims);
+  LiteRtStatus (*build_transpose_conv_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* padding, int32_t* stride_w,
+      int32_t* stride_h, uint32_t* fused_activation_function);
+  LiteRtStatus (*build_unpack_op_option)(LiteRtBuilder builder, LiteRtOp op,
+                                         int32_t* axis, int32_t* num);
+  LiteRtStatus (*get_split_v_num_splits_option)(LiteRtOp op,
+                                                int32_t* num_splits);
+  // Added in version 1.4.0
+  LiteRtStatus (*get_local_response_normalization_radius_option)(
+      LiteRtOp op, int32_t* radius);
+  LiteRtStatus (*get_local_response_normalization_bias_option)(LiteRtOp op,
+                                                               float* bias);
+  LiteRtStatus (*get_local_response_normalization_alpha_option)(LiteRtOp op,
+                                                                float* alpha);
+  LiteRtStatus (*get_local_response_normalization_beta_option)(LiteRtOp op,
+                                                               float* beta);
+  // Added in version 1.5.0
+  LiteRtStatus (*get_conv_3d_transpose_padding_option)(LiteRtOp op,
+                                                       uint32_t* padding);
+  LiteRtStatus (*get_conv_3d_transpose_stride_d_option)(LiteRtOp op,
+                                                        int32_t* stride_d);
+  LiteRtStatus (*get_conv_3d_transpose_stride_w_option)(LiteRtOp op,
+                                                        int32_t* stride_w);
+  LiteRtStatus (*get_conv_3d_transpose_stride_h_option)(LiteRtOp op,
+                                                        int32_t* stride_h);
+  LiteRtStatus (*get_conv_3d_transpose_fused_activation_option)(
+      LiteRtOp op, uint32_t* fused_activation_function);
+  LiteRtStatus (*get_conv_3d_transpose_dilation_d_option)(
+      LiteRtOp op, int32_t* dilation_d_factor);
+  LiteRtStatus (*get_conv_3d_transpose_dilation_w_option)(
+      LiteRtOp op, int32_t* dilation_w_factor);
+  LiteRtStatus (*get_conv_3d_transpose_dilation_h_option)(
+      LiteRtOp op, int32_t* dilation_h_factor);
+  LiteRtStatus (*build_conv_3d_transpose_op_option)(
+      LiteRtBuilder builder, LiteRtOp op, uint32_t* padding, int32_t* stride_w,
+      int32_t* stride_h, int32_t* stride_d, int32_t* dilation_w_factor,
+      int32_t* dilation_h_factor, int32_t* dilation_d_factor,
+      uint32_t* fused_activation_function);
 } LiteRtCompilerContext;
+// LINT.ThenChange(./litert_compiler_context.cc:compiler_context_version)
 
 // ABI compatibility check for LiteRtCompilerContext.
 //
@@ -374,513 +549,692 @@ typedef struct LiteRtCompilerContext {
 // changes to this struct.
 #if defined(__cplusplus) && defined(__SIZEOF_POINTER__) && \
     __SIZEOF_POINTER__ == 8
-static_assert(sizeof(LiteRtCompilerContext) == 1040,
+static_assert(sizeof(LiteRtCompilerContext) == 1512,
               "LiteRtCompilerContext size mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_model_subgraphs) == 0,
+static_assert(offsetof(LiteRtCompilerContext, abi_header) == 0,
+              "LiteRtCompilerContext abi_header offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, get_num_model_subgraphs) == 8,
               "LiteRtCompilerContext get_num_model_subgraphs offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_model_subgraph) == 8,
+static_assert(offsetof(LiteRtCompilerContext, get_model_subgraph) == 16,
               "LiteRtCompilerContext get_model_subgraph offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_subgraph_ops) == 16,
+static_assert(offsetof(LiteRtCompilerContext, get_num_subgraph_ops) == 24,
               "LiteRtCompilerContext get_num_subgraph_ops offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_subgraph_op) == 24,
+static_assert(offsetof(LiteRtCompilerContext, get_subgraph_op) == 32,
               "LiteRtCompilerContext get_subgraph_op offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_subgraph_inputs) == 32,
+static_assert(offsetof(LiteRtCompilerContext, get_num_subgraph_inputs) == 40,
               "LiteRtCompilerContext get_num_subgraph_inputs offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_subgraph_input) == 40,
+static_assert(offsetof(LiteRtCompilerContext, get_subgraph_input) == 48,
               "LiteRtCompilerContext get_subgraph_input offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_subgraph_outputs) == 48,
+static_assert(offsetof(LiteRtCompilerContext, get_num_subgraph_outputs) == 56,
               "LiteRtCompilerContext get_num_subgraph_outputs offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_subgraph_output) == 56,
+static_assert(offsetof(LiteRtCompilerContext, get_subgraph_output) == 64,
               "LiteRtCompilerContext get_subgraph_output offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_op_code) == 64,
+static_assert(offsetof(LiteRtCompilerContext, get_op_code) == 72,
               "LiteRtCompilerContext get_op_code offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_custom_code) == 72,
+static_assert(offsetof(LiteRtCompilerContext, get_custom_code) == 80,
               "LiteRtCompilerContext get_custom_code offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_op_inputs) == 80,
+static_assert(offsetof(LiteRtCompilerContext, get_num_op_inputs) == 88,
               "LiteRtCompilerContext get_num_op_inputs offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_op_input) == 88,
+static_assert(offsetof(LiteRtCompilerContext, get_op_input) == 96,
               "LiteRtCompilerContext get_op_input offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_op_outputs) == 96,
+static_assert(offsetof(LiteRtCompilerContext, get_num_op_outputs) == 104,
               "LiteRtCompilerContext get_num_op_outputs offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_op_output) == 104,
+static_assert(offsetof(LiteRtCompilerContext, get_op_output) == 112,
               "LiteRtCompilerContext get_op_output offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_tensor_name) == 112,
+static_assert(offsetof(LiteRtCompilerContext, get_tensor_name) == 120,
               "LiteRtCompilerContext get_tensor_name offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_tensor_index) == 120,
+static_assert(offsetof(LiteRtCompilerContext, get_tensor_index) == 128,
               "LiteRtCompilerContext get_tensor_index offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_tensor_type_id) == 128,
+static_assert(offsetof(LiteRtCompilerContext, get_tensor_type_id) == 136,
               "LiteRtCompilerContext get_tensor_type_id offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_ranked_tensor_type) == 136,
+static_assert(offsetof(LiteRtCompilerContext, get_ranked_tensor_type) == 144,
               "LiteRtCompilerContext get_ranked_tensor_type offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_unranked_tensor_type) == 144,
+static_assert(offsetof(LiteRtCompilerContext, get_unranked_tensor_type) == 152,
               "LiteRtCompilerContext get_unranked_tensor_type offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_quantization_type_id) == 152,
+static_assert(offsetof(LiteRtCompilerContext, get_quantization_type_id) == 160,
               "LiteRtCompilerContext get_quantization_type_id offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_per_tensor_quantization) == 160,
+    offsetof(LiteRtCompilerContext, get_per_tensor_quantization) == 168,
     "LiteRtCompilerContext get_per_tensor_quantization offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_per_channel_quantization) == 168,
+    offsetof(LiteRtCompilerContext, get_per_channel_quantization) == 176,
     "LiteRtCompilerContext get_per_channel_quantization offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_num_tensor_uses) == 176,
+static_assert(offsetof(LiteRtCompilerContext, get_num_tensor_uses) == 184,
               "LiteRtCompilerContext get_num_tensor_uses offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_tensor_use) == 184,
+static_assert(offsetof(LiteRtCompilerContext, get_tensor_use) == 192,
               "LiteRtCompilerContext get_tensor_use offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_tensor_defining_op) == 192,
+static_assert(offsetof(LiteRtCompilerContext, get_tensor_defining_op) == 200,
               "LiteRtCompilerContext get_tensor_defining_op offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_tensor_weights) == 200,
+static_assert(offsetof(LiteRtCompilerContext, get_tensor_weights) == 208,
               "LiteRtCompilerContext get_tensor_weights offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_weights_buffer_id) == 208,
+static_assert(offsetof(LiteRtCompilerContext, get_weights_buffer_id) == 216,
               "LiteRtCompilerContext get_weights_buffer_id offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_weights_bytes) == 216,
+static_assert(offsetof(LiteRtCompilerContext, get_weights_bytes) == 224,
               "LiteRtCompilerContext get_weights_bytes offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_shlo_composite_op_name) == 224,
+    offsetof(LiteRtCompilerContext, get_shlo_composite_op_name) == 232,
     "LiteRtCompilerContext get_shlo_composite_op_name offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_shlo_composite_op_decomposition_subgraph_index) == 232,
+             get_shlo_composite_op_decomposition_subgraph_index) == 240,
     "LiteRtCompilerContext get_shlo_composite_op_decomposition_subgraph_index "
     "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_shlo_composite_op_attributes) == 240,
+    offsetof(LiteRtCompilerContext, get_shlo_composite_op_attributes) == 248,
     "LiteRtCompilerContext get_shlo_composite_op_attributes offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_shlo_composite_op_version) == 248,
+    offsetof(LiteRtCompilerContext, get_shlo_composite_op_version) == 256,
     "LiteRtCompilerContext get_shlo_composite_op_version offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, push_op) == 256,
+static_assert(offsetof(LiteRtCompilerContext, push_op) == 264,
               "LiteRtCompilerContext push_op offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_opaque_options) == 264,
+static_assert(offsetof(LiteRtCompilerContext, get_opaque_options) == 272,
               "LiteRtCompilerContext get_opaque_options offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, find_opaque_options_data) == 272,
+static_assert(offsetof(LiteRtCompilerContext, find_opaque_options_data) == 280,
               "LiteRtCompilerContext find_opaque_options_data offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, destroy_options) == 280,
+static_assert(offsetof(LiteRtCompilerContext, destroy_options) == 288,
               "LiteRtCompilerContext destroy_options offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_environment_options_value) == 288,
+    offsetof(LiteRtCompilerContext, get_environment_options_value) == 296,
     "LiteRtCompilerContext get_environment_options_value offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_strided_slice_begin_mask_option) == 296,
+                       get_strided_slice_begin_mask_option) == 304,
               "LiteRtCompilerContext get_strided_slice_begin_mask_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_strided_slice_end_mask_option) == 304,
+    offsetof(LiteRtCompilerContext, get_strided_slice_end_mask_option) == 312,
     "LiteRtCompilerContext get_strided_slice_end_mask_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_strided_slice_shrink_axis_mask_option) == 312,
+                       get_strided_slice_shrink_axis_mask_option) == 320,
               "LiteRtCompilerContext get_strided_slice_shrink_axis_mask_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_strided_slice_ellipsis_mask_option) == 320,
+                       get_strided_slice_ellipsis_mask_option) == 328,
               "LiteRtCompilerContext get_strided_slice_ellipsis_mask_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_strided_slice_new_axis_mask_option) == 328,
+                       get_strided_slice_new_axis_mask_option) == 336,
               "LiteRtCompilerContext get_strided_slice_new_axis_mask_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_strided_slice_offset_option) == 336,
+    offsetof(LiteRtCompilerContext, get_strided_slice_offset_option) == 344,
     "LiteRtCompilerContext get_strided_slice_offset_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_sub_fused_activation_option) == 344,
+    offsetof(LiteRtCompilerContext, get_sub_fused_activation_option) == 352,
     "LiteRtCompilerContext get_sub_fused_activation_option offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_sum_keep_dims_option) == 352,
+static_assert(offsetof(LiteRtCompilerContext, get_sum_keep_dims_option) == 360,
               "LiteRtCompilerContext get_sum_keep_dims_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_2d_padding_option) == 360,
+    offsetof(LiteRtCompilerContext, get_conv_2d_padding_option) == 368,
     "LiteRtCompilerContext get_conv_2d_padding_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_2d_stride_w_option) == 368,
+    offsetof(LiteRtCompilerContext, get_conv_2d_stride_w_option) == 376,
     "LiteRtCompilerContext get_conv_2d_stride_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_2d_stride_h_option) == 376,
+    offsetof(LiteRtCompilerContext, get_conv_2d_stride_h_option) == 384,
     "LiteRtCompilerContext get_conv_2d_stride_h_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_conv_2d_fused_activation_option) == 384,
+                       get_conv_2d_fused_activation_option) == 392,
               "LiteRtCompilerContext get_conv_2d_fused_activation_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_2d_dilation_w_option) == 392,
+    offsetof(LiteRtCompilerContext, get_conv_2d_dilation_w_option) == 400,
     "LiteRtCompilerContext get_conv_2d_dilation_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_2d_dilation_h_option) == 400,
+    offsetof(LiteRtCompilerContext, get_conv_2d_dilation_h_option) == 408,
     "LiteRtCompilerContext get_conv_2d_dilation_h_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_padding_option) == 408,
+                       get_depthwise_conv_2d_padding_option) == 416,
               "LiteRtCompilerContext get_depthwise_conv_2d_padding_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_stride_w_option) == 416,
+                       get_depthwise_conv_2d_stride_w_option) == 424,
               "LiteRtCompilerContext get_depthwise_conv_2d_stride_w_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_stride_h_option) == 424,
+                       get_depthwise_conv_2d_stride_h_option) == 432,
               "LiteRtCompilerContext get_depthwise_conv_2d_stride_h_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_depth_multiplier_option) == 432,
+                       get_depthwise_conv_2d_depth_multiplier_option) == 440,
               "LiteRtCompilerContext "
               "get_depthwise_conv_2d_depth_multiplier_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_fused_activation_option) == 440,
+                       get_depthwise_conv_2d_fused_activation_option) == 448,
               "LiteRtCompilerContext "
               "get_depthwise_conv_2d_fused_activation_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_dilation_w_option) == 448,
+                       get_depthwise_conv_2d_dilation_w_option) == 456,
               "LiteRtCompilerContext get_depthwise_conv_2d_dilation_w_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depthwise_conv_2d_dilation_h_option) == 456,
+                       get_depthwise_conv_2d_dilation_h_option) == 464,
               "LiteRtCompilerContext get_depthwise_conv_2d_dilation_h_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_transpose_conv_padding_option) == 464,
+    offsetof(LiteRtCompilerContext, get_transpose_conv_padding_option) == 472,
     "LiteRtCompilerContext get_transpose_conv_padding_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_transpose_conv_stride_w_option) == 472,
+    offsetof(LiteRtCompilerContext, get_transpose_conv_stride_w_option) == 480,
     "LiteRtCompilerContext get_transpose_conv_stride_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_transpose_conv_stride_h_option) == 480,
+    offsetof(LiteRtCompilerContext, get_transpose_conv_stride_h_option) == 488,
     "LiteRtCompilerContext get_transpose_conv_stride_h_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_transpose_conv_fused_activation_option) == 488,
+                       get_transpose_conv_fused_activation_option) == 496,
               "LiteRtCompilerContext "
               "get_transpose_conv_fused_activation_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_add_fused_activation_option) == 496,
+    offsetof(LiteRtCompilerContext, get_add_fused_activation_option) == 504,
     "LiteRtCompilerContext get_add_fused_activation_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_mul_fused_activation_option) == 504,
+    offsetof(LiteRtCompilerContext, get_mul_fused_activation_option) == 512,
     "LiteRtCompilerContext get_mul_fused_activation_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_div_fused_activation_option) == 512,
+    offsetof(LiteRtCompilerContext, get_div_fused_activation_option) == 520,
     "LiteRtCompilerContext get_div_fused_activation_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_fully_connected_fused_activation_option) == 520,
+                       get_fully_connected_fused_activation_option) == 528,
               "LiteRtCompilerContext "
               "get_fully_connected_fused_activation_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_fully_connected_weights_format_option) == 528,
+                       get_fully_connected_weights_format_option) == 536,
               "LiteRtCompilerContext get_fully_connected_weights_format_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_fully_connected_keep_num_dims_option) == 536,
+                       get_fully_connected_keep_num_dims_option) == 544,
               "LiteRtCompilerContext get_fully_connected_keep_num_dims_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_fully_connected_quantized_bias_type_option) == 544,
+                       get_fully_connected_quantized_bias_type_option) == 552,
               "LiteRtCompilerContext "
               "get_fully_connected_quantized_bias_type_option offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_fully_connected_asymmetric_quantize_input_option) == 552,
+             get_fully_connected_asymmetric_quantize_input_option) == 560,
     "LiteRtCompilerContext "
     "get_fully_connected_asymmetric_quantize_input_option offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_softmax_beta_option) == 560,
+static_assert(offsetof(LiteRtCompilerContext, get_softmax_beta_option) == 568,
               "LiteRtCompilerContext get_softmax_beta_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_concatenation_axis_option) == 568,
+    offsetof(LiteRtCompilerContext, get_concatenation_axis_option) == 576,
     "LiteRtCompilerContext get_concatenation_axis_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_concatenation_fused_activation_option) == 576,
+                       get_concatenation_fused_activation_option) == 584,
               "LiteRtCompilerContext get_concatenation_fused_activation_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_split_num_splits_option) == 584,
+    offsetof(LiteRtCompilerContext, get_split_num_splits_option) == 592,
     "LiteRtCompilerContext get_split_num_splits_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_mean_keep_dims_option) == 592,
+    offsetof(LiteRtCompilerContext, get_mean_keep_dims_option) == 600,
     "LiteRtCompilerContext get_mean_keep_dims_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_reduce_max_keep_dims_option) == 600,
+    offsetof(LiteRtCompilerContext, get_reduce_max_keep_dims_option) == 608,
     "LiteRtCompilerContext get_reduce_max_keep_dims_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_resize_bilinear_align_corners_option) == 608,
+                       get_resize_bilinear_align_corners_option) == 616,
               "LiteRtCompilerContext get_resize_bilinear_align_corners_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_resize_bilinear_half_pixel_center_option) == 616,
+                       get_resize_bilinear_half_pixel_center_option) == 624,
               "LiteRtCompilerContext "
               "get_resize_bilinear_half_pixel_center_option offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_resize_nearest_neighbor_align_corners_option) == 624,
+             get_resize_nearest_neighbor_align_corners_option) == 632,
     "LiteRtCompilerContext get_resize_nearest_neighbor_align_corners_option "
     "offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_resize_nearest_neighbor_half_pixel_center_option) == 632,
+             get_resize_nearest_neighbor_half_pixel_center_option) == 640,
     "LiteRtCompilerContext "
     "get_resize_nearest_neighbor_half_pixel_center_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_x_option) == 640,
+    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_x_option) == 648,
     "LiteRtCompilerContext get_batch_matmul_adj_x_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_y_option) == 648,
+    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_y_option) == 656,
     "LiteRtCompilerContext get_batch_matmul_adj_y_option offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_batch_matmul_asymmetric_quantize_input_option) == 656,
+             get_batch_matmul_asymmetric_quantize_input_option) == 664,
     "LiteRtCompilerContext get_batch_matmul_asymmetric_quantize_input_option "
     "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_average_pool_2d_padding_option) == 664,
+    offsetof(LiteRtCompilerContext, get_average_pool_2d_padding_option) == 672,
     "LiteRtCompilerContext get_average_pool_2d_padding_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_stride_w_option) == 672,
+                       get_average_pool_2d_stride_w_option) == 680,
               "LiteRtCompilerContext get_average_pool_2d_stride_w_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_stride_h_option) == 680,
+                       get_average_pool_2d_stride_h_option) == 688,
               "LiteRtCompilerContext get_average_pool_2d_stride_h_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_filter_width_option) == 688,
+                       get_average_pool_2d_filter_width_option) == 696,
               "LiteRtCompilerContext get_average_pool_2d_filter_width_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_filter_height_option) == 696,
+                       get_average_pool_2d_filter_height_option) == 704,
               "LiteRtCompilerContext get_average_pool_2d_filter_height_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_fused_activation_option) == 704,
+                       get_average_pool_2d_fused_activation_option) == 712,
               "LiteRtCompilerContext "
               "get_average_pool_2d_fused_activation_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_max_pool_2d_padding_option) == 712,
+    offsetof(LiteRtCompilerContext, get_max_pool_2d_padding_option) == 720,
     "LiteRtCompilerContext get_max_pool_2d_padding_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_w_option) == 720,
+    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_w_option) == 728,
     "LiteRtCompilerContext get_max_pool_2d_stride_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_h_option) == 728,
+    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_h_option) == 736,
     "LiteRtCompilerContext get_max_pool_2d_stride_h_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_max_pool_2d_filter_width_option) == 736,
+                       get_max_pool_2d_filter_width_option) == 744,
               "LiteRtCompilerContext get_max_pool_2d_filter_width_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_max_pool_2d_filter_height_option) == 744,
+                       get_max_pool_2d_filter_height_option) == 752,
               "LiteRtCompilerContext get_max_pool_2d_filter_height_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_max_pool_2d_fused_activation_option) == 752,
+                       get_max_pool_2d_fused_activation_option) == 760,
               "LiteRtCompilerContext get_max_pool_2d_fused_activation_option "
               "offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_leaky_relu_alpha_option) == 760,
+    offsetof(LiteRtCompilerContext, get_leaky_relu_alpha_option) == 768,
     "LiteRtCompilerContext get_leaky_relu_alpha_option offset mismatch");
 
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_fully_connected_keep_num_dims_option) == 536,
+                       get_fully_connected_keep_num_dims_option) == 544,
               "LiteRtCompilerContext get_fully_connected_keep_num_dims_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_fully_connected_quantized_bias_type_option) == 544,
+                       get_fully_connected_quantized_bias_type_option) == 552,
               "LiteRtCompilerContext "
               "get_fully_connected_quantized_bias_type_option offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_fully_connected_asymmetric_quantize_input_option) == 552,
+             get_fully_connected_asymmetric_quantize_input_option) == 560,
     "LiteRtCompilerContext "
     "get_fully_connected_asymmetric_quantize_input_option offset mismatch");
 
-static_assert(offsetof(LiteRtCompilerContext, get_softmax_beta_option) == 560,
+static_assert(offsetof(LiteRtCompilerContext, get_softmax_beta_option) == 568,
               "LiteRtCompilerContext get_softmax_beta_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_concatenation_axis_option) == 568,
+    offsetof(LiteRtCompilerContext, get_concatenation_axis_option) == 576,
     "LiteRtCompilerContext get_concatenation_axis_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_concatenation_fused_activation_option) == 576,
+                       get_concatenation_fused_activation_option) == 584,
               "LiteRtCompilerContext get_concatenation_fused_activation_option "
               "offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_split_num_splits_option) == 584,
+    offsetof(LiteRtCompilerContext, get_split_num_splits_option) == 592,
     "LiteRtCompilerContext get_split_num_splits_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_mean_keep_dims_option) == 592,
+    offsetof(LiteRtCompilerContext, get_mean_keep_dims_option) == 600,
     "LiteRtCompilerContext get_mean_keep_dims_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_reduce_max_keep_dims_option) == 600,
+    offsetof(LiteRtCompilerContext, get_reduce_max_keep_dims_option) == 608,
     "LiteRtCompilerContext get_reduce_max_keep_dims_option offset mismatch");
 
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_resize_bilinear_align_corners_option) == 608,
+                       get_resize_bilinear_align_corners_option) == 616,
               "LiteRtCompilerContext get_resize_bilinear_align_corners_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_resize_bilinear_half_pixel_center_option) == 616,
+                       get_resize_bilinear_half_pixel_center_option) == 624,
               "LiteRtCompilerContext "
               "get_resize_bilinear_half_pixel_center_option offset mismatch");
 
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_resize_nearest_neighbor_align_corners_option) == 624,
+             get_resize_nearest_neighbor_align_corners_option) == 632,
     "LiteRtCompilerContext get_resize_nearest_neighbor_align_corners_option "
     "offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_resize_nearest_neighbor_half_pixel_center_option) == 632,
+             get_resize_nearest_neighbor_half_pixel_center_option) == 640,
     "LiteRtCompilerContext "
     "get_resize_nearest_neighbor_half_pixel_center_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_x_option) == 640,
+    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_x_option) == 648,
     "LiteRtCompilerContext get_batch_matmul_adj_x_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_y_option) == 648,
+    offsetof(LiteRtCompilerContext, get_batch_matmul_adj_y_option) == 656,
     "LiteRtCompilerContext get_batch_matmul_adj_y_option offset mismatch");
 static_assert(
     offsetof(LiteRtCompilerContext,
-             get_batch_matmul_asymmetric_quantize_input_option) == 656,
+             get_batch_matmul_asymmetric_quantize_input_option) == 664,
     "LiteRtCompilerContext get_batch_matmul_asymmetric_quantize_input_option "
     "offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_average_pool_2d_padding_option) == 664,
+    offsetof(LiteRtCompilerContext, get_average_pool_2d_padding_option) == 672,
     "LiteRtCompilerContext get_average_pool_2d_padding_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_stride_w_option) == 672,
+                       get_average_pool_2d_stride_w_option) == 680,
               "LiteRtCompilerContext get_average_pool_2d_stride_w_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_stride_h_option) == 680,
+                       get_average_pool_2d_stride_h_option) == 688,
               "LiteRtCompilerContext get_average_pool_2d_stride_h_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_filter_width_option) == 688,
+                       get_average_pool_2d_filter_width_option) == 696,
               "LiteRtCompilerContext get_average_pool_2d_filter_width_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_filter_height_option) == 696,
+                       get_average_pool_2d_filter_height_option) == 704,
               "LiteRtCompilerContext get_average_pool_2d_filter_height_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_average_pool_2d_fused_activation_option) == 704,
+                       get_average_pool_2d_fused_activation_option) == 712,
               "LiteRtCompilerContext "
               "get_average_pool_2d_fused_activation_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_max_pool_2d_padding_option) == 712,
+    offsetof(LiteRtCompilerContext, get_max_pool_2d_padding_option) == 720,
     "LiteRtCompilerContext get_max_pool_2d_padding_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_w_option) == 720,
+    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_w_option) == 728,
     "LiteRtCompilerContext get_max_pool_2d_stride_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_h_option) == 728,
+    offsetof(LiteRtCompilerContext, get_max_pool_2d_stride_h_option) == 736,
     "LiteRtCompilerContext get_max_pool_2d_stride_h_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_max_pool_2d_filter_width_option) == 736,
+                       get_max_pool_2d_filter_width_option) == 744,
               "LiteRtCompilerContext get_max_pool_2d_filter_width_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_max_pool_2d_filter_height_option) == 744,
+                       get_max_pool_2d_filter_height_option) == 752,
               "LiteRtCompilerContext get_max_pool_2d_filter_height_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_max_pool_2d_fused_activation_option) == 752,
+                       get_max_pool_2d_fused_activation_option) == 760,
               "LiteRtCompilerContext get_max_pool_2d_fused_activation_option "
               "offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_leaky_relu_alpha_option) == 760,
+    offsetof(LiteRtCompilerContext, get_leaky_relu_alpha_option) == 768,
     "LiteRtCompilerContext get_leaky_relu_alpha_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_reshape_new_shape_option) == 768,
+    offsetof(LiteRtCompilerContext, get_reshape_new_shape_option) == 776,
     "LiteRtCompilerContext get_reshape_new_shape_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_reduce_min_keep_dims_option) == 776,
+    offsetof(LiteRtCompilerContext, get_reduce_min_keep_dims_option) == 784,
     "LiteRtCompilerContext get_reduce_min_keep_dims_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_reduce_any_keep_dims_option) == 784,
+    offsetof(LiteRtCompilerContext, get_reduce_any_keep_dims_option) == 792,
     "LiteRtCompilerContext get_reduce_any_keep_dims_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_reduce_all_keep_dims_option) == 792,
+    offsetof(LiteRtCompilerContext, get_reduce_all_keep_dims_option) == 800,
     "LiteRtCompilerContext get_reduce_all_keep_dims_option offset mismatch");
 
-static_assert(offsetof(LiteRtCompilerContext, get_pack_axis_option) == 800,
+static_assert(offsetof(LiteRtCompilerContext, get_pack_axis_option) == 808,
               "LiteRtCompilerContext get_pack_axis_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_pack_values_count_option) == 808,
+    offsetof(LiteRtCompilerContext, get_pack_values_count_option) == 816,
     "LiteRtCompilerContext get_pack_values_count_option offset mismatch");
 
-static_assert(offsetof(LiteRtCompilerContext, get_one_hot_axis_option) == 816,
+static_assert(offsetof(LiteRtCompilerContext, get_one_hot_axis_option) == 824,
               "LiteRtCompilerContext get_one_hot_axis_option offset mismatch");
 
-static_assert(offsetof(LiteRtCompilerContext, get_unpack_axis_option) == 824,
+static_assert(offsetof(LiteRtCompilerContext, get_unpack_axis_option) == 832,
               "LiteRtCompilerContext get_unpack_axis_option offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_unpack_num_option) == 832,
+static_assert(offsetof(LiteRtCompilerContext, get_unpack_num_option) == 840,
               "LiteRtCompilerContext get_unpack_num_option offset mismatch");
 
-static_assert(offsetof(LiteRtCompilerContext, get_gather_axis_option) == 840,
+static_assert(offsetof(LiteRtCompilerContext, get_gather_axis_option) == 848,
               "LiteRtCompilerContext get_gather_axis_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_gather_batch_dims_option) == 848,
+    offsetof(LiteRtCompilerContext, get_gather_batch_dims_option) == 856,
     "LiteRtCompilerContext get_gather_batch_dims_option offset mismatch");
 
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_padding_option) == 856,
+    offsetof(LiteRtCompilerContext, get_conv_3d_padding_option) == 864,
     "LiteRtCompilerContext get_conv_3d_padding_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_stride_d_option) == 864,
+    offsetof(LiteRtCompilerContext, get_conv_3d_stride_d_option) == 872,
     "LiteRtCompilerContext get_conv_3d_stride_d_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_stride_w_option) == 872,
+    offsetof(LiteRtCompilerContext, get_conv_3d_stride_w_option) == 880,
     "LiteRtCompilerContext get_conv_3d_stride_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_stride_h_option) == 880,
+    offsetof(LiteRtCompilerContext, get_conv_3d_stride_h_option) == 888,
     "LiteRtCompilerContext get_conv_3d_stride_h_option offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_conv_3d_fused_activation_option) == 888,
+                       get_conv_3d_fused_activation_option) == 896,
               "LiteRtCompilerContext get_conv_3d_fused_activation_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_dilation_d_option) == 896,
+    offsetof(LiteRtCompilerContext, get_conv_3d_dilation_d_option) == 904,
     "LiteRtCompilerContext get_conv_3d_dilation_d_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_dilation_w_option) == 904,
+    offsetof(LiteRtCompilerContext, get_conv_3d_dilation_w_option) == 912,
     "LiteRtCompilerContext get_conv_3d_dilation_w_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_conv_3d_dilation_h_option) == 912,
+    offsetof(LiteRtCompilerContext, get_conv_3d_dilation_h_option) == 920,
     "LiteRtCompilerContext get_conv_3d_dilation_h_option offset mismatch");
 
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_depth_to_space_block_size_option) == 968,
+                       get_depth_to_space_block_size_option) == 976,
               "LiteRtCompilerContext get_depth_to_space_block_size_option "
               "offset mismatch");
 static_assert(offsetof(LiteRtCompilerContext,
-                       get_space_to_depth_block_size_option) == 976,
+                       get_space_to_depth_block_size_option) == 984,
               "LiteRtCompilerContext get_space_to_depth_block_size_option "
               "offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_cumsum_exclusive_option) == 984,
+    offsetof(LiteRtCompilerContext, get_cumsum_exclusive_option) == 992,
     "LiteRtCompilerContext get_cumsum_exclusive_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_cumsum_reverse_option) == 992,
+    offsetof(LiteRtCompilerContext, get_cumsum_reverse_option) == 1000,
     "LiteRtCompilerContext get_cumsum_reverse_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_gelu_approximate_option) == 1000,
+    offsetof(LiteRtCompilerContext, get_gelu_approximate_option) == 1008,
     "LiteRtCompilerContext get_gelu_approximate_option offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, get_mirror_pad_mode_option) == 1008,
+    offsetof(LiteRtCompilerContext, get_mirror_pad_mode_option) == 1016,
     "LiteRtCompilerContext get_mirror_pad_mode_option offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_squeeze_dims_option) == 1016,
+static_assert(offsetof(LiteRtCompilerContext, get_squeeze_dims_option) == 1024,
               "LiteRtCompilerContext get_squeeze_dims_option offset mismatch");
-static_assert(offsetof(LiteRtCompilerContext, get_custom_options) == 1024,
+static_assert(offsetof(LiteRtCompilerContext, get_custom_options) == 1032,
               "LiteRtCompilerContext get_custom_options offset mismatch");
 static_assert(
-    offsetof(LiteRtCompilerContext, serialize_model_with_signatures) == 1032,
+    offsetof(LiteRtCompilerContext, serialize_model_with_signatures) == 1040,
     "LiteRtCompilerContext serialize_model_with_signatures offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_tensor) == 1048,
+              "LiteRtCompilerContext build_tensor offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_weights) == 1056,
+              "LiteRtCompilerContext build_weights offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_op) == 1064,
+              "LiteRtCompilerContext build_op offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, erase_op) == 1072,
+              "LiteRtCompilerContext erase_op offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_add_op_option) == 1080,
+              "LiteRtCompilerContext build_add_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_batch_matmul_op_option) == 1088,
+    "LiteRtCompilerContext build_batch_matmul_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_block_wise_quantization) == 1096,
+    "LiteRtCompilerContext get_block_wise_quantization offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_shlo_composite_op_option) == 1104,
+    "LiteRtCompilerContext build_shlo_composite_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_average_pool_2d_op_option) == 1112,
+    "LiteRtCompilerContext build_average_pool_2d_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_concatenation_op_option) == 1120,
+    "LiteRtCompilerContext build_concatenation_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_conv_2d_op_option) == 1128,
+              "LiteRtCompilerContext build_conv_2d_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_conv_3d_op_option) == 1136,
+              "LiteRtCompilerContext build_conv_3d_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_cumsum_op_option) == 1144,
+              "LiteRtCompilerContext build_cumsum_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_depth_to_space_op_option) == 1152,
+    "LiteRtCompilerContext build_depth_to_space_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_depthwise_conv_2d_op_option) == 1160,
+    "LiteRtCompilerContext build_depthwise_conv_2d_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_div_op_option) == 1168,
+              "LiteRtCompilerContext build_div_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_fully_connected_op_option) == 1176,
+    "LiteRtCompilerContext build_fully_connected_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_gather_op_option) == 1184,
+              "LiteRtCompilerContext build_gather_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_gelu_op_option) == 1192,
+              "LiteRtCompilerContext build_gelu_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_l2_pool_2d_op_option) == 1200,
+    "LiteRtCompilerContext build_l2_pool_2d_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_leaky_relu_op_option) == 1208,
+    "LiteRtCompilerContext build_leaky_relu_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_max_pool_2d_op_option) == 1216,
+    "LiteRtCompilerContext build_max_pool_2d_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_mean_op_option) == 1224,
+              "LiteRtCompilerContext build_mean_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_mirror_pad_op_option) == 1232,
+    "LiteRtCompilerContext build_mirror_pad_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_mul_op_option) == 1240,
+              "LiteRtCompilerContext build_mul_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_one_hot_op_option) == 1248,
+              "LiteRtCompilerContext build_one_hot_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_pack_op_option) == 1256,
+              "LiteRtCompilerContext build_pack_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_reduce_all_op_option) == 1264,
+    "LiteRtCompilerContext build_reduce_all_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_reduce_any_op_option) == 1272,
+    "LiteRtCompilerContext build_reduce_any_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_reduce_max_op_option) == 1280,
+    "LiteRtCompilerContext build_reduce_max_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_reduce_min_op_option) == 1288,
+    "LiteRtCompilerContext build_reduce_min_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_reshape_op_option) == 1296,
+              "LiteRtCompilerContext build_reshape_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_resize_bilinear_op_option) == 1304,
+    "LiteRtCompilerContext build_resize_bilinear_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext,
+                       build_resize_nearest_neighbor_op_option) == 1312,
+              "LiteRtCompilerContext build_resize_nearest_neighbor_op_option "
+              "offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_softmax_op_option) == 1320,
+              "LiteRtCompilerContext build_softmax_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_space_to_depth_op_option) == 1328,
+    "LiteRtCompilerContext build_space_to_depth_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_split_op_option) == 1336,
+              "LiteRtCompilerContext build_split_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_split_v_op_option) == 1344,
+              "LiteRtCompilerContext build_split_v_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_squeeze_op_option) == 1352,
+              "LiteRtCompilerContext build_squeeze_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_strided_slice_op_option) == 1360,
+    "LiteRtCompilerContext build_strided_slice_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_sub_op_option) == 1368,
+              "LiteRtCompilerContext build_sub_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_sum_op_option) == 1376,
+              "LiteRtCompilerContext build_sum_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_transpose_conv_op_option) == 1384,
+    "LiteRtCompilerContext build_transpose_conv_op_option offset mismatch");
+static_assert(offsetof(LiteRtCompilerContext, build_unpack_op_option) == 1392,
+              "LiteRtCompilerContext build_unpack_op_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_split_v_num_splits_option) == 1400,
+    "LiteRtCompilerContext get_split_v_num_splits_option offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext,
+             get_local_response_normalization_radius_option) == 1408,
+    "LiteRtCompilerContext get_local_response_normalization_radius_option "
+    "offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext,
+             get_local_response_normalization_bias_option) == 1416,
+    "LiteRtCompilerContext get_local_response_normalization_bias_option "
+    "offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext,
+             get_local_response_normalization_alpha_option) == 1424,
+    "LiteRtCompilerContext get_local_response_normalization_alpha_option "
+    "offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext,
+             get_local_response_normalization_beta_option) == 1432,
+    "LiteRtCompilerContext get_local_response_normalization_beta_option "
+    "offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_padding_option) ==
+        1440,
+    "LiteRtCompilerContext get_conv_3d_transpose_padding_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_stride_d_option) ==
+        1448,
+    "LiteRtCompilerContext get_conv_3d_transpose_stride_d_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_stride_w_option) ==
+        1456,
+    "LiteRtCompilerContext get_conv_3d_transpose_stride_w_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_stride_h_option) ==
+        1464,
+    "LiteRtCompilerContext get_conv_3d_transpose_stride_h_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext,
+             get_conv_3d_transpose_fused_activation_option) == 1472,
+    "LiteRtCompilerContext get_conv_3d_transpose_fused_activation_option "
+    "offset mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_dilation_d_option) ==
+        1480,
+    "LiteRtCompilerContext get_conv_3d_transpose_dilation_d_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_dilation_w_option) ==
+        1488,
+    "LiteRtCompilerContext get_conv_3d_transpose_dilation_w_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, get_conv_3d_transpose_dilation_h_option) ==
+        1496,
+    "LiteRtCompilerContext get_conv_3d_transpose_dilation_h_option offset "
+    "mismatch");
+static_assert(
+    offsetof(LiteRtCompilerContext, build_conv_3d_transpose_op_option) ==
+        1504,
+    "LiteRtCompilerContext build_conv_3d_transpose_op_option offset mismatch");
 #endif  // __cplusplus
 
 LiteRtCompilerContext* LrtGetCompilerContext();
