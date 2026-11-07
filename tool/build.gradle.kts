@@ -8,19 +8,8 @@ import org.jetbrains.kotlin.konan.target.HostManager
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.dokka)
     alias(libs.plugins.vanniktech)
     id("kmplitert.native-conventions")
-}
-
-dokka {
-    dokkaSourceSets.configureEach {
-        suppress.set(true)
-    }
-
-    dokkaSourceSets.named("commonMain") {
-        suppress.set(false)
-    }
 }
 
 tasks.register("buildAndroidJni") {

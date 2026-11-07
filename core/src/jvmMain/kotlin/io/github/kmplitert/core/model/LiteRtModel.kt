@@ -1,32 +1,41 @@
 package io.github.kmplitert.core.model
 
 import com.sun.jna.PointerType
-import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.SizeTByReference
+import io.github.kmplitert.core.asSizeT
+import io.github.kmplitert.core.checkLiteRtStatus
+import java.util.concurrent.atomic.AtomicBoolean
 
-class LiteRtModel: PointerType() {
+class LiteRtModel : PointerType() {
+    private val destroyed = AtomicBoolean(false)
+
     fun destroy() {
-        LiteRtLibrary.INSTANCE.LiteRtDestroyModel(this)
+        if (destroyed.compareAndSet(false, true)) {
+            try {
+                LiteRtLibrary.INSTANCE.LiteRtDestroyModel(this)
+            } finally {
+                pointer = null
+            }
+        }
     }
 
     fun getSignature(index: Long): LiteRtSignature {
+        check(!destroyed.get()) { "Model is destroyed" }
         val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetModelSignature(this, index, ref)
-        check(status == 0) {
-            "Failed to get model signature: $status"
-        }
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetModelSignature(this, index.asSizeT(), ref)
+        checkLiteRtStatus(status, "LiteRtGetModelSignature")
         val signature = LiteRtSignature()
         signature.pointer = ref.value
         return signature
     }
 
     fun getNumSignatures(): Long {
-        val count = LongByReference()
+        check(!destroyed.get()) { "Model is destroyed" }
+        val count = SizeTByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetNumModelSignatures(this, count)
-        check(status == 0) {
-            "Failed to get num signatures: $status"
-        }
+        checkLiteRtStatus(status, "LiteRtGetNumModelSignatures")
         return count.value
     }
 
@@ -39,14 +48,13 @@ class LiteRtModel: PointerType() {
                 model = ref
             )
 
-            check(status == 0) {
-                "Failed to create model from file: $status"
-            }
+            checkLiteRtStatus(status, "LiteRtCreateModelFromFile")
 
             val model = LiteRtModel()
-            model.pointer = ref.value
+            model.pointer = requireNotNull(ref.value) {
+                "LiteRtCreateModelFromFile returned a null handle"
+            }
             return model
         }
     }
 }
-

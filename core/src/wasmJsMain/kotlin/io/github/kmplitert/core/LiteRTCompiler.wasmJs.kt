@@ -80,11 +80,11 @@ actual class LiteRTCompiler actual constructor(
         val elementSize = when (dtype) {
             "float32" -> 4
             "int32" -> 4
-            "int64" -> 8
+            "int64", "uint64", "float64" -> 8
+            "int16", "uint16", "float16" -> 2
             "bool" -> 1
-            "int8" -> 1
-            "uint8" -> 1
-            else -> 4
+            "int8", "uint8" -> 1
+            else -> throw IllegalArgumentException("Unsupported LiteRT tensor data type: $dtype")
         }
 
         var totalElements = 1
@@ -116,7 +116,13 @@ actual class LiteRTCompiler actual constructor(
             "int64" -> LiteRTElementType.INT64
             "bool" -> LiteRTElementType.BOOLEAN
             "int8" -> LiteRTElementType.INT8
-            else -> LiteRTElementType.FLOAT // Default
+            "uint8" -> LiteRTElementType.UINT8
+            "int16" -> LiteRTElementType.INT16
+            "uint16" -> LiteRTElementType.UINT16
+            "float16" -> LiteRTElementType.FLOAT16
+            "float64" -> LiteRTElementType.FLOAT64
+            "uint64" -> LiteRTElementType.UINT64
+            else -> throw IllegalArgumentException("Unsupported LiteRT tensor data type: $dtype")
         }
         val dims = mutableListOf<Int>()
         for (i in 0 until shape.length) {
@@ -228,5 +234,4 @@ actual class LiteRTCompiler actual constructor(
         }
     }
 }
-
 

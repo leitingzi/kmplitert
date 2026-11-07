@@ -105,12 +105,8 @@ class NativeLiteRtCompiledModel(
 
             // 1. Try to find by signature name
             for (i in 0 until numTensors) {
-                val cName = if (isInput) {
-                    LiteRtGetSignatureInputNameSafe(signature = signature, index = i)
-                } else {
-                    LiteRtGetSignatureOutputNameSafe(signature = signature, index = i)
-                }
-                if (cName?.toKString() == name) {
+                val cName = getSignatureTensorName(signature, i, isInput)
+                if (cName == name) {
                     tensorIndex = i
                     break
                 }
@@ -134,8 +130,8 @@ class NativeLiteRtCompiledModel(
                         )
                     }
                     if (status == kLiteRtStatusOk) {
-                        val cName = LiteRtGetTensorNameSafe(tensor = tensorRef.value!!)
-                        if (cName?.toKString() == name) {
+                        val cName = getTensorName(tensorRef.value!!)
+                        if (cName == name) {
                             tensorIndex = i
                             break
                         }
@@ -198,72 +194,62 @@ class NativeLiteRtCompiledModel(
                 }
                 return requirements
             }
-            
+
             throw Exception(message = "${if (isInput) "Input" else "Output"} tensor $name not found")
         }
     }
 
     private fun LiteRtTensorBufferRequirements.toPlatform(): LiteRTBufferRequirements {
-        val numTypes = LiteRtGetTensorBufferRequirementsNumSupportedTypesSafe(requirements = this)
-        val supportedTypes = mutableListOf<LiteRTTensorBufferType>()
-        for (i in 0 until numTypes) {
-            val type = LiteRtGetTensorBufferRequirementsSupportedTypeSafe(
-                requirements = this,
-                index = i
-            )
-            supportedTypes.add(element = type.toPlatform())
-        }
+        return memScoped {
+            val numTypesRef = alloc<IntVar>()
+            var status = LiteRtGetNumTensorBufferRequirementsSupportedBufferTypes(this@toPlatform, numTypesRef.ptr)
+            check(status == kLiteRtStatusOk) { "Failed to get supported buffer type count: $status" }
 
-        val bufferSize = LiteRtGetTensorBufferRequirementsBufferSizeSafe(requirements = this).toInt()
-
-        val numStrides = LiteRtGetTensorBufferRequirementsNumStridesSafe(requirements = this)
-        val stridesPtr = LiteRtGetTensorBufferRequirementsStridesSafe(requirements = this)
-        val strides = mutableListOf<Int>()
-        if (numStrides > 0 && stridesPtr != null) {
-            for (i in 0 until numStrides) {
-                strides.add(element = stridesPtr[i].toInt())
+            val supportedTypes = List(numTypesRef.value) { index ->
+                val typeRef = alloc<LiteRtTensorBufferTypeVar>()
+                status = LiteRtGetTensorBufferRequirementsSupportedTensorBufferType(
+                    this@toPlatform,
+                    index,
+                    typeRef.ptr
+                )
+                check(status == kLiteRtStatusOk) { "Failed to get supported buffer type at index $index: $status" }
+                typeRef.value.toPlatform()
             }
-        }
 
-        return LiteRTBufferRequirements(
-            supportedTypes = supportedTypes,
-            bufferSize = bufferSize,
-            strides = strides
-        )
+            val bufferSizeRef = alloc<ULongVar>()
+            status = LiteRtGetTensorBufferRequirementsBufferSize(this@toPlatform, bufferSizeRef.ptr)
+            check(status == kLiteRtStatusOk) { "Failed to get required buffer size: $status" }
+
+            val numStridesRef = alloc<IntVar>()
+            val stridesRef = alloc<CPointerVar<UIntVar>>()
+            status = LiteRtGetTensorBufferRequirementsStrides(
+                this@toPlatform,
+                numStridesRef.ptr,
+                stridesRef.ptr
+            )
+            check(status == kLiteRtStatusOk) { "Failed to get buffer strides: $status" }
+            val strideCount = numStridesRef.value
+            val strides = if (strideCount == 0) {
+                emptyList()
+            } else {
+                val stridePointer = checkNotNull(stridesRef.value) {
+                    "LiteRT returned a null strides pointer for $strideCount strides"
+                }
+                List(strideCount) { index ->
+                    stridePointer[index].toInt()
+                }
+            }
+
+            LiteRTBufferRequirements(
+                supportedTypes = supportedTypes,
+                bufferSize = bufferSizeRef.value.toInt(),
+                strides = strides
+            )
+        }
     }
 
     private fun LiteRtTensorBufferType.toPlatform(): LiteRTTensorBufferType {
-        return when (this) {
-            kLiteRtTensorBufferTypeHostMemory -> LiteRTTensorBufferType.HostMemory
-            kLiteRtTensorBufferTypeAhwb -> LiteRTTensorBufferType.Ahwb
-            kLiteRtTensorBufferTypeIon -> LiteRTTensorBufferType.Ion
-            kLiteRtTensorBufferTypeDmaBuf -> LiteRTTensorBufferType.DmaBuf
-            kLiteRtTensorBufferTypeFastRpc -> LiteRTTensorBufferType.FastRpc
-            kLiteRtTensorBufferTypeGlBuffer -> LiteRTTensorBufferType.GlBuffer
-            kLiteRtTensorBufferTypeGlTexture -> LiteRTTensorBufferType.GlTexture
-            kLiteRtTensorBufferTypeOpenClBuffer -> LiteRTTensorBufferType.OpenClBuffer
-            kLiteRtTensorBufferTypeOpenClBufferFp16 -> LiteRTTensorBufferType.OpenClBufferFp16
-            kLiteRtTensorBufferTypeOpenClTexture -> LiteRTTensorBufferType.OpenClTexture
-            kLiteRtTensorBufferTypeOpenClTextureFp16 -> LiteRTTensorBufferType.OpenClTextureFp16
-            kLiteRtTensorBufferTypeOpenClBufferPacked -> LiteRTTensorBufferType.OpenClBufferPacked
-            kLiteRtTensorBufferTypeOpenClImageBuffer -> LiteRTTensorBufferType.OpenClImageBuffer
-            kLiteRtTensorBufferTypeOpenClImageBufferFp16 -> LiteRTTensorBufferType.OpenClImageBufferFp16
-            kLiteRtTensorBufferTypeWebGpuBuffer -> LiteRTTensorBufferType.WebGpuBuffer
-            kLiteRtTensorBufferTypeWebGpuBufferFp16 -> LiteRTTensorBufferType.WebGpuBufferFp16
-            kLiteRtTensorBufferTypeWebGpuTexture -> LiteRTTensorBufferType.WebGpuTexture
-            kLiteRtTensorBufferTypeWebGpuTextureFp16 -> LiteRTTensorBufferType.WebGpuTextureFp16
-            kLiteRtTensorBufferTypeWebGpuImageBuffer -> LiteRTTensorBufferType.WebGpuImageBuffer
-            kLiteRtTensorBufferTypeWebGpuImageBufferFp16 -> LiteRTTensorBufferType.WebGpuImageBufferFp16
-            kLiteRtTensorBufferTypeWebGpuBufferPacked -> LiteRTTensorBufferType.WebGpuBufferPacked
-            kLiteRtTensorBufferTypeVulkanBuffer -> LiteRTTensorBufferType.VulkanBuffer
-            kLiteRtTensorBufferTypeVulkanBufferFp16 -> LiteRTTensorBufferType.VulkanBufferFp16
-            kLiteRtTensorBufferTypeVulkanTexture -> LiteRTTensorBufferType.VulkanTexture
-            kLiteRtTensorBufferTypeVulkanTextureFp16 -> LiteRTTensorBufferType.VulkanTextureFp16
-            kLiteRtTensorBufferTypeVulkanImageBuffer -> LiteRTTensorBufferType.VulkanImageBuffer
-            kLiteRtTensorBufferTypeVulkanImageBufferFp16 -> LiteRTTensorBufferType.VulkanImageBufferFp16
-            kLiteRtTensorBufferTypeVulkanBufferPacked -> LiteRTTensorBufferType.VulkanBufferPacked
-            else -> LiteRTTensorBufferType.Unknown
-        }
+        return LiteRTTensorBufferType.from(this.toInt())
     }
 
     private fun getTensorType(signatureIndex: Int, name: String, isInput: Boolean): LiteRTTensorType {
@@ -293,13 +279,9 @@ class NativeLiteRtCompiledModel(
 
             // 1. Try to find by signature name
             for (i in 0 until numTensors) {
-                val cName = if (isInput) {
-                    LiteRtGetSignatureInputNameSafe(signature = signature, index = i)
-                } else {
-                    LiteRtGetSignatureOutputNameSafe(signature = signature, index = i)
-                }
+                val cName = getSignatureTensorName(signature, i, isInput)
 
-                if (cName?.toKString() == name) {
+                if (cName == name) {
                     val tensorRef = alloc<LiteRtTensorVar>()
                     status = if (isInput) {
                         LiteRtGetSignatureInputTensorByIndex(
@@ -344,8 +326,8 @@ class NativeLiteRtCompiledModel(
                     )
                 }
                 if (status == kLiteRtStatusOk) {
-                    val cName = LiteRtGetTensorNameSafe(tensor = tensorRef.value!!)
-                    if (cName?.toKString() == name) {
+                    val cName = getTensorName(tensorRef.value!!)
+                    if (cName == name) {
                         val rankedType = alloc<LiteRtRankedTensorType>()
                         status = LiteRtGetRankedTensorType(
                             tensor = tensorRef.value!!,
@@ -384,35 +366,50 @@ class NativeLiteRtCompiledModel(
                     return rankedType.toPlatform()
                 }
             }
-            
+
             throw Exception(message = "${if (isInput) "Input" else "Output"} tensor $name not found in signature $signatureIndex.")
         }
     }
 
     private fun LiteRtRankedTensorType.toPlatform(): LiteRTTensorType {
-        val platformType = when (this.element_type) {
-            kLiteRtElementTypeFloat32 -> LiteRTElementType.FLOAT
-            kLiteRtElementTypeInt32 -> LiteRTElementType.INT
-            kLiteRtElementTypeInt64 -> LiteRTElementType.INT64
-            kLiteRtElementTypeBool -> LiteRTElementType.BOOLEAN
-            kLiteRtElementTypeInt8 -> LiteRTElementType.INT8
-            else -> LiteRTElementType.FLOAT // Default
-        }
+        val platformType = LiteRTElementType.fromNative(this.element_type.toInt())
         return LiteRTTensorType(
             elementType = platformType,
             layout = this.layout.toPlatform()
         )
     }
 
+    private fun getSignatureTensorName(
+        signature: LiteRtSignature,
+        index: Int,
+        isInput: Boolean
+    ): String? = memScoped {
+        val nameRef = alloc<CPointerVar<ByteVar>>()
+        val status = if (isInput) {
+            LiteRtGetSignatureInputName(signature, index.toULong(), nameRef.ptr)
+        } else {
+            LiteRtGetSignatureOutputName(signature, index.toULong(), nameRef.ptr)
+        }
+        check(status == kLiteRtStatusOk) { "Failed to get tensor name at index $index: $status" }
+        nameRef.value?.toKString()
+    }
+
+    private fun getTensorName(tensor: LiteRtTensor): String? = memScoped {
+        val nameRef = alloc<CPointerVar<ByteVar>>()
+        val status = LiteRtGetTensorName(tensor, nameRef.ptr)
+        check(status == kLiteRtStatusOk) { "Failed to get tensor name: $status" }
+        nameRef.value?.toKString()
+    }
+
     private fun LiteRtLayout.toPlatform(): LiteRTLayout {
         val rank = LiteRtGetLayoutRank(layout = this.ptr)
         val hasStrides = LiteRtGetLayoutHasStrides(layout = this.ptr)
-        
+
         val dims = mutableListOf<Int>()
         for (i in 0 until rank) {
             dims.add(this.dimensions[i])
         }
-        
+
         val strides = if (hasStrides) {
             val list = mutableListOf<Int>()
             for (i in 0 until rank) {
@@ -422,7 +419,7 @@ class NativeLiteRtCompiledModel(
         } else {
             LiteRTLayout.calculateDefaultStrides(dimensions = dims)
         }
-        
+
         return LiteRTLayout(dimensions = dims, strides = strides)
     }
 
@@ -549,10 +546,13 @@ class NativeLiteRtCompiledModel(
 
                 val options = optionsRef.value!!
                 val hwAcc = accelerator.toNative()
-                LiteRtSetOptionsHardwareAccelerators(
+                val statusSetOptions = LiteRtSetOptionsHardwareAccelerators(
                     options = options,
                     hardware_accelerators = hwAcc
                 )
+                check(value = statusSetOptions == kLiteRtStatusOk) {
+                    "Failed to set hardware accelerators: $statusSetOptions"
+                }
 
                 val compiledModelRef = alloc<LiteRtCompiledModelVar>()
                 val statusCompiled = LiteRtCreateCompiledModel(

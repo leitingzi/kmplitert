@@ -1,26 +1,15 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalWasmDsl::class)
+@file:OptIn(ExperimentalWasmDsl::class)
 
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.dokka)
     alias(libs.plugins.vanniktech)
     id("kmplitert.native-conventions")
-}
-
-dokka {
-    dokkaSourceSets.configureEach {
-        suppress.set(true)
-    }
-
-    dokkaSourceSets.named("commonMain") {
-        suppress.set(false)
-    }
 }
 
 group = "io.github.leitingzi"
@@ -92,6 +81,11 @@ kotlin {
         withHostTest {
             isIncludeAndroidResources = true
         }
+        withDeviceTestBuilder {
+            sourceSetTreeName = "androidDeviceTest"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
     }
 
     if (isPublishToMavenCentral || HostManager.hostIsMac) {
@@ -153,7 +147,7 @@ kotlin {
         }
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
-            implementation(npm("@litertjs/core", "2.5.2"))
+            implementation(npm("@litertjs/core", "2.6.0"))
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
@@ -161,7 +155,14 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
-            implementation(projects.tool)
+//            implementation(projects.tool)
+        }
+        sourceSets.named("androidDeviceTest") {
+            dependencies {
+                implementation(libs.kotlin.testJunit)
+                implementation(libs.androidx.test.runner)
+                implementation(libs.androidx.testExt.junit)
+            }
         }
     }
 }
@@ -169,6 +170,18 @@ kotlin {
 tasks.withType<Test>().configureEach {
     testLogging {
         showStandardStreams = true
+    }
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    workingDir = rootProject.projectDir.absolutePath
+
+    if (name == "iosSimulatorArm64Test") {
+        val modelPath = layout.projectDirectory
+            .file("CelsiusToFahrenheit.tflite")
+            .asFile
+            .absolutePath
+        environment("SIMCTL_CHILD_KMPLITERT_TEST_MODEL_PATH", modelPath)
     }
 }
 

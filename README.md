@@ -4,13 +4,14 @@
   <b>High-performance, type-safe Kotlin Multiplatform (KMP) library for Google LiteRT (TensorFlow Lite).</b>
   <br>
   <i>Bringing on-device Machine Learning to every screen, from Mobile to Web and Desktop.</i>
+  <br>
+  <a href="https://leitingzi.github.io/kmplitert/">中文在线文档</a>
 </p>
 
 <p align="center">
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
   <a href="http://kotlinlang.org"><img src="https://img.shields.io/badge/kotlin-2.4.0-purple.svg?logo=kotlin" alt="Kotlin"></a>
   <a href="https://central.sonatype.com/artifact/io.github.leitingzi/kmplitert-core"><img src="https://img.shields.io/maven-central/v/io.github.leitingzi/kmplitert-core" alt="Maven Central"></a>
-  <a href="https://leitingzi.github.io/kmplitert/"><img src="https://img.shields.io/badge/docs-dokka-brightgreen.svg" alt="API Docs"></a>
   <a href="https://github.com/leitingzi/kmplitert/actions"><img src="https://img.shields.io/github/actions/workflow/status/leitingzi/kmplitert/core-ci.yml?branch=master" alt="CI Status"></a>
 </p>
 
@@ -19,7 +20,6 @@
 ## 📖 Table of Contents
 
 - [🌟 Introduction](#-introduction)
-- [📚 API Documentation](#-api-documentation)
 - [🏗️ Architecture](#️-architecture)
 - [📊 Platform Support & Acceleration](#-platform-support--acceleration)
 - [📦 Installation](#-installation)
@@ -49,14 +49,6 @@ KMPLiteRT solves these problems by providing:
 - **Zero-Copy Performance**: Direct native memory access via `TFBuffer` ensures minimal overhead.
 - **Hardware First**: Seamless integration with **Metal (Apple)**, **NNAPI (Android)**, and **WebGPU (Web)**.
 - **Developer Friendly**: Type-safe APIs, coroutine support, and high-level image processing tools.
-
----
-
-## 📚 API Documentation
-
-Detailed API documentation, including module structures and function references, is available via Dokka:
-
-👉 **[KMPLiteRT Dokka API Reference](https://leitingzi.github.io/kmplitert/)**
 
 ---
 
@@ -118,7 +110,7 @@ graph TD
 Add KMPLiteRT to your `commonMain` source set in `build.gradle.kts`.
 
 ```kotlin
-val kmplitertVersion = "0.2.0" // Replace with latest
+val kmplitertVersion = "0.3.0" // Replace with latest
 
 kotlin {
     sourceSets {
@@ -132,6 +124,8 @@ kotlin {
     }
 }
 ```
+
+Version 0.3.0 aligns the JVM/JNA bindings with the bundled LiteRT C ABI and adds native element and tensor-buffer types to the public enums. Use `value`/`type` for native values rather than Kotlin enum ordinals.
 
 ### 🤖 Android Setup
 

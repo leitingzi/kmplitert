@@ -1,0 +1,54 @@
+site_name: KMPLiteRT 文档
+site_description: Kotlin Multiplatform 上的 LiteRT 推理库使用指南
+site_url: https://leitingzi.github.io/kmplitert/
+repo_url: https://github.com/leitingzi/kmplitert
+repo_name: leitingzi/kmplitert
+docs_dir: docs
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - tables
+
+nav:
+  - 首页: index.md
+  - 开始使用:
+      - 安装与快速开始: getting-started.md
+      - 平台与运行环境: platforms.md
+  - API 指南:
+      - Core API: api.md
+      - Native TFBuffer: native-buffer.md
+  - 支持与贡献: support.md

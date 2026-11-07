@@ -5,7 +5,9 @@ package io.github.kmplitert.core
  *
  * Provides typed read and write operations for tensor data.
  */
-interface TFBuffer {
+interface TFBuffer : AutoCloseable {
+
+    override fun close() {}
 
     /** Writes integer values. */
     fun writeInt(data: IntArray)
@@ -37,4 +39,3 @@ interface TFBuffer {
     /** Reads long integer values. */
     suspend fun readLong(): LongArray
 }
-

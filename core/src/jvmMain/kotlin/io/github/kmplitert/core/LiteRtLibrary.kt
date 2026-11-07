@@ -4,24 +4,12 @@ package io.github.kmplitert.core
 
 import com.sun.jna.Library
 import com.sun.jna.Native
-import com.sun.jna.NativeLibrary
-import com.sun.jna.Platform
 import com.sun.jna.Pointer
-import com.sun.jna.ptr.LongByReference
+import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
-import io.github.kmplitert.core.model.LiteRtCompiledModel
-import io.github.kmplitert.core.model.LiteRtEnvOption
-import io.github.kmplitert.core.model.LiteRtEnvironment
-import io.github.kmplitert.core.model.LiteRtModel
-import io.github.kmplitert.core.model.LiteRtOptions
-import io.github.kmplitert.core.model.LiteRtRankedTensorType
-import io.github.kmplitert.core.model.LiteRtSignature
-import io.github.kmplitert.core.model.LiteRtTensor
-import io.github.kmplitert.core.model.LiteRtTensorBuffer
-import io.github.kmplitert.core.model.LiteRtTensorBufferRequirements
-import java.io.File
+import io.github.kmplitert.core.model.*
 
-typealias LiteRtParamIndex = Long
+typealias LiteRtParamIndex = SizeT
 typealias LiteRtStatus = Int
 
 interface LiteRtLibrary : Library {
@@ -31,6 +19,7 @@ interface LiteRtLibrary : Library {
         options: LiteRtEnvOption?,
         environment: PointerByReference
     ): LiteRtStatus
+
     fun LiteRtDestroyEnvironment(environment: LiteRtEnvironment)
 
     fun LiteRtCreateModelFromFile(
@@ -38,6 +27,7 @@ interface LiteRtLibrary : Library {
         fileName: String,
         model: PointerByReference
     ): LiteRtStatus
+
     fun LiteRtDestroyModel(model: LiteRtModel)
 
     fun LiteRtCreateOptions(options: PointerByReference): LiteRtStatus
@@ -51,11 +41,21 @@ interface LiteRtLibrary : Library {
     fun LiteRtCreateOpaqueOptions(
         identifier: String,
         data: Pointer,
-        size: Long,
+        destructor: Pointer,
         opaque_options: PointerByReference
     ): LiteRtStatus
 
     fun LiteRtDestroyOpaqueOptions(opaque_options: Pointer)
+
+    fun LrtCreateGpuOptions(options: PointerByReference): LiteRtStatus
+    fun LrtDestroyGpuOptions(options: Pointer)
+    fun LrtSetGpuOptionsGpuBackend(options: Pointer, backend: Int): LiteRtStatus
+    fun LrtGetOpaqueGpuOptionsData(
+        options: Pointer,
+        identifier: PointerByReference,
+        payload: PointerByReference,
+        payload_destructor: PointerByReference
+    ): LiteRtStatus
 
     fun LiteRtSetOptionsHardwareAccelerators(
         options: LiteRtOptions,
@@ -68,6 +68,7 @@ interface LiteRtLibrary : Library {
         compilation_options: LiteRtOptions,
         compiled_model: PointerByReference,
     ): LiteRtStatus
+
     fun LiteRtDestroyCompiledModel(compiled_model: LiteRtCompiledModel)
 
     fun LiteRtGetCompiledModelInputBufferRequirements(
@@ -76,6 +77,7 @@ interface LiteRtLibrary : Library {
         input_index: LiteRtParamIndex,
         buffer_requirements: PointerByReference
     ): LiteRtStatus
+
     fun LiteRtGetCompiledModelOutputBufferRequirements(
         compiled_model: LiteRtCompiledModel,
         signature_index: LiteRtParamIndex,
@@ -85,23 +87,23 @@ interface LiteRtLibrary : Library {
 
     fun LiteRtGetNumTensorBufferRequirementsSupportedBufferTypes(
         requirements: LiteRtTensorBufferRequirements,
-        num_types: Pointer
+        num_types: IntByReference
     ): LiteRtStatus
 
     fun LiteRtGetTensorBufferRequirementsSupportedTensorBufferType(
         requirements: LiteRtTensorBufferRequirements,
         type_index: Int,
-        type: Pointer
+        type: IntByReference
     ): LiteRtStatus
 
     fun LiteRtGetTensorBufferRequirementsBufferSize(
         requirements: LiteRtTensorBufferRequirements,
-        buffer_size: Pointer
+        buffer_size: SizeTByReference
     ): LiteRtStatus
 
     fun LiteRtGetTensorBufferRequirementsStrides(
         requirements: LiteRtTensorBufferRequirements,
-        num_strides: Pointer,
+        num_strides: IntByReference,
         strides: PointerByReference
     ): LiteRtStatus
 
@@ -111,12 +113,13 @@ interface LiteRtLibrary : Library {
         input_index: LiteRtParamIndex,
         layout: Pointer
     ): LiteRtStatus
+
     fun LiteRtGetCompiledModelOutputTensorLayouts(
         compiled_model: LiteRtCompiledModel,
         signature_index: LiteRtParamIndex,
-        num_layouts: Long,
+        num_layouts: SizeT,
         layouts: Pointer,
-        update_allocation: Boolean
+        update_allocation: Byte
     ): LiteRtStatus
 
 
@@ -132,12 +135,12 @@ interface LiteRtLibrary : Library {
 
     fun LiteRtGetNumModelSubgraphs(
         model: LiteRtModel,
-        num_subgraphs: LongByReference
+        num_subgraphs: SizeTByReference
     ): LiteRtStatus
 
     fun LiteRtGetNumModelSignatures(
         model: LiteRtModel,
-        num_signatures: LongByReference
+        num_signatures: SizeTByReference
     ): LiteRtStatus
 
     fun LiteRtGetModelSignature(
@@ -145,19 +148,23 @@ interface LiteRtLibrary : Library {
         signature_index: LiteRtParamIndex,
         signature: PointerByReference
     ): LiteRtStatus
+
     fun LiteRtGetNumSignatureInputs(
         signature: LiteRtSignature,
-        num_inputs: LongByReference
+        num_inputs: SizeTByReference
     ): LiteRtStatus
+
     fun LiteRtGetNumSignatureOutputs(
         signature: LiteRtSignature,
-        num_outputs: LongByReference
+        num_outputs: SizeTByReference
     ): LiteRtStatus
+
     fun LiteRtGetSignatureInputTensor(
         signature: LiteRtSignature,
         input_name: String,
         tensor: PointerByReference
     ): LiteRtStatus
+
     fun LiteRtGetSignatureOutputTensor(
         signature: LiteRtSignature,
         output_name: String,
@@ -169,6 +176,7 @@ interface LiteRtLibrary : Library {
         input_idx: LiteRtParamIndex,
         tensor: PointerByReference
     ): LiteRtStatus
+
     fun LiteRtGetSignatureOutputTensorByIndex(
         signature: LiteRtSignature,
         output_idx: LiteRtParamIndex,
@@ -196,18 +204,19 @@ interface LiteRtLibrary : Library {
         tensor: LiteRtTensor,
         ranked_tensor_type: LiteRtRankedTensorType
     ): LiteRtStatus
+
     fun LiteRtGetTensorBufferPackedSize(
         tensor_buffer: LiteRtTensorBuffer,
-        size: LongByReference
+        size: SizeTByReference
     ): LiteRtStatus
 
 
     fun LiteRtRunCompiledModel(
         compiled_model: LiteRtCompiledModel,
         signature_index: LiteRtParamIndex,
-        num_input_buffers: Long,
+        num_input_buffers: SizeT,
         input_buffers: Array<LiteRtTensorBuffer>,
-        num_output_buffers: Long,
+        num_output_buffers: SizeT,
         output_buffers: Array<LiteRtTensorBuffer>
     ): LiteRtStatus
 
@@ -223,90 +232,12 @@ interface LiteRtLibrary : Library {
 
     companion object {
         private val iClass = LiteRtLibrary::class.java
+        private val loadOptions = mapOf(Library.OPTION_STRING_ENCODING to "UTF-8")
 
-        val INSTANCE: LiteRtLibrary
-        val nativeLibDir: String
-
-        private fun extractLibrary(os: String, fileName: String): File {
-            return try {
-                Native.extractFromResourcePath("$os/$fileName")
-            } catch (_: Exception) {
-                Native.extractFromResourcePath(fileName)
-            }
-        }
-
-        private fun loadOptionalPlugin(os: String, fileName: String): File? {
-            return try {
-                extractLibrary(os, fileName)
-            } catch (e: Exception) {
-                System.err.println("LiteRT optional plugin '$fileName' not found: ${e.message}")
-                null
-            }
-        }
-
-        private fun loadMainLibrary(os: String, ext: String): LiteRtLibrary {
-            return try {
-                Native.load("LiteRt", iClass)
-            } catch (_: UnsatisfiedLinkError) {
-                try {
-                    Native.load("libLiteRt", iClass)
-                } catch (_: UnsatisfiedLinkError) {
-                    val extracted = extractLibrary(os, "libLiteRt.$ext")
-                    Native.load(extracted.absolutePath, iClass)
-                }
-            }
-        }
-
-
-        init {
-            println("RESOURCE_PREFIX = ${Platform.RESOURCE_PREFIX}")
-            println("OS = ${System.getProperty("os.name")}")
-            println("ARCH = ${System.getProperty("os.arch")}")
-
-            val os = Platform.RESOURCE_PREFIX
-            val ext = when {
-                Platform.isWindows() -> "dll"
-                Platform.isMac() -> "dylib"
-                else -> "so"
-            }
-
-            println("Trying to load main: libLiteRt.$ext")
-
-            val pluginLibName = when {
-                Platform.isMac() -> "libLiteRtMetalAccelerator.$ext"
-                Platform.isWindows() -> "libLiteRtWebGpuAccelerator.$ext"
-                else -> "libLiteRtWebGpuAccelerator.$ext"
-            }
-
-            println("Trying to load plugin: $pluginLibName")
-
-            val pluginLib = loadOptionalPlugin(os, pluginLibName)
-
-            nativeLibDir = pluginLib?.parentFile?.absolutePath ?: System.getProperty("java.io.tmpdir")
-
-            if (Platform.isWindows()) {
-                try {
-                    listOf("dxcompiler.dll", "dxil.dll").forEach { name ->
-                        val target = File(nativeLibDir, name)
-                        if (!target.exists()) {
-                            extractLibrary(os, name).copyTo(target, overwrite = true)
-                        }
-                    }
-                } catch (e: Exception) {
-                    System.err.println("Warning: Failed to extract DirectX dependencies: ${e.message}")
-                }
-            }
-
-            pluginLib?.let {
-                try {
-                    NativeLibrary.getInstance(it.absolutePath)
-                } catch (e: UnsatisfiedLinkError) {
-                    System.err.println("Warning: Failed to load optional accelerator '${it.name}': ${e.message}")
-                }
-            }
-
-            INSTANCE = loadMainLibrary(os, ext)
-        }
+        private val loadedLibraries = LiteRtNativeLibraryLoader.load()
+        val nativeLibDir: String = loadedLibraries.pluginDirectory.absolutePath
+        internal val isGpuAcceleratorAvailable: Boolean = loadedLibraries.acceleratorPluginAvailable
+        val INSTANCE: LiteRtLibrary =
+            Native.load(loadedLibraries.mainLibrary.absolutePath, iClass, loadOptions)
     }
 }
-

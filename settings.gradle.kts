@@ -38,10 +38,10 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":app:androidApp")
-include(":app:desktopApp")
-include(":app:webApp")
-include(":app:shared")
+//include(":app:androidApp")
+//include(":app:desktopApp")
+//include(":app:webApp")
+//include(":app:shared")
 
 include(":core")
-include(":tool")
+// include(":tool")

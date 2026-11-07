@@ -2,19 +2,14 @@
 # yarn lockfile v1
 
 
-"@js-joda/core@3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@js-joda/core/-/core-3.2.0.tgz#3e61e21b7b2b8a6be746df1335cf91d70db2a273"
-  integrity sha512-PMqgJ0sw5B7FKb2d5bWYIoxjri+QlW/Pys7+Rw82jSH0QN3rB05jZ/VrrsUdh1w4+i2kw9JOejXGq/KhDOX7Kg==
-
-"@litertjs/core@2.5.2":
-  version "2.5.2"
-  resolved "https://registry.yarnpkg.com/@litertjs/core/-/core-2.5.2.tgz#391dfe724b30bcb74141193ee8631b2302d27419"
-  integrity sha512-2O4p5Me8B3KbW9EPU9Xe6iKl2jZ5nZeGxRBvhm5x42Wj7qb3xk2CjibPLA0eSyt2HuELu2hCIZ+7gHZM5cipcw==
+"@litertjs/core@2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@litertjs/core/-/core-2.6.0.tgz#39172692b05bb1df1a82621c15a6f67fb3777d04"
+  integrity sha512-TH6/5zLq57YzyZH6q+vO8be1SvTH76uDFe+CiL0wWtRNTUDhc2GAWm2YCohhnyt4fPvefSNztg5PKFZGAYL0cw==
   dependencies:
-    "@litertjs/wasm-utils" "^2.0.0"
+    "@litertjs/wasm-utils" "^2.6.0"
 
-"@litertjs/wasm-utils@^2.0.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@litertjs/wasm-utils/-/wasm-utils-2.5.0.tgz#64a718191513325ca783d4fb1d1cd2fe3e3ccd14"
-  integrity sha512-zhMAqJRJ3ROi48flZxYx+K2MiMllJVuH7oeumpSIfQMBeOb6JyLV/7ltLbY6E+nERUAfNwzIBqjslWAeXcO6iQ==
+"@litertjs/wasm-utils@^2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@litertjs/wasm-utils/-/wasm-utils-2.6.0.tgz#bdf03498dee34f24d464d389249f308d0c60e7c0"
+  integrity sha512-rxARtl8owf+aPV2TsMiAClYDBaEDemML3PjrzBxIpGCvv6POswR7068Kt0sIkrK5XvKkY2Z+JLcm3a9CHmvuUg==

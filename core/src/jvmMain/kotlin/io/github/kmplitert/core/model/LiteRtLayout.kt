@@ -1,15 +1,11 @@
 package io.github.kmplitert.core.model
 
-import io.github.kmplitert.core.LiteRTLayout
-import com.sun.jna.Platform
 import com.sun.jna.Structure
+import io.github.kmplitert.core.LiteRTLayout
 
 open class LiteRtLayout : Structure() {
     @JvmField
     var flags: Int = 0
-
-    @JvmField
-    var padding: Int = 0
 
     @JvmField
     var dimensions = IntArray(8)
@@ -18,7 +14,7 @@ open class LiteRtLayout : Structure() {
     var strides = IntArray(8)
 
     override fun getFieldOrder(): List<String> {
-        return listOf("flags", "padding", "dimensions", "strides")
+        return listOf("flags", "dimensions", "strides")
     }
 
     fun getRank(): Int {
@@ -55,5 +51,4 @@ open class LiteRtLayout : Structure() {
     class ByReference : LiteRtLayout(), Structure.ByReference
     class ByValue : LiteRtLayout(), Structure.ByValue
 }
-
 

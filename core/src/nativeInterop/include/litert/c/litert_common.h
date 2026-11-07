@@ -16,6 +16,7 @@
 #define ODML_LITERT_LITERT_C_LITERT_COMMON_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "litert/build_common/build_config.h"  // IWYU pragma: keep
 
@@ -32,11 +33,13 @@ extern "C" {
 // Define LITERT_CAPI_EXPORT macro to export a function properly with a shared
 // library.
 #if defined(LITERT_WINDOWS_OS)
-#ifdef LITERT_COMPILE_LIBRARY
+#if defined(LITERT_STATIC)
+#define LITERT_CAPI_EXPORT
+#elif defined(LITERT_COMPILE_LIBRARY)
 #define LITERT_CAPI_EXPORT __declspec(dllexport)
 #else
 #define LITERT_CAPI_EXPORT __declspec(dllimport)
-#endif  // LITERT_COMPILE_LIBRARY
+#endif  // LITERT_STATIC
 #else
 #define LITERT_CAPI_EXPORT __attribute__((visibility("default")))
 #endif  // LITERT_WINDOWS_OS
@@ -64,6 +67,21 @@ extern "C" {
   typedef struct name##T* name;           \
   typedef const struct name##T* name##Const
 
+// Type-erased pointer to a versioned C ABI interface struct whose first member
+// at byte offset 0 is `LiteRtAbiHeader abi_header` (see
+// `c/internal/litert_abi_header.h`).
+//
+// Examples of concrete interface structs passed via `LiteRtInterface`:
+//   - `const LiteRtDispatchInterface_V1*`
+//   - `const LiteRtCompilerPluginInterface_V1*`
+//   - `const LiteRtCustomTensorBufferHandlersDef_V1*`
+//
+// The underlying struct may be statically allocated (e.g. `static const` in
+// `.rodata`) or heap-allocated by the provider, as long as the provider manages
+// its lifetime. `const` indicates that the caller treats the returned table as
+// read-only and will not modify or free it.
+typedef const void* LiteRtInterface;
+
 // LiteRT Accelerator object. (litert_accelerator.h)
 LITERT_DEFINE_HANDLE(LiteRtAccelerator);
 // LiteRT DelegateWrapper object. (litert_delegate_wrapper.h).
@@ -84,6 +102,10 @@ LITERT_DEFINE_HANDLE(LiteRtEvent);
 LITERT_DEFINE_HANDLE(LiteRtLogger);
 // LiteRT Metrics object. (litert_metrics.h)
 LITERT_DEFINE_HANDLE(LiteRtMetrics);
+// LiteRT DelegationMetrics object. (litert_compiled_model.h)
+LITERT_DEFINE_HANDLE(LiteRtDelegationMetrics);
+// LiteRT AcceleratorDelegationMetrics object. (litert_compiled_model.h)
+LITERT_DEFINE_HANDLE(LiteRtAcceleratorDelegationMetrics);
 
 // Constant data behind a tensor stored in the model. (litert_model.h)
 LITERT_DEFINE_HANDLE(LiteRtWeights);
@@ -182,6 +204,17 @@ LITERT_DEFINE_HANDLE(LiteRtExternalLiteRtBufferContext);
 #define LITERT_DISABLE_OPENGL_SUPPORT
 #endif
 
+// copybara:uncomment_begin(google-only)
+// #if defined(LITERT_PLATFORM_MICRODROID)
+// #ifndef LITERT_DISABLE_AHWB_SUPPORT
+// #define LITERT_DISABLE_AHWB_SUPPORT
+// #endif
+// #ifndef LITERT_DISABLE_OPENGL_SUPPORT
+// #define LITERT_DISABLE_OPENGL_SUPPORT
+// #endif
+// #endif  // LITERT_PLATFORM_MICRODROID
+// copybara:uncomment_end
+
 #if defined(LITERT_DISABLE_METAL_SUPPORT)
 #define LITERT_HAS_METAL_SUPPORT 0
 #else
@@ -268,6 +301,7 @@ typedef enum {
   kLiteRtStatusErrorWrongVersion = 8,
   kLiteRtStatusErrorUnknown = 9,
   kLiteRtStatusErrorAlreadyExists = 10,
+  kLiteRtStatusErrorFailedPrecondition = 11,
 
   // Inference progression errors.
   kLiteRtStatusCancelled = 100,
@@ -307,7 +341,8 @@ typedef enum {
 } LiteRtStatus;
 // LINT.ThenChange(
 //   ../kotlin/src/main/kotlin/com/google/ai/edge/litert/LiteRtException.kt:status_codes,
-//   ../cc/litert_common.h:status_codes
+//   ../cc/litert_common.h:status_codes,
+//   ../objc/apis/LRTError.h:status_codes
 // )
 
 // Returns a string describing the status value.
@@ -330,6 +365,11 @@ typedef enum {
   kLiteRtDelegatePrecisionDefault = 0,
   kLiteRtDelegatePrecisionFp16 = 1,
   kLiteRtDelegatePrecisionFp32 = 2,
+  // FP16 storage and arithmetic with FP32 accumulation where supported.
+  // Currently the option is only for the GPU backend and only impacts the
+  // CONV_2D, DEPTHWISE_CONV_2D, FULLY_CONNECTED, TRANSPOSE_CONV and
+  // BATCH_MAT_MUL operators and any stablehlo composite op that uses them.
+  kLiteRtDelegatePrecisionFp16WithFp32Accum = 3,
 } LiteRtDelegatePrecision;
 
 typedef enum {
