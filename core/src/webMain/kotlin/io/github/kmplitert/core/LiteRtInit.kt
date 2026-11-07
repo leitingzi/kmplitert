@@ -33,7 +33,7 @@ object LiteRtInit {
 
     private var scope = MainScope()
 
-    private var wasmRootPath = "https://cdn.jsdelivr.net/npm/@litertjs/core/wasm/"
+    private var wasmRootPath = "https://cdn.jsdelivr.net/npm/@litertjs/core@2.6.0/wasm/"
 
     /**
      * Returns whether the LiteRT runtime has been successfully initialized.

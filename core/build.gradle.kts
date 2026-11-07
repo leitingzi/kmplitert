@@ -147,7 +147,7 @@ kotlin {
         }
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
-            implementation(npm("@litertjs/core", "2.5.2"))
+            implementation(npm("@litertjs/core", "2.6.0"))
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
