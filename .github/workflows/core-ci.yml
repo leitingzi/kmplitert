@@ -7,6 +7,7 @@ on:
       - master
     paths:
       - 'core/**'
+      - '.github/workflows/**'
       - 'gradle/**'
       - '*.gradle.kts'
       - 'gradle.properties'
