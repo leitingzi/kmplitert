@@ -10,7 +10,7 @@ import litert.*
 class NativeTFBuffer(
     val buffer: LiteRtTensorBuffer
 ) : TFBuffer {
-    
+
     private fun <T> withLockedBuffer(mode: LiteRtTensorBufferLockMode, block: (COpaquePointer) -> T): T {
         return memScoped {
             val addrRef = alloc<COpaquePointerVar>()
@@ -112,7 +112,9 @@ class NativeTFBuffer(
         val data = BooleanArray(size)
         withLockedBuffer(kLiteRtTensorBufferLockModeRead) { addr ->
             val hostAddr = addr.reinterpret<ByteVar>()
-            for (i in 0 until size) { data[i] = hostAddr[i] != 0.toByte() }
+            for (i in 0 until size) {
+                data[i] = hostAddr[i] != 0.toByte()
+            }
         }
         return data
     }
@@ -128,5 +130,3 @@ class NativeTFBuffer(
         return data
     }
 }
-
-
