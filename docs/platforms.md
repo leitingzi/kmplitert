@@ -22,7 +22,3 @@ Apple Native 构建需为目标架构准备匹配的 LiteRT 原生库，并让�
 ## 硬件加速
 
 API 提供 `CPU`、`GPU`、`NPU` 三种加速器选择。具体后端能力取决于目标平台和设备；例如平台上的 GPU/NPU delegate 并非自动可用。不要将某一设备上的加速结果视为其他设备的保证。
-
-## 验证目标
-
-仓库包含 Android、JVM、JS、Wasm 和 Native 相关 source set。部分 Native target 只会在匹配的主机系统或发布任务中配置，因此可执行的构建和测试目标取决于构建主机及其原生工具链。

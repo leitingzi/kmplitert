@@ -49,6 +49,5 @@ nav:
       - 安装与快速开始: getting-started.md
       - 平台与运行环境: platforms.md
   - API 指南:
-      - Core API: api.md
-      - Native TFBuffer: native-buffer.md
+      - Core API: core-api.md
   - 支持与贡献: support.md

@@ -50,5 +50,3 @@ suspend fun runInference(modelPath: String): FloatArray {
 }
 ```
 
-使用 `LiteRTCompiler` 前，必须调用 `init()` 完成初始化；使用完毕后，务必调用 `close()` 释放关联资源。  
-示例中的 `modelPath` 需要是目标平台可正常访问的模型文件路径。

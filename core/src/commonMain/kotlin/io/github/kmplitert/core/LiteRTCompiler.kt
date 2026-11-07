@@ -10,7 +10,10 @@ package io.github.kmplitert.core
  * @property filePath Path to the LiteRT model file.
  * @property accelerator Preferred hardware accelerator.
  */
-expect class LiteRTCompiler(filePath: String, accelerator: LiteRTAccelerator) {
+expect class LiteRTCompiler(
+    filePath: String,
+    accelerator: LiteRTAccelerator = LiteRTAccelerator.CPU
+) {
 
     /**
      * Initializes the model and prepares it for inference.
