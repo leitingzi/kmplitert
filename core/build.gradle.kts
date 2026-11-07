@@ -81,6 +81,11 @@ kotlin {
         withHostTest {
             isIncludeAndroidResources = true
         }
+        withDeviceTestBuilder {
+            sourceSetTreeName = "androidDeviceTest"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
     }
 
     if (isPublishToMavenCentral || HostManager.hostIsMac) {
@@ -151,6 +156,13 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
 //            implementation(projects.tool)
+        }
+        sourceSets.named("androidDeviceTest") {
+            dependencies {
+                implementation(libs.kotlin.testJunit)
+                implementation(libs.androidx.test.runner)
+                implementation(libs.androidx.testExt.junit)
+            }
         }
     }
 }
