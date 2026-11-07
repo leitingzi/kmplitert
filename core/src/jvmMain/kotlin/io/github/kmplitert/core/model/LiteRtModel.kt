@@ -1,18 +1,19 @@
 package io.github.kmplitert.core.model
 
 import com.sun.jna.PointerType
-import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.SizeTByReference
+import io.github.kmplitert.core.asSizeT
 
-class LiteRtModel: PointerType() {
+class LiteRtModel : PointerType() {
     fun destroy() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyModel(this)
     }
 
     fun getSignature(index: Long): LiteRtSignature {
         val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetModelSignature(this, index, ref)
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetModelSignature(this, index.asSizeT(), ref)
         check(status == 0) {
             "Failed to get model signature: $status"
         }
@@ -22,7 +23,7 @@ class LiteRtModel: PointerType() {
     }
 
     fun getNumSignatures(): Long {
-        val count = LongByReference()
+        val count = SizeTByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetNumModelSignatures(this, count)
         check(status == 0) {
             "Failed to get num signatures: $status"
@@ -49,4 +50,3 @@ class LiteRtModel: PointerType() {
         }
     }
 }
-

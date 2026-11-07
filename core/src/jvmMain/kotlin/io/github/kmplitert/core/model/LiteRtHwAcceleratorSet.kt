@@ -11,6 +11,8 @@ enum class LiteRtHwAcceleratorSet(val value: Int) {
     /**
      * NPU hardware acceleration
      */
-    NPU(value = 1 shl 2);
-}
+    NPU(value = 1 shl 2),
 
+    /** WebNN hardware acceleration. */
+    WEBNN(value = 1 shl 3);
+}

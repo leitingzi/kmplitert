@@ -1,13 +1,14 @@
 package io.github.kmplitert.core.model
 
 import com.sun.jna.PointerType
-import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.SizeTByReference
+import io.github.kmplitert.core.asSizeT
 
 class LiteRtSignature : PointerType() {
     fun getNumInputs(): Long {
-        val count = LongByReference()
+        val count = SizeTByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetNumSignatureInputs(this, count)
         check(status == 0) {
             "Failed to get num signature inputs: $status"
@@ -16,7 +17,7 @@ class LiteRtSignature : PointerType() {
     }
 
     fun getNumOutputs(): Long {
-        val count = LongByReference()
+        val count = SizeTByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetNumSignatureOutputs(this, count)
         check(status == 0) {
             "Failed to get num signature outputs: $status"
@@ -48,7 +49,7 @@ class LiteRtSignature : PointerType() {
 
     fun getInputTensor(index: Long): LiteRtTensor {
         val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputTensorByIndex(this, index, ref)
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputTensorByIndex(this, index.asSizeT(), ref)
         check(status == 0) {
             "Failed to get input tensor: $status"
         }
@@ -59,7 +60,7 @@ class LiteRtSignature : PointerType() {
 
     fun getOutputTensor(index: Long): LiteRtTensor {
         val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureOutputTensorByIndex(this, index, ref)
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureOutputTensorByIndex(this, index.asSizeT(), ref)
         check(status == 0) {
             "Failed to get output tensor: $status"
         }
@@ -70,7 +71,7 @@ class LiteRtSignature : PointerType() {
 
     fun getInputName(index: Long): String {
         val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputName(this, index, ref)
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureInputName(this, index.asSizeT(), ref)
         check(status == 0) {
             "Failed to get input name: $status"
         }
@@ -79,12 +80,11 @@ class LiteRtSignature : PointerType() {
 
     fun getOutputName(index: Long): String {
         val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureOutputName(this, index, ref)
+        val status = LiteRtLibrary.INSTANCE.LiteRtGetSignatureOutputName(this, index.asSizeT(), ref)
         check(status == 0) {
             "Failed to get output name: $status"
         }
         return ref.value.getString(0)
     }
 }
-
 

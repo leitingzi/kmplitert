@@ -1,5 +1,5 @@
 [versions]
-agp = "9.2.1"
+agp = "9.1.1"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "36"
@@ -19,7 +19,7 @@ material3 = "1.11.0-alpha07"
 materialIconsExtended = "1.7.3"
 robolectric = "4.16.1"
 java-jna = "5.19.1"
-kmplitert = "0.2.0"
+kmplitert = "0.3.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

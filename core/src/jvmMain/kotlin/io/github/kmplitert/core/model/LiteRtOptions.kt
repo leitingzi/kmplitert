@@ -6,8 +6,20 @@ import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
 
 class LiteRtOptions : PointerType() {
+    private val retainedGpuOptions = mutableListOf<LiteRtGpuOptions>()
+    private var destroyed = false
+
     fun destroy() {
-        LiteRtLibrary.INSTANCE.LiteRtDestroyOptions(this)
+        if (!destroyed) {
+            destroyed = true
+            try {
+                LiteRtLibrary.INSTANCE.LiteRtDestroyOptions(this)
+            } finally {
+                retainedGpuOptions.forEach(LiteRtGpuOptions::destroy)
+                retainedGpuOptions.clear()
+                pointer = null
+            }
+        }
     }
 
     fun setAccelerators(liteRtHwAcceleratorSet: LiteRtHwAcceleratorSet) {
@@ -31,8 +43,17 @@ class LiteRtOptions : PointerType() {
     }
 
     fun addGpuOptions(gpuOptions: LiteRtGpuOptions) {
-        val opaqueOptions = gpuOptions.createOpaqueOptions()
-        addOpaqueOptions(opaqueOptions)
+        var opaqueOptions: Pointer? = null
+        try {
+            val createdOpaqueOptions = gpuOptions.createOpaqueOptions()
+            opaqueOptions = createdOpaqueOptions
+            addOpaqueOptions(createdOpaqueOptions)
+        } catch (failure: Throwable) {
+            opaqueOptions?.let(LiteRtLibrary.INSTANCE::LiteRtDestroyOpaqueOptions)
+            gpuOptions.destroy()
+            throw failure
+        }
+        retainedGpuOptions.add(gpuOptions)
     }
 
     companion object {
@@ -50,4 +71,3 @@ class LiteRtOptions : PointerType() {
         }
     }
 }
-

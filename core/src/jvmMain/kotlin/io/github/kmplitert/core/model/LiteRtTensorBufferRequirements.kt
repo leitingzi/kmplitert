@@ -2,46 +2,71 @@ package io.github.kmplitert.core.model
 
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.IntByReference
-import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRTBufferRequirements
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.SizeTByReference
 
 class LiteRtTensorBufferRequirements : PointerType() {
 
     fun toPlatform(): LiteRTBufferRequirements {
         val numTypesRef = IntByReference()
-        LiteRtLibrary.INSTANCE.LiteRtGetNumTensorBufferRequirementsSupportedBufferTypes(this, numTypesRef.pointer)
+        val numTypesStatus = LiteRtLibrary.INSTANCE.LiteRtGetNumTensorBufferRequirementsSupportedBufferTypes(
+            this,
+            numTypesRef
+        )
+        check(numTypesStatus == 0) {
+            "Failed to get supported tensor buffer type count: $numTypesStatus"
+        }
         val numTypes = numTypesRef.value
+        require(numTypes >= 0) { "Invalid number of supported tensor buffer types: $numTypes" }
 
         val supportedTypes = mutableListOf<LiteRtTensorBufferType>()
         for (i in 0 until numTypes) {
             val typeRef = IntByReference()
-            LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferRequirementsSupportedTensorBufferType(
+            val typeStatus = LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferRequirementsSupportedTensorBufferType(
                 this,
                 i,
-                typeRef.pointer
+                typeRef
             )
-            LiteRtTensorBufferType.fromValue(typeRef.value)?.let {
-                supportedTypes.add(it)
+            check(typeStatus == 0) {
+                "Failed to get supported tensor buffer type at index $i: $typeStatus"
             }
+            supportedTypes.add(
+                requireNotNull(LiteRtTensorBufferType.fromValue(typeRef.value)) {
+                    "Unknown LiteRT tensor buffer type: ${typeRef.value}"
+                }
+            )
         }
 
-        val bufferSizeRef = LongByReference()
-        LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferRequirementsBufferSize(this, bufferSizeRef.pointer)
-        val bufferSize = bufferSizeRef.value.toInt()
+        val bufferSizeRef = SizeTByReference()
+        val bufferSizeStatus = LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferRequirementsBufferSize(
+            this,
+            bufferSizeRef
+        )
+        check(bufferSizeStatus == 0) {
+            "Failed to get tensor buffer requirements size: $bufferSizeStatus"
+        }
+        val bufferSize = Math.toIntExact(bufferSizeRef.value)
 
         val numStridesRef = IntByReference()
         val stridesPtrRef = PointerByReference()
-        LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferRequirementsStrides(
+        val stridesStatus = LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferRequirementsStrides(
             this,
-            numStridesRef.pointer,
+            numStridesRef,
             stridesPtrRef
         )
+        check(stridesStatus == 0) {
+            "Failed to get tensor buffer requirements strides: $stridesStatus"
+        }
         val numStrides = numStridesRef.value
+        require(numStrides >= 0) { "Invalid number of tensor buffer strides: $numStrides" }
         val strides = mutableListOf<Int>()
-        if (numStrides > 0 && stridesPtrRef.value != null) {
-            val stridesArray = stridesPtrRef.value.getIntArray(0, numStrides)
+        if (numStrides > 0) {
+            val stridesPointer = requireNotNull(stridesPtrRef.value) {
+                "LiteRT returned a null strides pointer for $numStrides strides"
+            }
+            val stridesArray = stridesPointer.getIntArray(0, numStrides)
             strides.addAll(stridesArray.toList())
         }
 
@@ -76,11 +101,11 @@ class LiteRtTensorBufferRequirements : PointerType() {
             LiteRtTensorBufferType.WEBGPU_IMAGE_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.WebGpuImageBuffer
             LiteRtTensorBufferType.WEBGPU_IMAGE_BUFFER_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.WebGpuImageBufferFp16
             LiteRtTensorBufferType.WEBGPU_BUFFER_PACKED -> io.github.kmplitert.core.LiteRTTensorBufferType.WebGpuBufferPacked
-            LiteRtTensorBufferType.METAL_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown // Mapping to unknown if no direct match or if not applicable
-            LiteRtTensorBufferType.METAL_BUFFER_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown
-            LiteRtTensorBufferType.METAL_TEXTURE -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown
-            LiteRtTensorBufferType.METAL_TEXTURE_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown
-            LiteRtTensorBufferType.METAL_BUFFER_PACKED -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown
+            LiteRtTensorBufferType.METAL_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.MetalBuffer
+            LiteRtTensorBufferType.METAL_BUFFER_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.MetalBufferFp16
+            LiteRtTensorBufferType.METAL_TEXTURE -> io.github.kmplitert.core.LiteRTTensorBufferType.MetalTexture
+            LiteRtTensorBufferType.METAL_TEXTURE_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.MetalTextureFp16
+            LiteRtTensorBufferType.METAL_BUFFER_PACKED -> io.github.kmplitert.core.LiteRTTensorBufferType.MetalBufferPacked
             LiteRtTensorBufferType.VULKAN_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.VulkanBuffer
             LiteRtTensorBufferType.VULKAN_BUFFER_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.VulkanBufferFp16
             LiteRtTensorBufferType.VULKAN_TEXTURE -> io.github.kmplitert.core.LiteRTTensorBufferType.VulkanTexture
@@ -88,9 +113,8 @@ class LiteRtTensorBufferRequirements : PointerType() {
             LiteRtTensorBufferType.VULKAN_IMAGE_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.VulkanImageBuffer
             LiteRtTensorBufferType.VULKAN_IMAGE_BUFFER_FP16 -> io.github.kmplitert.core.LiteRTTensorBufferType.VulkanImageBufferFp16
             LiteRtTensorBufferType.VULKAN_BUFFER_PACKED -> io.github.kmplitert.core.LiteRTTensorBufferType.VulkanBufferPacked
-            LiteRtTensorBufferType.USER_CUSTOM_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown
-            LiteRtTensorBufferType.OPENVINO_TENSOR_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.Unknown
+            LiteRtTensorBufferType.USER_CUSTOM_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.UserCustomBuffer
+            LiteRtTensorBufferType.OPENVINO_TENSOR_BUFFER -> io.github.kmplitert.core.LiteRTTensorBufferType.OpenVINOTensorBuffer
         }
     }
 }
-

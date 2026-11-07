@@ -1,41 +1,54 @@
 package io.github.kmplitert.core.model
 
-import com.sun.jna.Memory
 import com.sun.jna.Pointer
+import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
 
-class LiteRtGpuOptions {
-    private var backend: LiteRtGpuBackend? = null
+class LiteRtGpuOptions : PointerType() {
+    init {
+        val ref = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LrtCreateGpuOptions(ref)
+        check(status == 0) { "Failed to create GPU options: $status" }
+        pointer = requireNotNull(ref.value) { "GPU options pointer is null" }
+    }
 
     fun setBackend(backend: LiteRtGpuBackend) {
-        this.backend = backend
+        val status = LiteRtLibrary.INSTANCE.LrtSetGpuOptionsGpuBackend(pointer, backend.value)
+        check(status == 0) { "Failed to set GPU backend: $status" }
     }
 
     fun createOpaqueOptions(): Pointer {
-        val toml = buildString {
-            backend?.let {
-                append("backend = ${it.value}\n")
-            }
-        }
-
-        val tomlBytes = toml.toByteArray(Charsets.UTF_8)
-        val tomlPtr = Memory((tomlBytes.size + 1).toLong())
-        tomlPtr.write(0, tomlBytes, 0, tomlBytes.size)
-        tomlPtr.setByte(tomlBytes.size.toLong(), 0)
-
-        val ref = PointerByReference()
-        val status = LiteRtLibrary.INSTANCE.LiteRtCreateOpaqueOptions(
-            identifier = "gpu_options",
-            data = tomlPtr,
-            size = (tomlBytes.size + 1).toLong(),
-            opaque_options = ref
+        val identifier = PointerByReference()
+        val payload = PointerByReference()
+        val destructor = PointerByReference()
+        val dataStatus = LiteRtLibrary.INSTANCE.LrtGetOpaqueGpuOptionsData(
+            options = pointer,
+            identifier = identifier,
+            payload = payload,
+            payload_destructor = destructor
         )
-        check(status == 0) {
-            "Failed to create opaque GPU options: $status"
-        }
+        check(dataStatus == 0) { "Failed to get opaque GPU options data: $dataStatus" }
 
-        return ref.value
+        val identifierPointer = requireNotNull(identifier.value) { "GPU options identifier is null" }
+        val payloadPointer = requireNotNull(payload.value) { "GPU options payload is null" }
+        val destructorPointer = requireNotNull(destructor.value) { "GPU options destructor is null" }
+        val opaqueOptions = PointerByReference()
+        val status = LiteRtLibrary.INSTANCE.LiteRtCreateOpaqueOptions(
+            identifier = identifierPointer.getString(0, "UTF-8"),
+            data = payloadPointer,
+            destructor = destructorPointer,
+            opaque_options = opaqueOptions
+        )
+        check(status == 0) { "Failed to create opaque GPU options: $status" }
+        return requireNotNull(opaqueOptions.value) { "Opaque GPU options pointer is null" }
+    }
+
+    fun destroy() {
+        if (pointer != null) {
+            LiteRtLibrary.INSTANCE.LrtDestroyGpuOptions(pointer)
+            pointer = null
+        }
     }
 
     companion object {
@@ -55,5 +68,3 @@ enum class LiteRtGpuBackend(val value: Int) {
     WEBGPU(2),
     OPENGL(3)
 }
-
-

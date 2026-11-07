@@ -7,6 +7,7 @@ import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.JvmTFBuffer
 import io.github.kmplitert.core.LiteRtLibrary
 import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.core.asSizeT
 
 class LiteRtCompiledModel : PointerType() {
 
@@ -23,8 +24,8 @@ class LiteRtCompiledModel : PointerType() {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelInputBufferRequirements(
             compiled_model = this,
-            signature_index = signature_index,
-            input_index = input_index,
+            signature_index = signature_index.asSizeT(),
+            input_index = input_index.asSizeT(),
             buffer_requirements = ref
         )
         check(status == 0) {
@@ -39,8 +40,8 @@ class LiteRtCompiledModel : PointerType() {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelOutputBufferRequirements(
             compiled_model = this,
-            signature_index = signature_index,
-            output_index = output_index,
+            signature_index = signature_index.asSizeT(),
+            output_index = output_index.asSizeT(),
             buffer_requirements = ref
         )
         check(status == 0) {
@@ -56,8 +57,8 @@ class LiteRtCompiledModel : PointerType() {
         layout.write()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelInputTensorLayout(
             compiled_model = this,
-            signature_index = signature_index,
-            input_index = input_index,
+            signature_index = signature_index.asSizeT(),
+            input_index = input_index.asSizeT(),
             layout = layout.pointer
         )
         check(status == 0) {
@@ -67,22 +68,35 @@ class LiteRtCompiledModel : PointerType() {
         return layout
     }
 
-    fun getOutputTensorLayout(signature_index: Long, num_layouts: Long, update_allocation: Boolean): LiteRtLayout {
-        val layout = LiteRtLayout()
-        layout.write()
+    fun getOutputTensorLayout(
+        signature_index: Long,
+        num_layouts: Long,
+        update_allocation: Boolean
+    ): List<LiteRtLayout> {
+        require(num_layouts >= 0L && num_layouts <= Int.MAX_VALUE.toLong()) {
+            "Number of output layouts is out of range: $num_layouts"
+        }
+        val layouts = if (num_layouts == 0L) {
+            emptyArray()
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            (LiteRtLayout().toArray(num_layouts.toInt()) as Array<LiteRtLayout>).also { array ->
+                array.forEach(LiteRtLayout::write)
+            }
+        }
 
         val status = LiteRtLibrary.INSTANCE.LiteRtGetCompiledModelOutputTensorLayouts(
             compiled_model = this,
-            signature_index = signature_index,
-            num_layouts = num_layouts,
-            layouts = layout.pointer,
-            update_allocation = update_allocation
+            signature_index = signature_index.asSizeT(),
+            num_layouts = num_layouts.asSizeT(),
+            layouts = layouts.firstOrNull()?.pointer ?: com.sun.jna.Pointer.NULL,
+            update_allocation = (if (update_allocation) 1 else 0).toByte()
         )
         check(status == 0) {
             "Failed to get output tensor layout: $status"
         }
-        layout.read()
-        return layout
+        layouts.forEach(LiteRtLayout::read)
+        return layouts.toList()
     }
 
     fun createManagedTensorBufferFromRequirements(
@@ -116,10 +130,10 @@ class LiteRtCompiledModel : PointerType() {
 
         val status = LiteRtLibrary.INSTANCE.LiteRtRunCompiledModel(
             compiled_model = this,
-            signature_index = signature_index,
-            num_input_buffers = input_buffers.size.toLong(),
+            signature_index = signature_index.asSizeT(),
+            num_input_buffers = input_buffers.size.toLong().asSizeT(),
             input_buffers = input,
-            num_output_buffers = output_buffers.size.toLong(),
+            num_output_buffers = output_buffers.size.toLong().asSizeT(),
             output_buffers = output,
         )
         check(status == 0) {
@@ -184,33 +198,39 @@ class LiteRtCompiledModel : PointerType() {
             val model = LiteRtModel.create(environment = env, filePath = filePath)
 
             val options = LiteRtOptions.create()
-            options.setAccelerators(accelerator)
+            try {
+                options.setAccelerators(accelerator)
 
-            if (accelerator == LiteRtHwAcceleratorSet.GPU) {
-                val gpuOptions = LiteRtGpuOptions.create()
-                gpuOptions.setBackend(LiteRtGpuBackend.AUTOMATIC)
-                options.addGpuOptions(gpuOptions)
-                // gpuOptions.destroy() // Should we destroy it here? The opaque data might be needed.
-                // In C++, the payload is usually copied or its ownership is managed.
+                if (accelerator == LiteRtHwAcceleratorSet.GPU) {
+                    val gpuOptions = LiteRtGpuOptions.create()
+                    try {
+                        gpuOptions.setBackend(LiteRtGpuBackend.AUTOMATIC)
+                        options.addGpuOptions(gpuOptions)
+                    } catch (failure: Throwable) {
+                        gpuOptions.destroy()
+                        throw failure
+                    }
+                }
+
+                val ref = PointerByReference()
+                val status = LiteRtLibrary.INSTANCE.LiteRtCreateCompiledModel(
+                    environment = env,
+                    model = model,
+                    compilation_options = options,
+                    compiled_model = ref
+                )
+                check(status == 0) {
+                    "Failed to create compiled model: $status"
+                }
+
+                val compiledModel = LiteRtCompiledModel()
+                compiledModel.pointer = ref.value
+                compiledModel.env = env
+                compiledModel.model = model
+                return compiledModel
+            } finally {
+                options.destroy()
             }
-
-            val ref = PointerByReference()
-            val status = LiteRtLibrary.INSTANCE.LiteRtCreateCompiledModel(
-                environment = env,
-                model = model,
-                compilation_options = options,
-                compiled_model = ref
-            )
-            check(status == 0) {
-                "Failed to create compiled model: $status"
-            }
-
-            val compiledModel = LiteRtCompiledModel()
-            compiledModel.pointer = ref.value
-            compiledModel.env = env
-            compiledModel.model = model
-            return compiledModel
         }
     }
 }
-

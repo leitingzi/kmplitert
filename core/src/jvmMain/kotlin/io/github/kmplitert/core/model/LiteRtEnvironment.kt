@@ -7,8 +7,11 @@ import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
 
 class LiteRtEnvironment : PointerType() {
+    private var retainedOptions: List<LiteRtEnvOption> = emptyList()
+
     fun destroy() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyEnvironment(this)
+        retainedOptions = emptyList()
     }
 
     companion object {
@@ -17,17 +20,12 @@ class LiteRtEnvironment : PointerType() {
 
             val optionsArray = if (options.isNotEmpty()) {
                 val first = LiteRtEnvOption()
+
                 @Suppress("UNCHECKED_CAST")
                 val array = first.toArray(options.size) as Array<LiteRtEnvOption>
                 options.forEachIndexed { index, opt ->
                     opt.write()
-                    array[index].pointer.write(
-                        0,
-                        opt.pointer.getByteArray(0, opt.size()),
-                        0,
-                        opt.size()
-                    )
-                    array[index].read()
+                    opt.copyTo(array[index])
                 }
                 array[0]
             } else {
@@ -46,13 +44,14 @@ class LiteRtEnvironment : PointerType() {
 
             val env = LiteRtEnvironment()
             env.pointer = ref.value
+            env.retainedOptions = options
             return env
         }
 
         fun createWithPluginDir(pluginDir: String): LiteRtEnvironment {
             val opt = LiteRtEnvOption()
-            opt.tag = 0 // kLiteRtEnvOptionTagCompilerPluginLibraryDir
-            opt.value.type = 8 // kLiteRtAnyTypeString
+            opt.tag = LiteRtEnvOptionTag.COMPILER_PLUGIN_LIBRARY_DIR
+            opt.value.type = LiteRtAnyType.STRING
 
             // Manually allocate UTF-8 memory for the string to avoid JNA encoding issues
             val bytes = pluginDir.toByteArray(Charsets.UTF_8)
@@ -60,17 +59,12 @@ class LiteRtEnvironment : PointerType() {
             memory.write(0, bytes, 0, bytes.size)
             memory.setByte(bytes.size.toLong(), 0.toByte())
 
-            opt.value.value.str_value = null
             opt.value.value.ptr_value = memory
             opt.value.value.setType(Pointer::class.java)
             opt.value.write()
+            opt.retainedMemory = memory
 
-            val env = create(listOf(opt))
-            // Keep memory alive during the native call
-            memory.hashCode() 
-            return env
+            return create(listOf(opt))
         }
     }
 }
-
-

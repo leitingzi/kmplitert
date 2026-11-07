@@ -118,7 +118,7 @@ graph TD
 Add KMPLiteRT to your `commonMain` source set in `build.gradle.kts`.
 
 ```kotlin
-val kmplitertVersion = "0.2.0" // Replace with latest
+val kmplitertVersion = "0.3.0" // Replace with latest
 
 kotlin {
     sourceSets {
@@ -132,6 +132,8 @@ kotlin {
     }
 }
 ```
+
+Version 0.3.0 aligns the JVM/JNA bindings with the bundled LiteRT C ABI and adds native element and tensor-buffer types to the public enums. Use `value`/`type` for native values rather than Kotlin enum ordinals.
 
 ### 🤖 Android Setup
 

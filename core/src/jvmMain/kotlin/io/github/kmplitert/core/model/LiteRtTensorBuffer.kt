@@ -2,12 +2,18 @@ package io.github.kmplitert.core.model
 
 import com.sun.jna.Pointer
 import com.sun.jna.PointerType
-import com.sun.jna.ptr.LongByReference
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
 import io.github.kmplitert.core.LiteRtStatus
+import io.github.kmplitert.core.SizeTByReference
 
-class LiteRtTensorBuffer: PointerType() {
+internal enum class LiteRtTensorBufferLockMode(val value: Int) {
+    Read(0),
+    Write(1),
+    ReadWrite(2)
+}
+
+class LiteRtTensorBuffer : PointerType() {
     fun clear(): LiteRtStatus {
         val status = LiteRtLibrary.INSTANCE.LiteRtClearTensorBuffer(this)
         check(status == 0) {
@@ -20,7 +26,10 @@ class LiteRtTensorBuffer: PointerType() {
         LiteRtLibrary.INSTANCE.LiteRtDestroyTensorBuffer(this)
     }
 
-    fun lock(lockMode: Int = 2): Pointer {
+    fun lock(lockMode: Int = LiteRtTensorBufferLockMode.ReadWrite.value): Pointer {
+        require(LiteRtTensorBufferLockMode.entries.any { it.value == lockMode }) {
+            "Invalid tensor buffer lock mode: $lockMode"
+        }
         val hostMemAddrRef = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtLockTensorBuffer(
             tensor_buffer = this,
@@ -33,8 +42,10 @@ class LiteRtTensorBuffer: PointerType() {
         return hostMemAddrRef.value
     }
 
+    internal fun lock(lockMode: LiteRtTensorBufferLockMode): Pointer = lock(lockMode.value)
+
     fun getPackedSize(): Long {
-        val sizeRef = LongByReference()
+        val sizeRef = SizeTByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferPackedSize(
             tensor_buffer = this,
             size = sizeRef
@@ -49,4 +60,3 @@ class LiteRtTensorBuffer: PointerType() {
         LiteRtLibrary.INSTANCE.LiteRtUnlockTensorBuffer(this)
     }
 }
-

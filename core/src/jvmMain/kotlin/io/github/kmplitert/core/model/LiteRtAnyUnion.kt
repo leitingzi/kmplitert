@@ -5,7 +5,7 @@ import com.sun.jna.Union
 
 class LiteRtAnyUnion : Union() {
     @JvmField
-    var bool_value: Boolean = false
+    var bool_value: Byte = 0
 
     @JvmField
     var int_value: Long = 0
@@ -14,9 +14,8 @@ class LiteRtAnyUnion : Union() {
     var real_value: Double = 0.0
 
     @JvmField
-    var str_value: String? = null
+    var str_value: Pointer? = null
 
     @JvmField
     var ptr_value: Pointer? = null
 }
-
