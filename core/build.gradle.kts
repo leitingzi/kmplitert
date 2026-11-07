@@ -175,6 +175,14 @@ tasks.withType<Test>().configureEach {
 
 tasks.withType<KotlinNativeTest>().configureEach {
     workingDir = rootProject.projectDir.absolutePath
+
+    if (name == "iosSimulatorArm64Test") {
+        val modelPath = layout.projectDirectory
+            .file("CelsiusToFahrenheit.tflite")
+            .asFile
+            .absolutePath
+        environment("SIMCTL_CHILD_KMPLITERT_TEST_MODEL_PATH", modelPath)
+    }
 }
 
 tasks.register<Copy>("copyNativeLitertToJvm") {

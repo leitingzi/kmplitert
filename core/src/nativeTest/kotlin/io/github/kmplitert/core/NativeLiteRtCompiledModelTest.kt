@@ -1,17 +1,23 @@
 package io.github.kmplitert.core
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
 import kotlinx.coroutines.test.runTest
+import platform.posix.getenv
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalForeignApi::class)
 class NativeLiteRtCompiledModelTest {
     @Test
     fun compilesModelReadsRequirementsAndRunsInference() = runTest(timeout = 60.seconds) {
+        val modelPath = getenv("KMPLITERT_TEST_MODEL_PATH")?.toKString()
+            ?: "core/CelsiusToFahrenheit.tflite"
         val compiler = LiteRTCompiler(
-            filePath = "core/src/nativeTest/resources/CelsiusToFahrenheit.tflite",
+            filePath = modelPath,
             accelerator = LiteRTAccelerator.CPU
         )
         var buffers: List<TFBuffer> = emptyList()

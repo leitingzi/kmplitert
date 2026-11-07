@@ -8,7 +8,9 @@ on:
     paths:
       - 'core/**'
       - '.github/workflows/**'
+      - 'build-logic/**'
       - 'gradle/**'
+      - 'settings.gradle.kts'
       - '*.gradle.kts'
       - 'gradle.properties'
 
@@ -24,6 +26,14 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
       - name: Build and Test (Linux, Android, JS, Wasm)
         run: |
           chmod +x gradlew
@@ -32,7 +42,7 @@ jobs:
                     :core:testAndroidHostTest \
                     :core:jsBrowserTest \
                     :core:wasmJsBrowserTest \
-                    --stacktrace --info --no-daemon
+                    --stacktrace
 
   macos-ios:
     name: MacOS & iOS
@@ -45,13 +55,21 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
       - name: Build and Test (MacOS, iOS)
         run: |
           chmod +x gradlew
           ./gradlew :core:assemble \
                     :core:macosArm64Test \
                     :core:iosSimulatorArm64Test \
-                    --stacktrace --info --no-daemon
+                    --stacktrace
 
   windows:
     name: Windows
@@ -64,9 +82,17 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
       - name: Build and Test (Windows)
         shell: bash
         run: |
           ./gradlew :core:assemble \
                     :core:mingwX64Test \
-                    --stacktrace --info --no-daemon
+                    --stacktrace

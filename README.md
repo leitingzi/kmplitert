@@ -4,6 +4,8 @@
   <b>High-performance, type-safe Kotlin Multiplatform (KMP) library for Google LiteRT (TensorFlow Lite).</b>
   <br>
   <i>Bringing on-device Machine Learning to every screen, from Mobile to Web and Desktop.</i>
+  <br>
+  <a href="https://leitingzi.github.io/kmplitert/">中文在线文档</a>
 </p>
 
 <p align="center">
