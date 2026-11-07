@@ -6,6 +6,8 @@ import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
 import io.github.kmplitert.core.LiteRtStatus
 import io.github.kmplitert.core.SizeTByReference
+import io.github.kmplitert.core.checkLiteRtStatus
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal enum class LiteRtTensorBufferLockMode(val value: Int) {
     Read(0),
@@ -14,19 +16,27 @@ internal enum class LiteRtTensorBufferLockMode(val value: Int) {
 }
 
 class LiteRtTensorBuffer : PointerType() {
+    private val destroyed = AtomicBoolean(false)
+
     fun clear(): LiteRtStatus {
+        check(!destroyed.get()) { "Tensor buffer is destroyed" }
         val status = LiteRtLibrary.INSTANCE.LiteRtClearTensorBuffer(this)
-        check(status == 0) {
-            "Failed to clear tensor buffer: $status"
-        }
+        checkLiteRtStatus(status, "LiteRtClearTensorBuffer")
         return 0
     }
 
     fun destroy() {
-        LiteRtLibrary.INSTANCE.LiteRtDestroyTensorBuffer(this)
+        if (destroyed.compareAndSet(false, true)) {
+            try {
+                LiteRtLibrary.INSTANCE.LiteRtDestroyTensorBuffer(this)
+            } finally {
+                pointer = null
+            }
+        }
     }
 
     fun lock(lockMode: Int = LiteRtTensorBufferLockMode.ReadWrite.value): Pointer {
+        check(!destroyed.get()) { "Tensor buffer is destroyed" }
         require(LiteRtTensorBufferLockMode.entries.any { it.value == lockMode }) {
             "Invalid tensor buffer lock mode: $lockMode"
         }
@@ -36,23 +46,20 @@ class LiteRtTensorBuffer : PointerType() {
             host_mem_addr = hostMemAddrRef,
             lock_mode = lockMode
         )
-        check(status == 0) {
-            "Failed to lock tensor buffer: $status"
-        }
+        checkLiteRtStatus(status, "LiteRtLockTensorBuffer")
         return hostMemAddrRef.value
     }
 
     internal fun lock(lockMode: LiteRtTensorBufferLockMode): Pointer = lock(lockMode.value)
 
     fun getPackedSize(): Long {
+        check(!destroyed.get()) { "Tensor buffer is destroyed" }
         val sizeRef = SizeTByReference()
         val status = LiteRtLibrary.INSTANCE.LiteRtGetTensorBufferPackedSize(
             tensor_buffer = this,
             size = sizeRef
         )
-        check(status == 0) {
-            "Failed to get tensor buffer packed size: $status"
-        }
+        checkLiteRtStatus(status, "LiteRtGetTensorBufferPackedSize")
         return sizeRef.value
     }
 

@@ -5,13 +5,22 @@ import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.checkLiteRtStatus
+import java.util.concurrent.atomic.AtomicBoolean
 
 class LiteRtEnvironment : PointerType() {
     private var retainedOptions: List<LiteRtEnvOption> = emptyList()
+    private val destroyed = AtomicBoolean(false)
 
     fun destroy() {
-        LiteRtLibrary.INSTANCE.LiteRtDestroyEnvironment(this)
-        retainedOptions = emptyList()
+        if (destroyed.compareAndSet(false, true)) {
+            try {
+                LiteRtLibrary.INSTANCE.LiteRtDestroyEnvironment(this)
+            } finally {
+                retainedOptions = emptyList()
+                pointer = null
+            }
+        }
     }
 
     companion object {
@@ -38,12 +47,12 @@ class LiteRtEnvironment : PointerType() {
                 environment = ref
             )
 
-            check(status == 0) {
-                "Failed to create environment: $status"
-            }
+            checkLiteRtStatus(status, "LiteRtCreateEnvironment")
 
             val env = LiteRtEnvironment()
-            env.pointer = ref.value
+            env.pointer = requireNotNull(ref.value) {
+                "LiteRtCreateEnvironment returned a null handle"
+            }
             env.retainedOptions = options
             return env
         }

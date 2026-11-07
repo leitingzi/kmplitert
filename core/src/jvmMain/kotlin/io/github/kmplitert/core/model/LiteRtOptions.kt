@@ -4,45 +4,58 @@ import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.checkLiteRtStatus
+import java.util.concurrent.atomic.AtomicBoolean
 
 class LiteRtOptions : PointerType() {
     private val retainedGpuOptions = mutableListOf<LiteRtGpuOptions>()
-    private var destroyed = false
+    private val destroyed = AtomicBoolean(false)
 
     fun destroy() {
-        if (!destroyed) {
-            destroyed = true
+        if (destroyed.compareAndSet(false, true)) {
+            var failure: Throwable? = null
             try {
                 LiteRtLibrary.INSTANCE.LiteRtDestroyOptions(this)
-            } finally {
-                retainedGpuOptions.forEach(LiteRtGpuOptions::destroy)
-                retainedGpuOptions.clear()
-                pointer = null
+            } catch (destroyFailure: Throwable) {
+                failure = destroyFailure
             }
+            retainedGpuOptions.forEach { options ->
+                try {
+                    options.destroy()
+                } catch (cleanupFailure: Throwable) {
+                    if (failure == null) {
+                        failure = cleanupFailure
+                    } else {
+                        failure.addSuppressed(cleanupFailure)
+                    }
+                }
+            }
+            retainedGpuOptions.clear()
+            pointer = null
+            failure?.let { throw it }
         }
     }
 
     fun setAccelerators(liteRtHwAcceleratorSet: LiteRtHwAcceleratorSet) {
+        check(!destroyed.get()) { "Options are destroyed" }
         val status = LiteRtLibrary.INSTANCE.LiteRtSetOptionsHardwareAccelerators(
             options = this,
             hardware_accelerators = liteRtHwAcceleratorSet.value
         )
-        check(status == 0) {
-            "Failed to set hardware accelerators: $status"
-        }
+        checkLiteRtStatus(status, "LiteRtSetOptionsHardwareAccelerators")
     }
 
     fun addOpaqueOptions(opaqueOptions: Pointer) {
+        check(!destroyed.get()) { "Options are destroyed" }
         val status = LiteRtLibrary.INSTANCE.LiteRtAddOpaqueOptions(
             options = this,
             opaque_options = opaqueOptions
         )
-        check(status == 0) {
-            "Failed to add opaque options: $status"
-        }
+        checkLiteRtStatus(status, "LiteRtAddOpaqueOptions")
     }
 
     fun addGpuOptions(gpuOptions: LiteRtGpuOptions) {
+        check(!destroyed.get()) { "Options are destroyed" }
         var opaqueOptions: Pointer? = null
         try {
             val createdOpaqueOptions = gpuOptions.createOpaqueOptions()
@@ -61,12 +74,12 @@ class LiteRtOptions : PointerType() {
             val ref = PointerByReference()
             val status = LiteRtLibrary.INSTANCE.LiteRtCreateOptions(options = ref)
 
-            check(status == 0) {
-                "Failed to create options: $status"
-            }
+            checkLiteRtStatus(status, "LiteRtCreateOptions")
 
             val options = LiteRtOptions()
-            options.pointer = ref.value
+            options.pointer = requireNotNull(ref.value) {
+                "LiteRtCreateOptions returned a null handle"
+            }
             return options
         }
     }

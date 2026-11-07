@@ -4,175 +4,190 @@ package io.github.kmplitert.core
 
 import io.github.kmplitert.core.model.LiteRtCompiledModel
 import io.github.kmplitert.core.model.LiteRtHwAcceleratorSet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 actual class LiteRTCompiler actual constructor(
     val filePath: String,
     val accelerator: LiteRTAccelerator
 ) {
-    private lateinit var compiledModel: LiteRtCompiledModel
+    private data class TensorLocation(val signatureIndex: Long, val tensorIndex: Long)
+
+    private val mutex = Mutex()
+    private var compiledModel: LiteRtCompiledModel? = null
+    private var inputLocations: Map<String, TensorLocation> = emptyMap()
+    private var outputLocations: Map<String, TensorLocation> = emptyMap()
+    private var closed = false
 
     actual suspend fun init() {
-        compiledModel = LiteRtCompiledModel.create(filePath = filePath, accelerator = accelerator.toJvm())
-    }
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                check(!closed) { "Compiler is closed" }
+                if (compiledModel != null) return@withLock
 
-    actual suspend fun getInputTensorType(inputName: String): LiteRTTensorType {
-        val model = compiledModel.model ?: throw IllegalStateException("Model is not set")
-        val numSignatures = model.getNumSignatures()
-        
-        for (s in 0 until numSignatures) {
-            val signature = model.getSignature(index = s)
-            
-            // Try to get by signature input name first
-            val numInputs = signature.getNumInputs()
-            for (i in 0 until numInputs) {
-                if (signature.getInputName(index = i) == inputName) {
-                    return signature.getInputTensor(index = i)
-                        .getRankedTensorType()
-                        .toPlatform()
-                }
-            }
-            
-            // Try to get by tensor name
-            for (i in 0 until numInputs) {
-                val tensor = signature.getInputTensor(index = i)
-                if (tensor.getName() == inputName) {
-                    return tensor.getRankedTensorType()
-                        .toPlatform()
-                }
-            }
-            
-            // Try C-API lookup in this signature
-            try {
-                val tensor = signature.getInputTensor(name = inputName)
-                return tensor.getRankedTensorType().toPlatform()
-            } catch (_: Exception) {
-            }
-        }
-
-        throw Exception("Input tensor $inputName not found in any of the $numSignatures signatures.")
-    }
-
-    actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType {
-        val model = compiledModel.model ?: throw IllegalStateException("Model is not set")
-        val numSignatures = model.getNumSignatures()
-
-        for (s in 0 until numSignatures) {
-            val signature = model.getSignature(index = s)
-
-            // Try to get by signature output name first
-            val numOutputs = signature.getNumOutputs()
-            for (i in 0 until numOutputs) {
-                if (signature.getOutputName(index = i) == outputName) {
-                    return signature.getOutputTensor(index = i)
-                        .getRankedTensorType()
-                        .toPlatform()
-                }
-            }
-
-            // Try to get by tensor name
-            for (i in 0 until numOutputs) {
-                val tensor = signature.getOutputTensor(index = i)
-                if (tensor.getName() == outputName) {
-                    return tensor.getRankedTensorType()
-                        .toPlatform()
-                }
-            }
-
-            // Try C-API lookup in this signature
-            try {
-                val tensor = signature.getOutputTensor(name = outputName)
-                return tensor.getRankedTensorType().toPlatform()
-            } catch (_: Exception) {
-            }
-        }
-        
-        throw Exception("Output tensor $outputName not found in any of the $numSignatures signatures.")
-    }
-
-    actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements {
-        val model = compiledModel.model ?: throw IllegalStateException("Model is not set")
-        val numSignatures = model.getNumSignatures()
-
-        for (s in 0 until numSignatures) {
-            val signature = model.getSignature(s)
-            val numInputs = signature.getNumInputs()
-            for (i in 0 until numInputs) {
-                if (signature.getInputName(index = i) == inputName || signature.getInputTensor(index = i).getName() == inputName) {
-                    val requirements = compiledModel.getInputBufferRequirements(
-                        signature_index = s,
-                        input_index = i
-                    ).toPlatform()
-
-                    if (requirements.strides.isEmpty()) {
-                        val tensorType = signature.getInputTensor(index = i)
-                            .getRankedTensorType()
-                            .toPlatform()
-
-                        return requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
+                val createdModel = LiteRtCompiledModel.create(
+                    filePath = filePath,
+                    accelerator = accelerator.toJvm()
+                )
+                try {
+                    val (inputs, outputs) = buildTensorLocations(createdModel)
+                    compiledModel = createdModel
+                    inputLocations = inputs
+                    outputLocations = outputs
+                } catch (failure: Throwable) {
+                    try {
+                        createdModel.destroy()
+                    } catch (cleanupFailure: Throwable) {
+                        failure.addSuppressed(cleanupFailure)
                     }
-                    return requirements
+                    throw failure
                 }
             }
         }
-        throw Exception("Input tensor $inputName not found")
     }
 
-    actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements {
-        val model = compiledModel.model ?: throw IllegalStateException("Model is not set")
-        val numSignatures = model.getNumSignatures()
+    actual suspend fun getInputTensorType(inputName: String): LiteRTTensorType =
+        withInitializedModel { model ->
+            val location = inputLocation(inputName)
+            model.modelOrThrow()
+                .getSignature(location.signatureIndex)
+                .getInputTensor(location.tensorIndex)
+                .getRankedTensorType()
+                .toPlatform()
+        }
 
-        for (s in 0 until numSignatures) {
-            val signature = model.getSignature(s)
-            val numOutputs = signature.getNumOutputs()
-            for (i in 0 until numOutputs) {
-                if (signature.getOutputName(index = i) == outputName || signature.getOutputTensor(index = i).getName() == outputName) {
-                    val requirements = compiledModel.getOutputBufferRequirements(
-                        signature_index = s,
-                        output_index = i
-                    ).toPlatform()
+    actual suspend fun getOutputTensorType(outputName: String): LiteRTTensorType =
+        withInitializedModel { model ->
+            val location = outputLocation(outputName)
+            model.modelOrThrow()
+                .getSignature(location.signatureIndex)
+                .getOutputTensor(location.tensorIndex)
+                .getRankedTensorType()
+                .toPlatform()
+        }
 
-                    if (requirements.strides.isEmpty()) {
-                        val tensorType = signature.getOutputTensor(index = i)
-                            .getRankedTensorType()
-                            .toPlatform()
-
-                        return requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
-                    }
-                    return requirements
-                }
+    actual suspend fun getInputBufferRequirements(inputName: String): LiteRTBufferRequirements =
+        withInitializedModel { model ->
+            val location = inputLocation(inputName)
+            val requirements = model.getInputBufferRequirements(
+                signature_index = location.signatureIndex,
+                input_index = location.tensorIndex
+            ).toPlatform()
+            if (requirements.strides.isEmpty()) {
+                val tensorType = model.modelOrThrow()
+                    .getSignature(location.signatureIndex)
+                    .getInputTensor(location.tensorIndex)
+                    .getRankedTensorType()
+                    .toPlatform()
+                requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
+            } else {
+                requirements
             }
         }
-        throw Exception("Output tensor $outputName not found")
-    }
 
-    actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> {
-        return compiledModel.getInputBuffers(signatureIndex.toLong())
-    }
+    actual suspend fun getOutputBufferRequirements(outputName: String): LiteRTBufferRequirements =
+        withInitializedModel { model ->
+            val location = outputLocation(outputName)
+            val requirements = model.getOutputBufferRequirements(
+                signature_index = location.signatureIndex,
+                output_index = location.tensorIndex
+            ).toPlatform()
+            if (requirements.strides.isEmpty()) {
+                val tensorType = model.modelOrThrow()
+                    .getSignature(location.signatureIndex)
+                    .getOutputTensor(location.tensorIndex)
+                    .getRankedTensorType()
+                    .toPlatform()
+                requirements.copy(strides = tensorType.layout?.strides ?: emptyList())
+            } else {
+                requirements
+            }
+        }
 
-    actual suspend fun getOutputBuffers(signatureIndex: Int): List<TFBuffer> {
-        return compiledModel.getOutputBuffers(signatureIndex.toLong())
-    }
+    actual suspend fun getInputBuffers(signatureIndex: Int): List<TFBuffer> =
+        withInitializedModel { it.getInputBuffers(signatureIndex.toLong()) }
+
+    actual suspend fun getOutputBuffers(signatureIndex: Int): List<TFBuffer> =
+        withInitializedModel { it.getOutputBuffers(signatureIndex.toLong()) }
 
     actual suspend fun run(inputs: List<TFBuffer>, outputs: List<TFBuffer>, signatureIndex: Int) {
-        compiledModel.run(
-            signature_index = signatureIndex.toLong(),
-            input_buffers = inputs,
-            output_buffers = outputs
-        )
+        withInitializedModel { model ->
+            model.run(
+                signature_index = signatureIndex.toLong(),
+                input_buffers = inputs,
+                output_buffers = outputs
+            )
+        }
     }
 
     actual suspend fun close() {
-        if (::compiledModel.isInitialized) {
-            compiledModel.destroy()
+        withContext(NonCancellable + Dispatchers.IO) {
+            mutex.withLock {
+                if (closed) return@withLock
+                closed = true
+                val model = compiledModel
+                compiledModel = null
+                inputLocations = emptyMap()
+                outputLocations = emptyMap()
+                model?.destroy()
+            }
         }
     }
 
-    private fun LiteRTAccelerator.toJvm(): LiteRtHwAcceleratorSet {
-        return when (this) {
+    private suspend fun <T> withInitializedModel(block: (LiteRtCompiledModel) -> T): T =
+        withContext(Dispatchers.IO) {
+            mutex.withLock {
+                check(!closed) { "Compiler is closed" }
+                val model = compiledModel ?: throw IllegalStateException("Compiler is not initialized")
+                block(model)
+            }
+        }
+
+    private fun buildTensorLocations(
+        compiledModel: LiteRtCompiledModel
+    ): Pair<Map<String, TensorLocation>, Map<String, TensorLocation>> {
+        val model = compiledModel.modelOrThrow()
+        val inputs = linkedMapOf<String, TensorLocation>()
+        val outputs = linkedMapOf<String, TensorLocation>()
+        var signatureIndex = 0L
+
+        while (signatureIndex < model.getNumSignatures()) {
+            val signature = model.getSignature(signatureIndex)
+            var tensorIndex = 0L
+            while (tensorIndex < signature.getNumInputs()) {
+                val location = TensorLocation(signatureIndex, tensorIndex)
+                inputs.putIfAbsent(signature.getInputName(tensorIndex), location)
+                inputs.putIfAbsent(signature.getInputTensor(tensorIndex).getName(), location)
+                tensorIndex++
+            }
+            tensorIndex = 0L
+            while (tensorIndex < signature.getNumOutputs()) {
+                val location = TensorLocation(signatureIndex, tensorIndex)
+                outputs.putIfAbsent(signature.getOutputName(tensorIndex), location)
+                outputs.putIfAbsent(signature.getOutputTensor(tensorIndex).getName(), location)
+                tensorIndex++
+            }
+            signatureIndex++
+        }
+        return inputs to outputs
+    }
+
+    private fun inputLocation(name: String): TensorLocation =
+        inputLocations[name] ?: throw IllegalArgumentException("Input tensor '$name' was not found")
+
+    private fun outputLocation(name: String): TensorLocation =
+        outputLocations[name] ?: throw IllegalArgumentException("Output tensor '$name' was not found")
+
+    private fun LiteRtCompiledModel.modelOrThrow() =
+        model ?: throw IllegalStateException("Model is not set")
+
+    private fun LiteRTAccelerator.toJvm(): LiteRtHwAcceleratorSet =
+        when (this) {
             LiteRTAccelerator.CPU -> LiteRtHwAcceleratorSet.CPU
             LiteRTAccelerator.GPU -> LiteRtHwAcceleratorSet.GPU
             LiteRTAccelerator.NPU -> LiteRtHwAcceleratorSet.NPU
         }
-    }
 }
-

@@ -2,10 +2,13 @@ package io.github.kmplitert.core
 
 import io.github.kmplitert.core.model.LiteRtTensorBuffer
 import io.github.kmplitert.core.model.LiteRtTensorBufferLockMode
+import java.util.concurrent.atomic.AtomicBoolean
 
 class JvmTFBuffer(
     val buffer: LiteRtTensorBuffer
 ) : TFBuffer {
+    private val closed = AtomicBoolean(false)
+
     override fun writeInt(data: IntArray) {
         withLock(LiteRtTensorBufferLockMode.Write) { it.write(0, data, 0, data.size) }
     }
@@ -28,6 +31,7 @@ class JvmTFBuffer(
     }
 
     override suspend fun readInt(): IntArray {
+        ensureOpen()
         val size = buffer.getPackedSize()
         val numElements = (size / 4).toInt()
         return withLock(LiteRtTensorBufferLockMode.Read) { outputAddr ->
@@ -36,6 +40,7 @@ class JvmTFBuffer(
     }
 
     override suspend fun readFloat(): FloatArray {
+        ensureOpen()
         val size = buffer.getPackedSize()
         val numElements = (size / 4).toInt()
         return withLock(LiteRtTensorBufferLockMode.Read) { outputAddr ->
@@ -44,6 +49,7 @@ class JvmTFBuffer(
     }
 
     override suspend fun readInt8(): ByteArray {
+        ensureOpen()
         val size = buffer.getPackedSize()
         val numElements = size.toInt()
         return withLock(LiteRtTensorBufferLockMode.Read) { outputAddr ->
@@ -52,6 +58,7 @@ class JvmTFBuffer(
     }
 
     override suspend fun readBoolean(): BooleanArray {
+        ensureOpen()
         val size = buffer.getPackedSize()
         val numElements = size.toInt()
         return withLock(LiteRtTensorBufferLockMode.Read) { outputAddr ->
@@ -62,6 +69,7 @@ class JvmTFBuffer(
     }
 
     override suspend fun readLong(): LongArray {
+        ensureOpen()
         val size = buffer.getPackedSize()
         val numElements = (size / 8).toInt()
         return withLock(LiteRtTensorBufferLockMode.Read) { outputAddr ->
@@ -70,11 +78,22 @@ class JvmTFBuffer(
     }
 
     private inline fun <T> withLock(lockMode: LiteRtTensorBufferLockMode, block: (com.sun.jna.Pointer) -> T): T {
+        ensureOpen()
         val address = buffer.lock(lockMode)
         try {
             return block(address)
         } finally {
             buffer.unlock()
         }
+    }
+
+    override fun close() {
+        if (closed.compareAndSet(false, true)) {
+            buffer.destroy()
+        }
+    }
+
+    internal fun ensureOpen() {
+        check(!closed.get()) { "Tensor buffer is closed" }
     }
 }

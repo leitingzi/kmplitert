@@ -1,16 +1,21 @@
 package io.github.kmplitert.core
 
-import java.nio.file.Files
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import java.nio.file.Files
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
 class LiteRTTest {
 
     private suspend fun runModelInferenceTest(config: ModelTestConfig) {
-        val modelFile = Files.createTempFile("kmplitert-${config.name}-", ".tflite")
+        val modelFile = withContext(Dispatchers.IO) {
+            Files.createTempFile("kmplitert-${config.name}-", ".tflite")
+        }
         try {
-            Files.write(modelFile, config.modelBytes)
+            withContext(Dispatchers.IO) { Files.write(modelFile, config.modelBytes) }
             val compiler = LiteRTCompiler(
                 filePath = modelFile.toAbsolutePath().toString(),
                 accelerator = LiteRTAccelerator.CPU
@@ -58,14 +63,29 @@ class LiteRTTest {
                             val actual = outputBuffers[index].readFloat()
                             assertEquals(expected.size, actual.size, "Output ${expect.name} size mismatch")
                             for (i in expected.indices) {
-                                assertEquals(expected[i], actual[i], expect.tolerance, "Output ${expect.name} value mismatch at index $i")
+                                assertEquals(
+                                    expected[i],
+                                    actual[i],
+                                    expect.tolerance,
+                                    "Output ${expect.name} value mismatch at index $i"
+                                )
                             }
                         }
+
                         is IntArray -> {
-                            assertContentEquals(expected, outputBuffers[index].readInt(), "Output ${expect.name} mismatch")
+                            assertContentEquals(
+                                expected,
+                                outputBuffers[index].readInt(),
+                                "Output ${expect.name} mismatch"
+                            )
                         }
+
                         is ByteArray -> {
-                            assertContentEquals(expected, outputBuffers[index].readInt8(), "Output ${expect.name} mismatch")
+                            assertContentEquals(
+                                expected,
+                                outputBuffers[index].readInt8(),
+                                "Output ${expect.name} mismatch"
+                            )
                         }
                     }
                 }
@@ -73,7 +93,7 @@ class LiteRTTest {
                 compiler.close()
             }
         } finally {
-            Files.deleteIfExists(modelFile)
+            withContext(Dispatchers.IO) { Files.deleteIfExists(modelFile) }
         }
     }
 
@@ -129,6 +149,48 @@ class LiteRTTest {
             )
         )
         runModelInferenceTest(config)
+    }
+
+    @Test
+    fun compilerCloseReleasesBuffersAndIsIdempotent() = runTest(timeout = 60.seconds) {
+        val modelFile = withContext(Dispatchers.IO) {
+            Files.createTempFile("kmplitert-close-", ".tflite")
+        }
+        val compiler = LiteRTCompiler(
+            filePath = modelFile.toAbsolutePath().toString(),
+            accelerator = LiteRTAccelerator.CPU
+        )
+        try {
+            withContext(Dispatchers.IO) {
+                Files.write(modelFile, loadModelBytes("CelsiusToFahrenheit.tflite"))
+            }
+            compiler.init()
+            compiler.init()
+            val inputBuffer = compiler.getInputBuffers().single()
+            val outputBuffer = compiler.getOutputBuffers().single()
+
+            compiler.close()
+            compiler.close()
+
+            assertFailsWith<IllegalStateException> {
+                inputBuffer.writeFloat(floatArrayOf(100f))
+            }
+            assertFailsWith<IllegalStateException> {
+                outputBuffer.writeFloat(floatArrayOf(100f))
+            }
+            val useAfterClose = try {
+                compiler.getInputTensorType("input_c")
+                null
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: IllegalStateException) {
+                failure
+            }
+            assertIs<IllegalStateException>(useAfterClose)
+        } finally {
+            compiler.close()
+            withContext(Dispatchers.IO) { Files.deleteIfExists(modelFile) }
+        }
     }
 
     private fun loadModelBytes(name: String): ByteArray {

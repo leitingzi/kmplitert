@@ -1,15 +1,7 @@
 package io.github.kmplitert.core
 
-import io.github.kmplitert.core.model.LiteRtGpuBackend
-import io.github.kmplitert.core.model.LiteRtHwAcceleratorSet
-import io.github.kmplitert.core.model.LiteRtLayout
-import io.github.kmplitert.core.model.LiteRtRankedTensorType
-import io.github.kmplitert.core.model.LiteRtTensorBufferLockMode
-import io.github.kmplitert.core.model.LiteRtTensorBufferType
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import io.github.kmplitert.core.model.*
+import kotlin.test.*
 
 class LiteRtAbiTest {
     private class LayoutProbe : LiteRtLayout() {
@@ -145,5 +137,16 @@ class LiteRtAbiTest {
         val reference = SizeTByReference()
         reference.value = 1234L
         assertEquals(1234L, reference.value)
+    }
+
+    @Test
+    fun nativeStatusFailuresExposeStatusNameAndOperation() {
+        val failure = assertFailsWith<LiteRtException> {
+            checkLiteRtStatus(1, "LiteRtCreateModelFromFile")
+        }
+
+        assertEquals(1, failure.status)
+        assertEquals("kLiteRtStatusErrorInvalidArgument", failure.statusName)
+        assertTrue(failure.message.orEmpty().contains("LiteRtCreateModelFromFile"))
     }
 }

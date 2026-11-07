@@ -4,21 +4,27 @@ import com.sun.jna.Pointer
 import com.sun.jna.PointerType
 import com.sun.jna.ptr.PointerByReference
 import io.github.kmplitert.core.LiteRtLibrary
+import io.github.kmplitert.core.checkLiteRtStatus
+import java.util.concurrent.atomic.AtomicBoolean
 
 class LiteRtGpuOptions : PointerType() {
+    private val destroyed = AtomicBoolean(false)
+
     init {
         val ref = PointerByReference()
         val status = LiteRtLibrary.INSTANCE.LrtCreateGpuOptions(ref)
-        check(status == 0) { "Failed to create GPU options: $status" }
+        checkLiteRtStatus(status, "LrtCreateGpuOptions")
         pointer = requireNotNull(ref.value) { "GPU options pointer is null" }
     }
 
     fun setBackend(backend: LiteRtGpuBackend) {
+        check(!destroyed.get()) { "GPU options are destroyed" }
         val status = LiteRtLibrary.INSTANCE.LrtSetGpuOptionsGpuBackend(pointer, backend.value)
-        check(status == 0) { "Failed to set GPU backend: $status" }
+        checkLiteRtStatus(status, "LrtSetGpuOptionsGpuBackend")
     }
 
     fun createOpaqueOptions(): Pointer {
+        check(!destroyed.get()) { "GPU options are destroyed" }
         val identifier = PointerByReference()
         val payload = PointerByReference()
         val destructor = PointerByReference()
@@ -28,7 +34,7 @@ class LiteRtGpuOptions : PointerType() {
             payload = payload,
             payload_destructor = destructor
         )
-        check(dataStatus == 0) { "Failed to get opaque GPU options data: $dataStatus" }
+        checkLiteRtStatus(dataStatus, "LrtGetOpaqueGpuOptionsData")
 
         val identifierPointer = requireNotNull(identifier.value) { "GPU options identifier is null" }
         val payloadPointer = requireNotNull(payload.value) { "GPU options payload is null" }
@@ -40,14 +46,17 @@ class LiteRtGpuOptions : PointerType() {
             destructor = destructorPointer,
             opaque_options = opaqueOptions
         )
-        check(status == 0) { "Failed to create opaque GPU options: $status" }
+        checkLiteRtStatus(status, "LiteRtCreateOpaqueOptions")
         return requireNotNull(opaqueOptions.value) { "Opaque GPU options pointer is null" }
     }
 
     fun destroy() {
-        if (pointer != null) {
-            LiteRtLibrary.INSTANCE.LrtDestroyGpuOptions(pointer)
-            pointer = null
+        if (destroyed.compareAndSet(false, true)) {
+            try {
+                LiteRtLibrary.INSTANCE.LrtDestroyGpuOptions(pointer)
+            } finally {
+                pointer = null
+            }
         }
     }
 
