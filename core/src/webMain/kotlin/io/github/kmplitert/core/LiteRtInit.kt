@@ -39,7 +39,7 @@ object LiteRtInit {
      * Returns whether the LiteRT runtime has been successfully initialized.
      */
     val isInitialized: Boolean
-        get() = initTask?.isCompleted == true && initTask?.isCancelled == false
+        get() = isLoaded && initTask?.isCancelled == false
 
     /**
      * Returns whether initialization is currently in progress.

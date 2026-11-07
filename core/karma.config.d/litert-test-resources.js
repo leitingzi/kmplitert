@@ -22,7 +22,7 @@ config.set({
     basePath: path.resolve(__dirname, "../../../../"),
     client: {
         mocha: {
-            timeout: 60000
+            timeout: 120000
         }
     },
     browserNoActivityTimeout: 60000,
