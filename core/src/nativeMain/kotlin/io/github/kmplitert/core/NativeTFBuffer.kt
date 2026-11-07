@@ -10,8 +10,21 @@ import litert.*
 class NativeTFBuffer(
     val buffer: LiteRtTensorBuffer
 ) : TFBuffer {
+    private var closed = false
+
+    override fun close() {
+        if (!closed) {
+            closed = true
+            LiteRtDestroyTensorBuffer(buffer)
+        }
+    }
+
+    private fun ensureOpen() {
+        check(!closed) { "Tensor buffer is closed" }
+    }
 
     private fun <T> withLockedBuffer(mode: LiteRtTensorBufferLockMode, block: (COpaquePointer) -> T): T {
+        ensureOpen()
         return memScoped {
             val addrRef = alloc<COpaquePointerVar>()
             val status = LiteRtLockTensorBuffer(buffer, addrRef.ptr, mode)
@@ -66,6 +79,7 @@ class NativeTFBuffer(
     }
 
     private fun getBufferSize(): Long {
+        ensureOpen()
         return memScoped {
             val sizeRef = alloc<ULongVar>()
             val status = LiteRtGetTensorBufferPackedSize(buffer, sizeRef.ptr)

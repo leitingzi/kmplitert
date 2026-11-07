@@ -2,6 +2,7 @@
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
@@ -158,6 +159,10 @@ tasks.withType<Test>().configureEach {
     testLogging {
         showStandardStreams = true
     }
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    workingDir = rootProject.projectDir.absolutePath
 }
 
 tasks.register<Copy>("copyNativeLitertToJvm") {
