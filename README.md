@@ -147,6 +147,17 @@ class MyApp : Application() {
 
 Dynamic linking is **mandatory** for iOS and Apple targets to support hardware delegates like Metal and to ensure binary compatibility.
 
+### Prerequisite: Xcode command-line tools
+
+Building or synchronizing Apple targets requires a working Xcode toolchain. Install Xcode, launch it once to accept its license, then select it as the active developer directory:
+
+```shell
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+xcodebuild -version
+```
+
+When Xcode is unavailable, this project skips Apple targets during normal Gradle synchronization so Android, JVM, and web development can continue. Apple targets are enabled automatically once `xcodebuild -version` succeeds.
+
 ### 0. Download Prebuilt Binaries
 
 Before configuring your project, you need the native LiteRT dynamic libraries (`.dylib` for iOS/macOS, `.so` for Linux, `.dll` for Windows).

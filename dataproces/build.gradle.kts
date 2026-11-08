@@ -28,7 +28,7 @@ kotlin {
         }
     }
 
-    if (HostManager.hostIsMac) {
+    if (LiteRT.isAppleToolchainAvailable()) {
         iosArm64()
         iosSimulatorArm64()
         macosArm64()
