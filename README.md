@@ -156,7 +156,7 @@ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 xcodebuild -version
 ```
 
-When Xcode is unavailable, this project skips Apple targets during normal Gradle synchronization so Android, JVM, and web development can continue. Apple targets are enabled automatically once `xcodebuild -version` succeeds.
+Apple targets are always declared on macOS so their source sets remain available. Gradle synchronization and builds require `xcodebuild -version` to succeed.
 
 ### 0. Download Prebuilt Binaries
 

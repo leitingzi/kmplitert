@@ -93,7 +93,7 @@ kotlin {
         }
     }
 
-    if (isPublishToMavenCentral || LiteRT.isAppleToolchainAvailable()) {
+    if (isPublishToMavenCentral || HostManager.hostIsMac) {
         iosArm64()
         iosSimulatorArm64()
         macosArm64()

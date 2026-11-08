@@ -2,6 +2,7 @@
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
 plugins {
@@ -29,7 +30,7 @@ kotlin {
         }
     }
 
-    if (LiteRT.isAppleToolchainAvailable()) {
+    if (HostManager.hostIsMac) {
         listOf(
             iosArm64(),
             iosSimulatorArm64()
