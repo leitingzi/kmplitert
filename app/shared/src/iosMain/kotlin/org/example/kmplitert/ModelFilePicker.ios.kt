@@ -13,7 +13,7 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
-import platform.UniformTypeIdentifiers.UTType
+import platform.UniformTypeIdentifiers.UTTypeData
 import platform.darwin.NSObject
 
 private class ModelDocumentPickerDelegate(
@@ -46,7 +46,7 @@ actual fun ModelFilePickerButton(
     Button(
         onClick = {
             val picker = UIDocumentPickerViewController(
-                forOpeningContentTypes = listOf(UTType.data),
+                forOpeningContentTypes = listOf(UTTypeData),
                 asCopy = true
             )
             delegate.value = ModelDocumentPickerDelegate(onModelSelected, onError)
