@@ -9,13 +9,14 @@
 <div class="actions">
   <a class="md-button md-button--primary" href="getting-started/">开始使用 →</a>
   <a class="md-button" href="core-api/">探索 Core API</a>
+  <a class="md-button" href="demo/">试用在线示例</a>
 </div>
 
 </div>
 
 ## 从这里出发
 
-<div class="grid cards" markdown>
+<div class="grid cards" markdown="1">
 
 -   **01 / 快速运行**
 
@@ -53,7 +54,7 @@
 
 ## 小而清晰的核心
 
-`LiteRTCompiler` 管理模型推理，`TFBuffer` 负责张量读写。Core 只关注运行时；数据预处理和后处理可以按需使用独立的 Tool 模块。
+`LiteRTCompiler` 管理模型推理，`TFBuffer` 负责张量读写。Core 只关注运行时；应用可以基于类型安全的张量 API 实现数据预处理和后处理。
 
 ```kotlin
 compiler.init()

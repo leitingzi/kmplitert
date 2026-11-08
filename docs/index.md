@@ -9,13 +9,14 @@
 <div class="actions">
   <a class="md-button md-button--primary" href="getting-started/">Get started →</a>
   <a class="md-button" href="core-api/">Explore the Core API</a>
+  <a class="md-button" href="demo/">Try the live demo</a>
 </div>
 
 </div>
 
 ## Find your orbit
 
-<div class="grid cards" markdown>
+<div class="grid cards" markdown="1">
 
 -   **01 / Get started**
 
@@ -53,7 +54,7 @@
 
 ## A small, focused core
 
-`LiteRTCompiler` manages model inference, while `TFBuffer` reads and writes tensors. Core focuses on the runtime; the separate, optional Tool module can help with preprocessing and postprocessing.
+`LiteRTCompiler` manages model inference, while `TFBuffer` reads and writes tensors. Core focuses on the runtime; applications can build preprocessing and postprocessing on top of its typed tensor APIs.
 
 ```kotlin
 compiler.init()

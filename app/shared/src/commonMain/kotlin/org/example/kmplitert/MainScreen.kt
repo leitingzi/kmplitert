@@ -1,400 +1,442 @@
 package org.example.kmplitert
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.kmplitert.tool.LiteRTHandler
-import org.example.kmplitert.viewmodel.MainViewModel
+import io.github.kmplitert.core.LiteRTAccelerator
+import io.github.kmplitert.core.LiteRTCompiler
+import io.github.kmplitert.core.LiteRTElementType
+import io.github.kmplitert.core.LiteRTTensorType
+import io.github.kmplitert.core.TFBuffer
+import kmplitert.app.shared.generated.resources.Res
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+private data class DemoModel(
+    val name: String,
+    val description: String,
+    val resourcePath: String? = null,
+    val filePath: String? = null,
+    val inputName: String = "",
+    val outputName: String = "",
+    val sampleInput: String = "100"
+)
+
+private data class ModelInfo(
+    val input: LiteRTTensorType,
+    val output: LiteRTTensorType
+)
+
+private val demoModels = listOf(
+    DemoModel(
+        name = "Celsius to Fahrenheit",
+        description = "Convert one temperature value from Celsius to Fahrenheit.",
+        resourcePath = "files/CelsiusToFahrenheit.tflite",
+        inputName = "input_c",
+        outputName = "Identity"
+    ),
+    DemoModel(
+        name = "Batch temperature conversion",
+        description = "Convert three Celsius values in a single inference.",
+        resourcePath = "files/CelsiusToFahrenheitEx.tflite",
+        inputName = "input_c",
+        outputName = "Identity",
+        sampleInput = "100, 0, -40"
+    )
+)
 
 @Composable
-fun MainScreen(
-    viewModel: MainViewModel = viewModel { MainViewModel() }
-) {
-    val scrollState = rememberScrollState()
-    val status by viewModel.currentStatus.collectAsState()
+fun MainScreen() {
+    var selectedModel by remember { mutableStateOf(demoModels.first()) }
+    var modelInfo by remember { mutableStateOf<ModelInfo?>(null) }
+    var compiler by remember { mutableStateOf<LiteRTCompiler?>(null) }
+    var inputTensorName by remember { mutableStateOf(selectedModel.inputName) }
+    var outputTensorName by remember { mutableStateOf(selectedModel.outputName) }
+    var inputValues by remember { mutableStateOf(selectedModel.sampleInput) }
+    var result by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf("Loading model…") }
+    var isRunning by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isInspecting by remember { mutableStateOf(false) }
+    var isModelMenuExpanded by remember { mutableStateOf(false) }
+    var modelLoadAttempt by remember { mutableStateOf(0) }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(viewModel.logs) {
-        scrollState.animateScrollTo(scrollState.maxValue)
+    LaunchedEffect(selectedModel, modelLoadAttempt) {
+        modelInfo = null
+        compiler = null
+        result = null
+        inputTensorName = selectedModel.inputName
+        outputTensorName = selectedModel.outputName
+        inputValues = selectedModel.sampleInput
+        isLoading = true
+        message = "Loading ${selectedModel.name}…"
+        var loadedCompiler: LiteRTCompiler? = null
+
+        try {
+            val modelPath = selectedModel.filePath
+                ?: Res.getUri(checkNotNull(selectedModel.resourcePath))
+            val newCompiler = LiteRTCompiler(modelPath, LiteRTAccelerator.CPU)
+            loadedCompiler = newCompiler
+            newCompiler.init()
+            compiler = newCompiler
+
+            if (selectedModel.inputName.isNotBlank() && selectedModel.outputName.isNotBlank()) {
+                modelInfo = ModelInfo(
+                    input = newCompiler.getInputTensorType(selectedModel.inputName),
+                    output = newCompiler.getOutputTensorType(selectedModel.outputName)
+                )
+                message = "Model ready"
+            } else {
+                message = "Model loaded. Enter its input and output tensor names to inspect it."
+            }
+            isLoading = false
+            kotlinx.coroutines.awaitCancellation()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            message = "Could not load model: ${error.message ?: error::class.simpleName}"
+        } finally {
+            compiler = null
+            try {
+                withContext(NonCancellable + Dispatchers.Default) {
+                    loadedCompiler?.close()
+                }
+            } catch (error: Exception) {
+                message = "Could not close model: ${error.message ?: error::class.simpleName}"
+            }
+            isLoading = false
+        }
     }
 
-    Scaffold(topBar = { TopBar() }) { padding ->
-        Row(
+    fun inspectSelectedModel() {
+        val activeCompiler = compiler ?: return
+        val inputName = inputTensorName.trim()
+        val outputName = outputTensorName.trim()
+        if (inputName.isEmpty() || outputName.isEmpty()) {
+            message = "Enter both tensor names before inspecting the model."
+            return
+        }
+
+        isInspecting = true
+        modelInfo = null
+        result = null
+        scope.launch {
+            try {
+                modelInfo = ModelInfo(
+                    input = activeCompiler.getInputTensorType(inputName),
+                    output = activeCompiler.getOutputTensorType(outputName)
+                )
+                message = "Model ready"
+            } catch (error: Exception) {
+                message = "Could not inspect tensors: ${error.message ?: error::class.simpleName}"
+            } finally {
+                isInspecting = false
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("LiteRT Model Playground") })
+        }
+    ) { contentPadding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(contentPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Left Panel: Model List
-            ModelList(
-                models = viewModel.models,
-                selectedModel = viewModel.selectedModel,
-                onModelSelect = viewModel::selectModel,
+            Column(
                 modifier = Modifier
-                    .width(280.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            )
-
-            VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-            // Right Panel: Details and Controls
-            ModelDetail(
-                model = viewModel.selectedModel,
-                status = status,
-                isProcessing = viewModel.isProcessing,
-                onInitialize = viewModel::initializeSelectedModel,
-                onClose = viewModel::closeSelectedModel,
-                onGetInfo = viewModel::getTensorInfo,
-                onRun = viewModel::runInference,
-                onClearLogs = viewModel::clearLogs,
-                logs = viewModel.logs,
-                scrollState = scrollState,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            )
-        }
-    }
-}
-
-@Composable
-private fun TopBar() {
-    CenterAlignedTopAppBar(
-        title = { Text("KMP LiteRT Explorer", style = MaterialTheme.typography.titleLarge) },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    )
-}
-
-@Composable
-private fun ModelList(
-    models: List<ModelItem>,
-    selectedModel: ModelItem?,
-    onModelSelect: (ModelItem) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            "Models",
-            modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(models) { model ->
-                val isSelected = model.id == selectedModel?.id
-                ListItem(
-                    headlineContent = { Text(model.name) },
-                    supportingContent = { Text(model.description, maxLines = 1) },
-                    modifier = Modifier
-                        .clickable { onModelSelect(model) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    colors = if (isSelected) {
-                        ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                    } else {
-                        ListItemDefaults.colors()
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ModelDetail(
-    model: ModelItem?,
-    status: LiteRTHandler.Status,
-    isProcessing: Boolean,
-    onInitialize: () -> Unit,
-    onClose: () -> Unit,
-    onGetInfo: (List<String>, List<String>) -> Unit,
-    onRun: () -> Unit,
-    onClearLogs: () -> Unit,
-    logs: String,
-    scrollState: ScrollState,
-    modifier: Modifier = Modifier
-) {
-    if (model == null) {
-        Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            Text("Select a model to start", style = MaterialTheme.typography.bodyLarge)
-        }
-        return
-    }
-
-    val inputNames = remember(model.id) { model.defaultInputNames.toMutableStateList() }
-    val outputNames = remember(model.id) { model.defaultOutputNames.toMutableStateList() }
-
-    val isInitialized = status !is LiteRTHandler.Status.Idle && status !is LiteRTHandler.Status.Initializing && status !is LiteRTHandler.Status.Error
-    val statusText = when (status) {
-        LiteRTHandler.Status.Idle -> "Status: Idle"
-        LiteRTHandler.Status.Initializing -> "Status: Initializing..."
-        LiteRTHandler.Status.Ready -> "Status: Ready"
-        LiteRTHandler.Status.Running -> "Status: Running Inference..."
-        LiteRTHandler.Status.Closing -> "Status: Closing..."
-        is LiteRTHandler.Status.Error -> "Status: Error"
-    }
-    val statusColor = when (status) {
-        LiteRTHandler.Status.Ready -> Color(0xFF4CAF50)
-        LiteRTHandler.Status.Running -> MaterialTheme.colorScheme.primary
-        is LiteRTHandler.Status.Error -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    Column(
-        modifier = modifier
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(model.name, style = MaterialTheme.typography.headlineSmall)
+                    .widthIn(max = 720.dp)
+                    .fillMaxWidth()
+            ) {
+                Text("Run an on-device model", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(8.dp))
                 Text(
-                    statusText,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = statusColor
+                    "Start with the built-in temperature model or choose your own .tflite file.",
+                    style = MaterialTheme.typography.bodyLarge
                 )
-            }
+                Spacer(Modifier.height(24.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = onInitialize,
-                    enabled = !isProcessing && !isInitialized
-                ) {
-                    Icon(Icons.Default.Build, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Initialize")
-                }
-
-                if (isInitialized) {
-                    OutlinedButton(
-                        onClick = onClose,
-                        enabled = !isProcessing,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
+                Card(Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(Icons.Default.Close, null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Close")
+                        Text("1. Choose a model", style = MaterialTheme.typography.titleMedium)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(
+                                onClick = { isModelMenuExpanded = true },
+                                enabled = !isLoading && !isRunning && !isInspecting
+                            ) {
+                                Text(selectedModel.name)
+                            }
+                            DropdownMenu(
+                                expanded = isModelMenuExpanded,
+                                onDismissRequest = { isModelMenuExpanded = false }
+                            ) {
+                                demoModels.forEach { model ->
+                                    DropdownMenuItem(
+                                        text = { Text(model.name) },
+                                        onClick = {
+                                            isModelMenuExpanded = false
+                                            selectedModel = model
+                                        }
+                                    )
+                                }
+                            }
+                            ModelFilePickerButton(
+                                enabled = !isLoading && !isRunning && !isInspecting,
+                                onModelSelected = { path, fileName ->
+                                    selectedModel = DemoModel(
+                                        name = fileName,
+                                        description = "User-selected LiteRT model.",
+                                        filePath = path
+                                    )
+                                },
+                                onError = { message = it }
+                            )
+                        }
+                        Text(selectedModel.description, style = MaterialTheme.typography.bodyMedium)
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (isLoading || isInspecting) {
+                                CircularProgressIndicator()
+                            }
+                            Text(
+                                message,
+                                color = if (message.startsWith("Could not")) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+
+                        if (!isLoading && compiler == null) {
+                            OutlinedButton(onClick = { modelLoadAttempt++ }) {
+                                Text("Retry loading model")
+                            }
+                        }
+
+                        if (!isLoading && compiler != null) {
+                            Text("2. Inspect model tensors", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "Enter the tensor names used by the selected model.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            OutlinedTextField(
+                                value = inputTensorName,
+                                onValueChange = {
+                                    inputTensorName = it
+                                    modelInfo = null
+                                    result = null
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Input tensor name") },
+                                singleLine = true,
+                                enabled = !isInspecting && !isRunning
+                            )
+                            OutlinedTextField(
+                                value = outputTensorName,
+                                onValueChange = {
+                                    outputTensorName = it
+                                    modelInfo = null
+                                    result = null
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Output tensor name") },
+                                singleLine = true,
+                                enabled = !isInspecting && !isRunning
+                            )
+                            Button(
+                                onClick = ::inspectSelectedModel,
+                                enabled = !isInspecting && !isRunning,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Read tensor information")
+                            }
+                        }
+
+                        modelInfo?.let { info ->
+                            Text(
+                                "Input: $inputTensorName · ${info.input.elementType} · " +
+                                    info.input.layout?.dimensions,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                "Output: $outputTensorName · ${info.output.elementType} · " +
+                                    info.output.layout?.dimensions,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text("3. Enter input data", style = MaterialTheme.typography.titleMedium)
+                            OutlinedTextField(
+                                value = inputValues,
+                                onValueChange = {
+                                    inputValues = it
+                                    result = null
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Input values") },
+                                supportingText = {
+                                    Text("Enter numeric values separated by commas.")
+                                },
+                                singleLine = true,
+                                enabled = !isRunning
+                            )
+                            Button(
+                                onClick = {
+                                    val parsedValues = inputValues
+                                        .split(',')
+                                        .map { it.trim().toFloatOrNull() }
+                                    if (parsedValues.any { it == null }) {
+                                        result = "Enter valid numeric values separated by commas."
+                                        return@Button
+                                    }
+                                    val values = parsedValues.filterNotNull()
+                                    val expectedCount = info.input.layout?.dimensions
+                                        ?.takeIf { dimensions -> dimensions.all { it > 0 } }
+                                        ?.fold(1) { count, dimension -> count * dimension }
+                                    if (expectedCount != null && values.size != expectedCount) {
+                                        result = "Enter $expectedCount numeric value(s)."
+                                        return@Button
+                                    }
+                                    if (values.isEmpty()) {
+                                        result = "Enter at least one numeric value."
+                                        return@Button
+                                    }
+                                    if (info.input.elementType !in supportedElementTypes) {
+                                        result = "Input type ${info.input.elementType} is not supported by this demo."
+                                        return@Button
+                                    }
+
+                                    val activeCompiler = compiler ?: return@Button
+                                    isRunning = true
+                                    result = null
+                                    scope.launch {
+                                        try {
+                                            val inputs = activeCompiler.getInputBuffers()
+                                            val outputs = activeCompiler.getOutputBuffers()
+                                            require(inputs.size == 1 && outputs.size == 1) {
+                                                "This demo runs models with one input tensor and one output tensor."
+                                            }
+                                            writeInput(inputs.single(), info.input.elementType, values)
+                                            activeCompiler.run(inputs, outputs)
+                                            result = readOutput(outputs.single(), info.output.elementType)
+                                        } catch (error: Exception) {
+                                            result = "Inference failed: ${error.message ?: error::class.simpleName}"
+                                        } finally {
+                                            isRunning = false
+                                        }
+                                    }
+                                },
+                                enabled = compiler != null && !isRunning && !isInspecting,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(if (isRunning) "Running…" else "Run inference")
+                            }
+                            result?.let { output ->
+                                Text("Result: $output", style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
                     }
                 }
             }
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Tensor Controls
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text("Tensor Configuration", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(16.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    TensorConfigSection(
-                        title = "Inputs",
-                        names = inputNames,
-                        modifier = Modifier.weight(1f)
-                    )
-                    TensorConfigSection(
-                        title = "Outputs",
-                        names = outputNames,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                OutlinedButton(
-                    onClick = { onGetInfo(inputNames.toList(), outputNames.toList()) },
-                    enabled = isInitialized && !isProcessing,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Icon(Icons.Default.Info, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Get Tensors Info")
-                }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Execution
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Button(
-                onClick = onRun,
-                enabled = isInitialized && !isProcessing,
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                Icon(Icons.Default.PlayArrow, null)
-                Spacer(Modifier.width(8.dp))
-                Text("Run Inference")
-            }
-            
-            OutlinedButton(
-                onClick = onClearLogs,
-                modifier = Modifier.height(56.dp)
-            ) {
-                Icon(Icons.Default.Clear, null)
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        if (isProcessing) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Console
-        Text("Console Output", style = MaterialTheme.typography.labelLarge)
-        Spacer(Modifier.height(8.dp))
-        Console(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            scrollState = scrollState,
-            logs = logs
-        )
     }
 }
 
-@Composable
-private fun TensorConfigSection(
-    title: String,
-    names: MutableList<String>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.height(8.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            names.forEachIndexed { index, name ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { names[index] = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Tensor name") },
-                        singleLine = true
-                    )
-                    IconButton(onClick = { names.removeAt(index) }) {
-                        Icon(Icons.Default.Delete, "Remove", tint = MaterialTheme.colorScheme.error)
-                    }
-                }
+private val supportedElementTypes = setOf(
+    LiteRTElementType.FLOAT,
+    LiteRTElementType.INT,
+    LiteRTElementType.INT8,
+    LiteRTElementType.UINT8,
+    LiteRTElementType.INT64,
+    LiteRTElementType.BOOLEAN
+)
+
+private fun writeInput(buffer: TFBuffer, elementType: LiteRTElementType, values: List<Float>) {
+    when (elementType) {
+        LiteRTElementType.FLOAT -> buffer.writeFloat(values.toFloatArray())
+        LiteRTElementType.INT -> {
+            require(values.all { it % 1f == 0f }) { "Integer tensors require whole-number inputs." }
+            buffer.writeInt(values.map(Float::toInt).toIntArray())
+        }
+        LiteRTElementType.INT8 -> {
+            require(values.all {
+                it % 1f == 0f && it >= Byte.MIN_VALUE.toFloat() && it <= Byte.MAX_VALUE.toFloat()
+            }) {
+                "INT8 tensors require whole numbers between -128 and 127."
             }
+            buffer.writeInt8(values.map { it.toInt().toByte() }.toByteArray())
         }
-        TextButton(
-            onClick = { names.add("") },
-            modifier = Modifier.padding(top = 4.dp)
-        ) {
-            Icon(Icons.Default.Add, null)
-            Spacer(Modifier.width(4.dp))
-            Text("Add $title")
+        LiteRTElementType.UINT8 -> {
+            require(values.all { it % 1f == 0f && it >= 0f && it <= 255f }) {
+                "UINT8 tensors require whole numbers between 0 and 255."
+            }
+            buffer.writeInt8(values.map { it.toInt().toByte() }.toByteArray())
         }
+        LiteRTElementType.INT64 -> {
+            require(values.all { it % 1f == 0f }) { "INT64 tensors require whole-number inputs." }
+            buffer.writeLong(values.map(Float::toLong).toLongArray())
+        }
+        LiteRTElementType.BOOLEAN -> {
+            require(values.all { it == 0f || it == 1f }) { "Boolean tensors accept only 0 or 1." }
+            buffer.writeBoolean(values.map { it == 1f }.toBooleanArray())
+        }
+        else -> error("Input type $elementType is not supported by this demo.")
     }
 }
 
-@Composable
-private fun Console(
-    modifier: Modifier = Modifier,
-    scrollState: ScrollState = rememberScrollState(),
-    logs: String = ""
-) {
-    Surface(
-        modifier = modifier,
-        color = Color(0xFF1E1E1E),
-        shape = MaterialTheme.shapes.medium,
-        border = CardDefaults.outlinedCardBorder()
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(12.dp)
-                .verticalScroll(scrollState)
-        ) {
-            Text(
-                text = logs,
-                color = Color(0xFF00FF00),
-                fontFamily = FontFamily.Monospace,
-                fontSize = 13.sp,
-                lineHeight = 20.sp
-            )
-        }
+private suspend fun readOutput(buffer: TFBuffer, elementType: LiteRTElementType): String =
+    when (elementType) {
+        LiteRTElementType.FLOAT -> buffer.readFloat().joinToString()
+        LiteRTElementType.INT -> buffer.readInt().joinToString()
+        LiteRTElementType.INT8 -> buffer.readInt8().joinToString()
+        LiteRTElementType.UINT8 -> buffer.readInt8().joinToString { (it.toInt() and 0xff).toString() }
+        LiteRTElementType.INT64 -> buffer.readLong().joinToString()
+        LiteRTElementType.BOOLEAN -> buffer.readBoolean().joinToString()
+        else -> "Output type $elementType is not supported by this demo."
     }
-}

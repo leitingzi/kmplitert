@@ -6,6 +6,7 @@ val KonanTarget.isApple: Boolean get() = when (this) {
     KonanTarget.IOS_ARM64,
     KonanTarget.IOS_SIMULATOR_ARM64,
     KonanTarget.IOS_X64,
+    KonanTarget.MACOS_X64,
     KonanTarget.MACOS_ARM64 -> true
     else -> false
 }
@@ -21,12 +22,16 @@ val KonanTarget.libDir: String? get() = when (this) {
     KonanTarget.ANDROID_ARM64 -> "android/arm64"
     KonanTarget.ANDROID_ARM32 -> "android/arm32"
     KonanTarget.ANDROID_X64 -> "android/x86-64"
+    KonanTarget.ANDROID_X86 -> "android/x86"
     KonanTarget.IOS_ARM64 -> "ios/arm64"
+    KonanTarget.IOS_X64 -> "ios/x86"
     KonanTarget.IOS_SIMULATOR_ARM64 -> "ios/sim-arm64"
     KonanTarget.MINGW_X64 -> "windows/x86-64"
     KonanTarget.LINUX_ARM64 -> "linux/arm64"
     KonanTarget.LINUX_X64 -> "linux/x86-64"
+    KonanTarget.LINUX_ARM32_HFP -> "linux/libhfp"
     KonanTarget.MACOS_ARM64 -> "macos/arm64"
+    KonanTarget.MACOS_X64 -> "macos/x86"
     else -> null
 }
 
@@ -34,11 +39,15 @@ fun String.toKonanTarget(): KonanTarget? = when (this) {
     "mingwX64" -> KonanTarget.MINGW_X64
     "linuxX64" -> KonanTarget.LINUX_X64
     "linuxArm64" -> KonanTarget.LINUX_ARM64
+    "linuxArm32HFP" -> KonanTarget.LINUX_X64
     "macosArm64" -> KonanTarget.MACOS_ARM64
+    "macosX64" -> KonanTarget.MACOS_X64
     "iosArm64" -> KonanTarget.IOS_ARM64
+    "iosX64" -> KonanTarget.IOS_X64
     "iosSimulatorArm64" -> KonanTarget.IOS_SIMULATOR_ARM64
     "androidNativeArm64" -> KonanTarget.ANDROID_ARM64
     "androidNativeArm32" -> KonanTarget.ANDROID_ARM32
     "androidNativeX64" -> KonanTarget.ANDROID_X64
+    "androidNativeX86" -> KonanTarget.ANDROID_X86
     else -> null
 }

@@ -43,6 +43,7 @@ plugins:
           site_description: 在 Kotlin Multiplatform 中运行 LiteRT 模型
           nav_translations:
             Home: 首页
+            Interactive Demo: 在线示例
             Getting Started: 开始使用
             Installation and First Inference: 安装与第一次推理
             Platforms and Capabilities: 平台与能力
@@ -75,6 +76,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Interactive Demo: demo.md
   - Getting Started:
       - Installation and First Inference: getting-started.md
       - Platforms and Capabilities: platforms.md

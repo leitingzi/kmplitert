@@ -6,7 +6,16 @@ on:
       - master
     paths:
       - "docs/**"
+      - "app/**"
+      - "core/**"
+      - "build-logic/**"
+      - "gradle/**"
+      - "gradlew"
+      - "gradlew.bat"
       - "mkdocs.yml"
+      - "settings.gradle.kts"
+      - "build.gradle.kts"
+      - "gradle.properties"
       - "requirements-docs.txt"
       - ".github/scripts/check_docs_i18n.py"
       - ".github/workflows/docs.yml"
@@ -38,11 +47,28 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-docs.txt
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Build web demo
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:webApp:jsBrowserDistribution
+
       - name: Install documentation dependencies
         run: python -m pip install -r requirements-docs.txt
 
       - name: Build documentation
         run: mkdocs build --strict
+
+      - name: Add web demo to documentation
+        run: |
+          mkdir -p site/demo-app
+          cp -R app/webApp/build/dist/js/productionExecutable/. site/demo-app/
 
       - name: Verify translations and language links
         run: python .github/scripts/check_docs_i18n.py

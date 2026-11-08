@@ -51,14 +51,18 @@ kotlin {
         browser()
     }
 
-    LiteRT.configureNativeBundling(":core")
+    LiteRT.configureNativeBundling(projects.core)
 
     sourceSets {
         androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
             implementation(libs.compose.uiToolingPreview)
         }
         jsMain.dependencies {
-            implementation(libs.wrappers.browser)
+            implementation(libs.kotlinx.browser)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.kotlinx.browser)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -67,13 +71,8 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.material.icons.extended)
-            implementation(libs.kotlinx.datetime)
 
             api(projects.core)
-            api(projects.tool)
         }
     }
 }

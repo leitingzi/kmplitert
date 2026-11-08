@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalWasmJsInterop::class)
-
 package io.github.kmplitert.dataprocess.image
 
 import kotlinx.browser.document

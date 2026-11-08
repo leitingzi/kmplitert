@@ -1,5 +1,7 @@
 package io.github.kmplitert
 
+import org.gradle.api.artifacts.ProjectDependency
+
 interface LiteRTExtension {
-    fun configureNativeBundling(coreProjectPath: String = ":core")
+    fun configureNativeBundling(coreProject: ProjectDependency)
 }

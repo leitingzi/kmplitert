@@ -13,7 +13,6 @@ androidx-test-runner = "1.7.0"
 composeMultiplatform = "1.11.1"
 junit = "4.13.2"
 kotlin = "2.4.0"
-kotlin-wrappers = "2026.7.7"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
 material3 = "1.11.0-alpha07"
@@ -47,7 +46,6 @@ kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-te
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version = "0.5.0" }
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
-wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 java-jna = { module = "net.java.dev.jna:jna", version.ref = "java-jna" }
 java-jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "java-jna" }
 edge-litert = { module = "com.google.ai.edge.litert:litert", version = "2.3.2" }

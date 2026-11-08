@@ -24,8 +24,7 @@ class NativeConventionsPlugin : Plugin<Project> {
     }
 }
 
-internal fun Project.configureNativeLiteRTBundling(coreProjectPath: String) {
-    val coreProject = project(coreProjectPath)
+internal fun Project.configureNativeLiteRTBundling(coreProject: Project) {
     val kotlin = extensions.getByType<KotlinMultiplatformExtension>()
     val cInteropPath = "src/nativeInterop"
 
