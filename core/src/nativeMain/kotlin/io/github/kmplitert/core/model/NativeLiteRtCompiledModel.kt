@@ -11,6 +11,7 @@ import io.github.kmplitert.core.LiteRTTensorBufferType
 import io.github.kmplitert.core.LiteRTTensorType
 import io.github.kmplitert.core.NativeTFBuffer
 import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.core.toLiteRtModelFilePath
 import io.github.kmplitert.core.toNative
 import kotlinx.cinterop.*
 import kotlinx.cinterop.get
@@ -530,7 +531,7 @@ class NativeLiteRtCompiledModel(
                 val modelRef = alloc<LiteRtModelVar>()
                 val statusModel = LiteRtCreateModelFromFile(
                     environment = env,
-                    filename = filePath,
+                    filename = filePath.toLiteRtModelFilePath(),
                     model = modelRef.ptr
                 )
                 check(value = statusModel == kLiteRtStatusOk) {

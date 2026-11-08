@@ -7,7 +7,7 @@ package io.github.kmplitert.core
  *
  * Call [init] before using this instance and [close] when it is no longer needed.
  *
- * @property filePath Path to the LiteRT model file.
+ * @property filePath Path or local `file://` URI for the LiteRT model file.
  * @property accelerator Preferred hardware accelerator.
  */
 expect class LiteRTCompiler(
@@ -97,4 +97,3 @@ expect class LiteRTCompiler(
      */
     suspend fun close()
 }
-

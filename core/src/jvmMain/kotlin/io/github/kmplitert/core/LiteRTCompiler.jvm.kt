@@ -29,7 +29,7 @@ actual class LiteRTCompiler actual constructor(
                 if (compiledModel != null) return@withLock
 
                 val createdModel = LiteRtCompiledModel.create(
-                    filePath = filePath,
+                    filePath = filePath.toLiteRtModelFilePath(),
                     accelerator = accelerator.toJvm()
                 )
                 try {
