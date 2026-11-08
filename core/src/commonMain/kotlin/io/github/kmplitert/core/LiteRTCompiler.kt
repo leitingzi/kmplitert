@@ -7,7 +7,7 @@ package io.github.kmplitert.core
  *
  * Call [init] before using this instance and [close] when it is no longer needed.
  *
- * @property filePath Path or local `file://` URI for the LiteRT model file.
+ * @property filePath Path or URI for the LiteRT model file. On JVM, `jar:` resource URIs are supported.
  * @property accelerator Preferred hardware accelerator.
  */
 expect class LiteRTCompiler(

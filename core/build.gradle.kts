@@ -105,7 +105,11 @@ kotlin {
 
     LiteRT.configureNativeBundling(projects.core)
 
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
+    }
 
     js {
         compilations.named("main") {

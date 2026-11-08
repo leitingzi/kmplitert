@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import java.nio.file.Files
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -149,6 +151,39 @@ class LiteRTTest {
             )
         )
         runModelInferenceTest(config)
+    }
+
+    @Test
+    fun compilerLoadsModelFromJarUri() = runTest(timeout = 60.seconds) {
+        val jarFile = withContext(Dispatchers.IO) {
+            Files.createTempFile("kmplitert-model-resource-", ".jar")
+        }
+        val resourcePath =
+            "composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite"
+        withContext(Dispatchers.IO) {
+            JarOutputStream(Files.newOutputStream(jarFile)).use { jar ->
+                jar.putNextEntry(JarEntry(resourcePath))
+                jar.write(loadModelBytes("CelsiusToFahrenheit.tflite"))
+                jar.closeEntry()
+            }
+        }
+        val compiler = LiteRTCompiler(
+            filePath = "jar:${jarFile.toUri()}!/$resourcePath",
+            accelerator = LiteRTAccelerator.CPU
+        )
+        try {
+            compiler.init()
+            assertEquals(
+                LiteRTElementType.FLOAT,
+                compiler.getInputTensorType("input_c").elementType
+            )
+        } finally {
+            try {
+                compiler.close()
+            } finally {
+                withContext(Dispatchers.IO) { Files.deleteIfExists(jarFile) }
+            }
+        }
     }
 
     @Test

@@ -13,8 +13,8 @@ theme:
   font: false
   palette:
     scheme: default
-    primary: indigo
-    accent: blue
+    primary: deep purple
+    accent: deep purple
   features:
     - navigation.sections
     - navigation.expand

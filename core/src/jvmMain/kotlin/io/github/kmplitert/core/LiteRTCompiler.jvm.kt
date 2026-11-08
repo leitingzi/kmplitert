@@ -9,6 +9,10 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.net.JarURLConnection
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 
 actual class LiteRTCompiler actual constructor(
     val filePath: String,
@@ -18,6 +22,7 @@ actual class LiteRTCompiler actual constructor(
 
     private val mutex = Mutex()
     private var compiledModel: LiteRtCompiledModel? = null
+    private var temporaryModelFile: Path? = null
     private var inputLocations: Map<String, TensorLocation> = emptyMap()
     private var outputLocations: Map<String, TensorLocation> = emptyMap()
     private var closed = false
@@ -28,13 +33,22 @@ actual class LiteRTCompiler actual constructor(
                 check(!closed) { "Compiler is closed" }
                 if (compiledModel != null) return@withLock
 
-                val createdModel = LiteRtCompiledModel.create(
-                    filePath = filePath.toLiteRtModelFilePath(),
-                    accelerator = accelerator.toJvm()
-                )
+                val normalizedPath = filePath.toLiteRtModelFilePath()
+                val extractedModelFile = normalizedPath.extractJarResource()
+                val modelPath = extractedModelFile?.toString() ?: normalizedPath
+                val createdModel = try {
+                    LiteRtCompiledModel.create(
+                        filePath = modelPath,
+                        accelerator = accelerator.toJvm()
+                    )
+                } catch (failure: Throwable) {
+                    extractedModelFile?.deleteAfterFailure(failure)
+                    throw failure
+                }
                 try {
                     val (inputs, outputs) = buildTensorLocations(createdModel)
                     compiledModel = createdModel
+                    temporaryModelFile = extractedModelFile
                     inputLocations = inputs
                     outputLocations = outputs
                 } catch (failure: Throwable) {
@@ -43,6 +57,7 @@ actual class LiteRTCompiler actual constructor(
                     } catch (cleanupFailure: Throwable) {
                         failure.addSuppressed(cleanupFailure)
                     }
+                    extractedModelFile?.deleteAfterFailure(failure)
                     throw failure
                 }
             }
@@ -130,9 +145,26 @@ actual class LiteRTCompiler actual constructor(
                 closed = true
                 val model = compiledModel
                 compiledModel = null
+                val modelFile = temporaryModelFile
+                temporaryModelFile = null
                 inputLocations = emptyMap()
                 outputLocations = emptyMap()
-                model?.destroy()
+                var failure: Throwable? = null
+                try {
+                    model?.destroy()
+                } catch (destroyFailure: Throwable) {
+                    failure = destroyFailure
+                }
+                try {
+                    modelFile?.let { Files.deleteIfExists(it) }
+                } catch (cleanupFailure: Throwable) {
+                    if (failure == null) {
+                        failure = cleanupFailure
+                    } else {
+                        failure.addSuppressed(cleanupFailure)
+                    }
+                }
+                failure?.let { throw it }
             }
         }
     }
@@ -190,4 +222,33 @@ actual class LiteRTCompiler actual constructor(
             LiteRTAccelerator.GPU -> LiteRtHwAcceleratorSet.GPU
             LiteRTAccelerator.NPU -> LiteRtHwAcceleratorSet.NPU
         }
+
+    private fun String.extractJarResource(): Path? {
+        if (!startsWith("jar:")) return null
+
+        val temporaryFile = Files.createTempFile("kmplitert-model-", ".tflite")
+        try {
+            val connection = URI(this).toURL().openConnection()
+            if (connection is JarURLConnection) {
+                connection.useCaches = false
+            }
+            connection.getInputStream().use { input ->
+                Files.newOutputStream(temporaryFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
+        } catch (failure: Throwable) {
+            temporaryFile.deleteAfterFailure(failure)
+            throw failure
+        }
+        return temporaryFile
+    }
+
+    private fun Path.deleteAfterFailure(failure: Throwable) {
+        try {
+            Files.deleteIfExists(this)
+        } catch (cleanupFailure: Throwable) {
+            failure.addSuppressed(cleanupFailure)
+        }
+    }
 }
