@@ -1,0 +1,100 @@
+name: Data Processing CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'dataproces/**'
+      - 'core/**'
+      - '.github/workflows/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+
+jobs:
+  linux-android-web:
+    name: Linux, Android, JVM & Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Linux, Android, JVM, JS, Wasm)
+        run: |
+          chmod +x gradlew
+          ./gradlew :dataproces:assemble \
+                    :dataproces:linuxX64Test \
+                    :dataproces:testAndroidHostTest \
+                    :dataproces:jvmTest \
+                    :dataproces:jsBrowserTest \
+                    :dataproces:wasmJsBrowserTest \
+                    --stacktrace
+
+  macos-ios:
+    name: macOS & iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (macOS, iOS)
+        run: |
+          chmod +x gradlew
+          ./gradlew :dataproces:assemble \
+                    :dataproces:macosArm64Test \
+                    :dataproces:iosSimulatorArm64Test \
+                    --stacktrace
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Windows)
+        shell: bash
+        run: |
+          ./gradlew :dataproces:assemble \
+                    :dataproces:mingwX64Test \
+                    --stacktrace
