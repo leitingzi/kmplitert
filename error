@@ -1,3 +1,11 @@
+xcode-select -p
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -runFirstLaunch
+sudo xcodebuild -license accept
+xcodebuild -version
+xcrun --find xcodebuild
+
+
 Type-safe project accessors is an incubating feature.
 > Task :build-logic:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :build-logic:compileKotlin UP-TO-DATE
