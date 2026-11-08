@@ -1,17 +1,17 @@
-# iOS 与 macOS Native
+# iOS and macOS Native
 
-Apple 目标通过 Kotlin/Native C interop 调用 LiteRT C API。当前 Core 构建配置包含 `iosArm64`、`iosSimulatorArm64` 和 `macosArm64`，并在 macOS 宿主或发布任务条件下配置。
+Apple targets call the LiteRT C API through Kotlin/Native C interop. The current Core build configures `iosArm64`, `iosSimulatorArm64`, and `macosArm64` on macOS hosts or under publication conditions.
 
-## 模型与二进制
+## Models and binaries
 
-将模型放入应用资源或其他可访问位置，最终向 `LiteRTCompiler` 传入实际文件系统路径。应用资源路径的获取方式取决于具体 iOS/macOS 工程。
+Place the model in application resources or another accessible location, and pass an actual filesystem path to `LiteRTCompiler`. How you obtain a resource path depends on the iOS/macOS project.
 
-LiteRT 库必须与设备或模拟器目标架构、操作系统及 C ABI 匹配。仓库构建约定为这些目标配置了链接路径和动态库打包逻辑；它是仓库内部 build-logic，不应假设在外部消费项目中自动可用。
+LiteRT libraries must match the device or simulator architecture, operating system, and C ABI. Repository build conventions configure linking paths and dynamic-library bundling for these targets; this is internal build logic and should not be assumed available automatically to external consumers.
 
-对最终应用，检查 framework 链接方式、动态库嵌入、签名和运行时搜索路径。仓库 [iOS / Native 配置示例](https://github.com/leitingzi/kmplitert#-ios--native-setup-critical)可作为起点，但需要结合使用的 Xcode 工程、LiteRT 二进制和发布版本验证，不能直接视为所有应用的通用配置。
+For the final application, check framework linkage, library embedding, signing, and runtime search paths. The repository's [iOS / Native setup example](https://github.com/leitingzi/kmplitert#-ios--native-setup-critical) is a starting point, not a universal configuration: validate it against your Xcode project, LiteRT binaries, and release version.
 
-## 验证
+## Verification
 
-仓库 Core CI 配置了 macOS ARM64 和 iOS ARM64 模拟器测试。真机、不同模型以及 GPU/NPU 能力需要在实际目标上单独验证。
+Core CI configures macOS ARM64 and iOS ARM64 simulator tests. Verify physical devices, other models, and GPU/NPU capabilities separately on actual targets.
 
-Native 缓冲区应按[生命周期指南](../guide/lifecycle.md)管理；按名称查询元数据当前使用签名 0。
+Manage Native buffers as described in the [lifecycle guide](../guide/lifecycle.md); name-based metadata queries currently use signature 0.

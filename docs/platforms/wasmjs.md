@@ -1,15 +1,15 @@
 # WasmJS
 
-`wasmJsMain` 与 `webMain` 使用 Kotlin/Wasm JS interop 调用 `@litertjs/core`，目标是浏览器 WasmJS。当前 npm 依赖版本为 `2.6.0`。
+`wasmJsMain` and `webMain` call `@litertjs/core` through Kotlin/Wasm JS interop in a browser. The current npm dependency is version `2.6.0`.
 
-## 模型与运行时
+## Model and runtime
 
-像 [JavaScript](javascript.md) 一样，将模型作为 Web 静态资源发布，并传入浏览器可访问的 URL，例如 `/models/CelsiusToFahrenheit.tflite`。站点部署在子路径时，请调整 URL。
+As with [JavaScript](javascript.md), serve the model as a static web resource and provide a browser-accessible URL such as `/models/CelsiusToFahrenheit.tflite`. Adjust the URL for sites deployed under a subpath.
 
-首次模型初始化会加载 Web 运行时和 WASM 资源。可在首次初始化之前通过 [`LiteRtInit`](../api/web.md) 配置自托管资源；所部署资源应与 npm 包版本匹配。
+The first model initialization loads the web runtime and WASM assets. Configure self-hosted assets using [`LiteRtInit`](../api/web.md) before initialization starts; the assets must match the npm package version.
 
-## 加速与限制
+## Acceleration and limitations
 
-CPU 使用 WASM；GPU 请求在 WebGPU 不可用时选择 WASM；NPU 请求使用 WebNN 选项。实际浏览器能力必须自行验证。当前实现没有使用 `signatureIndex` 参数选择签名。
+CPU uses WASM; GPU requests select WASM when WebGPU is unavailable; NPU requests use WebNN options. Verify actual browser capability. The current implementation does not use `signatureIndex` to select a signature.
 
-输入必须在运行前写入，输出应在运行后读取。仓库有浏览器 CPU 推理测试；测试使用的 `/base/...` 是测试服务器路径，不应照搬到生产应用。
+Write inputs before running and read outputs after it completes. The repository includes browser CPU inference tests; their `/base/...` paths are test-server paths and should not be copied into production.

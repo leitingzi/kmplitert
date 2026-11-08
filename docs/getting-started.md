@@ -1,10 +1,10 @@
-# 安装与第一次推理
+# Installation and First Inference
 
-从一个真实的温度转换模型开始：输入 `100°C`，得到约 `212°F`。
+Start with a real temperature conversion model: give it `100°C` and get approximately `212°F`.
 
-## 1. 添加依赖
+## 1. Add the dependency
 
-本文对应当前仓库中的 Core 源码。先克隆仓库，并在仓库中配置你的 Kotlin Multiplatform 应用模块；根项目的 `settings.gradle.kts` 已包含 `:core`。在应用模块的 `commonMain` 中添加项目依赖：
+This guide describes the Core source in the current repository. Clone the repository and configure your Kotlin Multiplatform application module within it; the root `settings.gradle.kts` already includes `:core`. Add the project dependency to the application's `commonMain`:
 
 ```kotlin
 kotlin {
@@ -16,23 +16,23 @@ kotlin {
 }
 ```
 
-启用应用模块对应的平台目标，并按[平台指南](platforms.md)配置运行环境。模型预处理工具是独立的可选模块，不是运行 Core 的前提。
+Enable the relevant platform targets in your application and follow the [platform guides](platforms.md) to configure the runtime. The preprocessing tools are a separate optional module, not a prerequisite for Core.
 
-!!! warning "Maven Central 发布状态"
-    截至 2026-11-08，仓库版本目录为 `0.3.0`，但 Maven Central 上尚未找到 `io.github.leitingzi:core:0.3.0` 或旧坐标 `io.github.leitingzi:kmplitert-core:0.3.0`。当前 Core 构建配置使用的发布坐标是 `io.github.leitingzi:core`。使用 Maven 依赖前，请核对[已发布版本](https://central.sonatype.com/artifact/io.github.leitingzi/core)及其 API；不要假设旧版与当前源码行为一致。
+!!! warning "Maven Central publication status"
+    As of 2026-11-08, the repository version is `0.3.0`, but neither `io.github.leitingzi:core:0.3.0` nor the older `io.github.leitingzi:kmplitert-core:0.3.0` was found on Maven Central. The current Core build publishes under `io.github.leitingzi:core`. Before using a Maven dependency, check the [published versions](https://central.sonatype.com/artifact/io.github.leitingzi/core) and their APIs; do not assume older versions behave like the current source.
 
-## 2. 准备模型
+## 2. Prepare the model
 
-示例使用仓库中的 [CelsiusToFahrenheit.tflite](https://github.com/leitingzi/kmplitert/blob/master/core/src/commonTest/resources/CelsiusToFahrenheit.tflite)。下载该文件并按目标平台提供给应用：
+The example uses [CelsiusToFahrenheit.tflite](https://github.com/leitingzi/kmplitert/blob/master/core/src/commonTest/resources/CelsiusToFahrenheit.tflite) from this repository. Download it and make it available to the application:
 
-- Android、JVM 和 Native：传入运行时可访问的文件路径。
-- JS 和 WasmJS：将模型作为 Web 静态资源提供，并传入浏览器可访问的 URL。
+- Android, JVM, and Native: provide a file path accessible to the runtime.
+- JS and WasmJS: serve it as a static web resource and provide a URL accessible to the browser.
 
-模型输入名为 `input_c`，输出名为 `Identity`；两者均为 `FLOAT`，shape 为 `[1, 1]`。其他模型需要使用自己的名称、类型和数据长度。具体操作见[平台指南](platforms.md)。
+The input is named `input_c` and the output `Identity`; both are `FLOAT` tensors with shape `[1, 1]`. Other models require their own names, types, and data lengths. See the [platform guides](platforms.md) for details.
 
-## 3. 执行推理 {#inference}
+## 3. Run inference {#inference}
 
-在协程中调用以下函数；`modelPath` 是上一步准备的路径或 URL。
+Call the function from a coroutine; `modelPath` is the path or URL prepared above.
 
 ```kotlin
 import io.github.kmplitert.core.LiteRTAccelerator
@@ -60,11 +60,11 @@ suspend fun celsiusToFahrenheit(modelPath: String): Float {
 }
 ```
 
-运行结果应接近 `212f`；仓库测试使用 `1f` 的容差。此示例先关闭已获得的缓冲区，再关闭编译器，与 Native 测试的释放顺序一致；不同平台的所有权细节见[生命周期](guide/lifecycle.md)。
+The result should be close to `212f`; the repository test uses a tolerance of `1f`. The example closes acquired buffers before the compiler, matching the Native test. See [lifecycle](guide/lifecycle.md) for platform-specific ownership.
 
-!!! note "模型不是通用输入格式"
-    不要直接对任意模型写入 `100f`。先检查模型的输入类型、形状、顺序及量化要求，再准备匹配的数据。
+!!! note "Model inputs are not interchangeable"
+    Do not write `100f` to an arbitrary model. Check its input type, shape, ordering, and quantization requirements before preparing data.
 
-## 接下来
+## Next steps
 
-了解[推理生命周期](guide/lifecycle.md)，或者前往[对应平台](platforms.md)配置模型和运行环境。遇到问题时查看[故障排查](troubleshooting.md)。
+Learn about the [inference lifecycle](guide/lifecycle.md), configure your [platform](platforms.md), or consult [troubleshooting](troubleshooting.md).

@@ -1,27 +1,27 @@
-# 平台与能力
+# Platforms and Capabilities
 
-Core 在公共源集提供统一接口，由平台源集对接各自的 LiteRT 运行时。相同接口不意味着模型路径、硬件能力和资源管理完全相同。
+Core exposes a shared interface and connects it to each platform's LiteRT runtime. A common interface does not mean model paths, hardware capabilities, and resource management are identical.
 
-## 实现与目标
+## Implementations and targets
 
-| 平台指南 | 实现源集 | 构建配置中的目标 | 运行时 |
+| Platform guide | Source sets | Configured targets | Runtime |
 |---|---|---|---|
-| [Android](platforms/android.md) | `androidMain` | Android，最低 API 24 | Google LiteRT Android |
+| [Android](platforms/android.md) | `androidMain` | Android, minimum API 24 | Google LiteRT Android |
 | [JVM](platforms/jvm.md) | `jvmMain` | JVM | JNA + LiteRT C API |
-| [iOS / macOS](platforms/apple.md) | `nativeMain` / `nativeInterop` | `iosArm64`、`iosSimulatorArm64`、`macosArm64` | LiteRT C API |
-| [Linux / Windows Native](platforms/native-desktop.md) | `nativeMain` / `nativeInterop` | `linuxX64`、`linuxArm64`、`mingwX64` | LiteRT C API |
-| [JavaScript](platforms/javascript.md) | `webMain` / `jsMain` | 浏览器 JS | `@litertjs/core` |
-| [WasmJS](platforms/wasmjs.md) | `webMain` / `wasmJsMain` | 浏览器 WasmJS | `@litertjs/core` |
+| [iOS / macOS](platforms/apple.md) | `nativeMain` / `nativeInterop` | `iosArm64`, `iosSimulatorArm64`, `macosArm64` | LiteRT C API |
+| [Linux / Windows Native](platforms/native-desktop.md) | `nativeMain` / `nativeInterop` | `linuxX64`, `linuxArm64`, `mingwX64` | LiteRT C API |
+| [JavaScript](platforms/javascript.md) | `webMain` / `jsMain` | Browser JS | `@litertjs/core` |
+| [WasmJS](platforms/wasmjs.md) | `webMain` / `wasmJsMain` | Browser WasmJS | `@litertjs/core` |
 
-Native 目标按构建宿主系统或发布任务条件配置；目标的存在不代表所有设备、加速器或已发布制品都经过验证。具体目标以 [Core 构建配置](https://github.com/leitingzi/kmplitert/blob/master/core/build.gradle.kts)为准。
+Native targets are configured according to the host or publication task. A configured target does not mean every device, accelerator, or published artifact has been verified. See the [Core build configuration](https://github.com/leitingzi/kmplitert/blob/master/core/build.gradle.kts).
 
-## 验证范围
+## Verification scope
 
-仓库有 Android 设备、JVM、Native、JS 和 WasmJS 的 CPU 温度转换测试。现有 Core CI 配置执行 Linux、macOS、iOS 模拟器、Windows Native 和浏览器测试，并构建 Android；Android 设备测试和 JVM 测试**未在该工作流中列为运行步骤**。测试代码存在或 CI 配置存在，均不代表当前版本在所有环境中已经通过。查看最新运行结果并在目标设备上验证。
+The repository contains CPU temperature-conversion tests for Android devices, JVM, Native, JS, and WasmJS. Core CI configures Linux, macOS, iOS simulator, Windows Native, and browser tests and builds Android; the Android device and JVM tests are **not listed as execution steps in that workflow**. The existence of tests or CI configuration does not prove that the current version passed in every environment. Check recent runs and test your target devices.
 
-## 需要留意的差异 {#differences}
+## Differences to note {#differences}
 
-- **签名：**Android、JVM 和 Native 的缓冲区创建与运行接收签名索引；Native 按名称查询元数据固定使用签名 0；JS/WasmJS 当前忽略缓冲区和运行方法的签名索引。
-- **加速：**CPU/GPU/NPU 是请求，不保证硬件可用；参见[硬件加速](guide/acceleration.md)。
-- **路径：**本地平台使用文件路径；Web 使用浏览器可访问的模型 URL 和运行时资源。
-- **资源：**Native 测试显式关闭缓冲区；不要假设所有平台的所有权和重复关闭行为相同。
+- **Signatures:** Android, JVM, and Native accept a signature index for buffer creation and execution. Native name-based metadata queries use signature 0; JS/WasmJS currently ignore the buffer and run methods' signature index.
+- **Acceleration:** CPU/GPU/NPU are requests, not hardware guarantees. See [hardware acceleration](guide/acceleration.md).
+- **Paths:** Local platforms use file paths; the web uses a browser-accessible model URL and runtime assets.
+- **Resources:** Native tests explicitly close buffers; do not assume ownership or repeated-close behavior is identical across platforms.

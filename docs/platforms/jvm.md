@@ -1,25 +1,25 @@
 # JVM
 
-`jvmMain` 使用 JNA 调用 LiteRT C API。JVM 与 Kotlin/Native 桌面目标是不同的构建目标，依赖加载方式也不同。
+`jvmMain` calls the LiteRT C API through JNA. JVM and Kotlin/Native desktop are different build targets with different dependency loading.
 
-## 模型文件
+## Model file
 
-将模型放到本地可读文件，并将绝对路径传给[推理示例](../getting-started.md)。若模型打包在应用 classpath 或 JAR 中，先将资源复制到文件；不要把 classpath 资源名当作系统文件路径。
+Place the model in a readable local file and pass its absolute path to the [inference example](../getting-started.md). If the model is packaged in a classpath or JAR, copy the resource to a file first; a classpath resource name is not a filesystem path.
 
-## 原生库
+## Native libraries
 
-当前仓库的 JVM 资源目录包含 Windows x86-64、Linux x86-64 / ARM64 和 macOS ARM64 的原生库。加载器按当前平台提取并加载对应库。具体发布制品是否包含目标二进制，需检查所使用版本。
+The current repository's JVM resources include native libraries for Windows x86-64, Linux x86-64 / ARM64, and macOS ARM64. The loader extracts and loads the library for the current platform. Check whether the published artifact for your version contains the required binary.
 
-也可以通过 JVM 系统属性指定原生主库文件或包含主库的目录：
+Alternatively, specify the main native library file or its directory with a JVM system property:
 
 ```text
 -Dkmplitert.native.path=/absolute/path/to/litert-libraries
 ```
 
-所指定的主库、可选加速插件及其依赖需要匹配操作系统、架构和 LiteRT ABI。主库加载失败会报错；加速插件不可用时会记录警告，GPU 请求可能回退 CPU。该选项应在首次加载运行时前设置。
+The main library, optional accelerator plugins, and their dependencies must match the OS, architecture, and LiteRT ABI. Main-library loading failures raise an error; unavailable accelerator plugins produce a warning and GPU requests may fall back to CPU. Set this property before the runtime is first loaded.
 
-## 生命周期与测试
+## Lifecycle and tests
 
-JVM 实现序列化编译器操作，并在关闭时释放其跟踪的缓冲区；不要将 JVM 的行为推广到其他平台。仓库提供 JVM 温度模型和 ABI 测试，但现有 Core CI 未列出 JVM 测试运行步骤。
+The JVM implementation serializes compiler operations and releases tracked buffers when closed; do not generalize this behavior to other platforms. The repository provides JVM temperature model and ABI tests, but Core CI does not list JVM test execution.
 
-常见加载问题见[故障排查](../troubleshooting.md)。
+See [troubleshooting](../troubleshooting.md) for loading problems.

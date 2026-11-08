@@ -1,6 +1,6 @@
-# 模型与推理生命周期
+# Model and Inference Lifecycle
 
-一轮推理可以分为五个阶段：**准备模型 → 初始化 → 创建缓冲区 → 写入并运行 → 释放资源**。
+An inference consists of five stages: **prepare the model → initialize → create buffers → write and run → release resources**.
 
 ```text
 modelPath → LiteRTCompiler → init()
@@ -12,24 +12,24 @@ modelPath → LiteRTCompiler → init()
                          close resources
 ```
 
-## 初始化
+## Initialization
 
-使用模型路径和可选的 `LiteRTAccelerator` 创建 `LiteRTCompiler`，默认加速器是 CPU。调用 `init()` 之后再查询张量或创建缓冲区。
+Create a `LiteRTCompiler` with the model path and an optional `LiteRTAccelerator`; CPU is the default. Call `init()` before querying tensors or creating buffers.
 
-编译器操作和读取方法是 `suspend` 函数，需要从协程调用。`suspend` 并不保证每个平台都切换到后台线程，也不保证可以并发调用同一个实例；应根据应用的线程和生命周期设计调度。
+Compiler operations and read methods are `suspend` functions and must be called from a coroutine. `suspend` does not guarantee background dispatch on every platform or concurrent access to the same instance; choose scheduling appropriate to your application's threads and lifecycle.
 
-## 查询与运行
+## Query and run
 
-模型的输入输出顺序、名称、数据类型和维度由模型定义。可通过 `getInputTensorType(name)`、`getOutputTensorType(name)` 和对应的 buffer requirements 查询元数据。名称必须来自模型；公共 API 没有枚举张量名称的方法。
+Input/output ordering, names, data types, and dimensions are defined by the model. Query metadata using `getInputTensorType(name)`, `getOutputTensorType(name)`, and their buffer requirements methods. Names must come from the model; the public API does not enumerate tensor names.
 
-从同一个编译器和签名获取输入、输出缓冲区，按模型约定的顺序写入数据，再调用 `run(inputs, outputs)`。运行完成后读取输出。多签名模型要注意[平台差异](../platforms.md#differences)。
+Obtain input and output buffers for the same compiler and signature, write data in model order, and call `run(inputs, outputs)`. Read outputs after it completes. Multi-signature models require attention to [platform differences](../platforms.md#differences).
 
-## 释放 {#cleanup}
+## Cleanup {#cleanup}
 
-以 `try/finally` 管理编译器和已经获取的缓冲区，参照[完整示例](../getting-started.md#inference)。示例按 Native 测试的顺序先关闭缓冲区、再关闭编译器；JVM 编译器关闭时也会释放其跟踪的缓冲区。Android 的当前缓冲区包装实现沿用接口的空 `close()`，Web 包装的 `close()` 也沿用该默认实现。
+Use `try/finally` for the compiler and acquired buffers as shown in the [complete example](../getting-started.md#inference). It closes buffers before the compiler, following the Native test; the JVM compiler also releases buffers it tracks when closed. The current Android and Web buffer wrappers inherit the interface's no-op `close()`.
 
-不要在关闭后继续使用缓冲区或编译器，也不要依赖重复初始化、重复关闭或多个协程并发访问在所有平台表现一致。
+Do not use a buffer or compiler after closing it, or assume repeated initialization, repeated closing, and concurrent access behave identically on every platform.
 
-## 重复推理
+## Repeated inference
 
-在模型和资源仍然有效时，可以根据模型需求更新输入并再次调用 `run`。模型、数据类型或签名发生变化时，不要假设先前缓冲区仍然兼容；重新核对目标平台和模型要求。
+While the model and resources remain valid, update inputs and call `run` again as required by the model. If the model, data type, or signature changes, do not assume earlier buffers are compatible; check the target platform and model requirements again.

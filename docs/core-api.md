@@ -1,6 +1,6 @@
 # Core API
 
-公共 API 位于 `io.github.kmplitert.core`。以下是共享代码常用的接口；平台底层绑定不应被视为稳定的跨平台抽象。
+The public API is in `io.github.kmplitert.core`. These are the interfaces commonly used from shared code; platform-level bindings should not be treated as stable cross-platform abstractions.
 
 ## LiteRTCompiler
 
@@ -11,25 +11,25 @@ LiteRTCompiler(
 )
 ```
 
-| 方法 | 用途 |
+| Method | Purpose |
 |---|---|
-| `suspend init()` | 加载并准备模型。其他操作前调用。 |
-| `suspend getInputTensorType(inputName)` | 按名称查询输入的元素类型和布局。 |
-| `suspend getOutputTensorType(outputName)` | 按名称查询输出的元素类型和布局。 |
-| `suspend getInputBufferRequirements(inputName)` | 查询输入缓冲区需求。 |
-| `suspend getOutputBufferRequirements(outputName)` | 查询输出缓冲区需求。 |
-| `suspend getInputBuffers(signatureIndex = 0)` | 创建指定签名的输入缓冲区列表。 |
-| `suspend getOutputBuffers(signatureIndex = 0)` | 创建指定签名的输出缓冲区列表。 |
-| `suspend run(inputs, outputs, signatureIndex = 0)` | 使用指定的输入、输出缓冲区执行推理。 |
-| `suspend close()` | 释放编译器资源。关闭后不再使用实例。 |
+| `suspend init()` | Load and prepare the model. Call before other operations. |
+| `suspend getInputTensorType(inputName)` | Query an input's element type and layout by name. |
+| `suspend getOutputTensorType(outputName)` | Query an output's element type and layout by name. |
+| `suspend getInputBufferRequirements(inputName)` | Query input buffer requirements. |
+| `suspend getOutputBufferRequirements(outputName)` | Query output buffer requirements. |
+| `suspend getInputBuffers(signatureIndex = 0)` | Create the signature's input buffer list. |
+| `suspend getOutputBuffers(signatureIndex = 0)` | Create the signature's output buffer list. |
+| `suspend run(inputs, outputs, signatureIndex = 0)` | Run inference with the supplied buffers. |
+| `suspend close()` | Release compiler resources. Do not reuse the instance afterward. |
 
-`filePath` 在本地目标上是模型文件路径，在 Web 上通常是可访问的模型 URL。名称、顺序及签名由模型决定；[平台能力](platforms.md)列出了签名行为差异。
+`filePath` is a model file path on local targets and typically an accessible model URL on the web. The model defines names, ordering, and signatures; see [platform capabilities](platforms.md) for signature differences.
 
 ## TFBuffer
 
-`TFBuffer` 扩展 `AutoCloseable`。写入是普通函数，读取是挂起函数：
+`TFBuffer` extends `AutoCloseable`. Writes are regular functions; reads are suspending:
 
-| 写入 | 读取 | Kotlin 数组 |
+| Write | Read | Kotlin array |
 |---|---|---|
 | `writeInt` | `readInt` | `IntArray` |
 | `writeFloat` | `readFloat` | `FloatArray` |
@@ -37,17 +37,17 @@ LiteRTCompiler(
 | `writeBoolean` | `readBoolean` | `BooleanArray` |
 | `writeLong` | `readLong` | `LongArray` |
 
-调用方必须确保类型和长度符合模型。资源所有权见[生命周期](guide/lifecycle.md#cleanup)。
+The caller must ensure the type and length match the model. See [lifecycle](guide/lifecycle.md#cleanup) for resource ownership.
 
-## 类型与枚举
+## Types and enums
 
-| 类型 | 说明 |
+| Type | Description |
 |---|---|
-| `LiteRTAccelerator` | `CPU`、`GPU`、`NPU`；实际能力依平台而定。 |
-| `LiteRTTensorType` | `elementType` 和可为空的 `layout`。 |
-| `LiteRTElementType` | LiteRT 元素类型及其原生值 `value`；`fromNative(value)` 在未知值时抛出异常。枚举不代表所有类型都有 `TFBuffer` 读写方法。 |
-| `LiteRTLayout` | `dimensions`、`strides`、`rank`、`hasStrides`；`calculateDefaultStrides` 计算行主序元素步长。 |
-| `LiteRTBufferRequirements` | `supportedTypes`、字节数 `bufferSize` 和 `strides`；步长单位注意事项见[张量指南](guide/tensors.md#requirements)。 |
-| `LiteRTTensorBufferType` | 主机内存及各类平台缓冲区类型，`type` 是原生值；`from(type)` 用于转换。 |
+| `LiteRTAccelerator` | `CPU`, `GPU`, `NPU`; actual capability depends on the platform. |
+| `LiteRTTensorType` | `elementType` and nullable `layout`. |
+| `LiteRTElementType` | LiteRT element types and native `value`; `fromNative(value)` throws for unknown values. Not all enum values have `TFBuffer` read/write methods. |
+| `LiteRTLayout` | `dimensions`, `strides`, `rank`, `hasStrides`; `calculateDefaultStrides` computes row-major element strides. |
+| `LiteRTBufferRequirements` | `supportedTypes`, `bufferSize` in bytes, and `strides`; see [stride considerations](guide/tensors.md#requirements). |
+| `LiteRTTensorBufferType` | Host and platform buffer types; `type` is the native value and `from(type)` converts it. |
 
-更多示例见[快速开始](getting-started.md)，Web 专用初始化入口见 [Web 初始化 API](api/web.md)。
+See the [quick start](getting-started.md) for examples and the [Web initialization API](api/web.md) for web-specific setup.

@@ -2,58 +2,58 @@
 
 <span class="eyebrow">Kotlin Multiplatform · LiteRT</span>
 
-# 一份推理逻辑，<br>跨越不同平台
+# One inference flow,<br>across platforms
 
-<p class="lead">用 Kotlin 连接 LiteRT。在共享代码中加载模型、读写张量并执行推理，让应用从移动端延伸到桌面与 Web。</p>
+<p class="lead">Bring LiteRT to Kotlin. Load models, read and write tensors, and run inference in shared code across mobile, desktop, and the web.</p>
 
 <div class="actions">
-  <a class="md-button md-button--primary" href="getting-started/">开始使用 →</a>
-  <a class="md-button" href="core-api/">探索 Core API</a>
+  <a class="md-button md-button--primary" href="getting-started/">Get started →</a>
+  <a class="md-button" href="core-api/">Explore the Core API</a>
 </div>
 
 </div>
 
-## 从这里出发
+## Find your orbit
 
 <div class="grid cards" markdown>
 
--   **01 / 快速运行**
+-   **01 / Get started**
 
     ---
 
-    从安装依赖到运行第一个温度转换模型。
+    Install Core and run your first temperature conversion model.
 
-    [开始第一次推理 →](getting-started.md)
+    [Run your first inference →](getting-started.md)
 
--   **02 / 理解 Core**
-
-    ---
-
-    掌握模型生命周期、张量、缓冲区和加速器。
-
-    [了解推理流程 →](guide/lifecycle.md)
-
--   **03 / 选择平台**
+-   **02 / Understand Core**
 
     ---
 
-    找到 Android、JVM、Native 与 Web 的接入细节。
+    Learn about the model lifecycle, tensors, buffers, and accelerators.
 
-    [查看平台指南 →](platforms.md)
+    [Explore the inference lifecycle →](guide/lifecycle.md)
 
--   **04 / 查阅 API**
+-   **03 / Choose a platform**
 
     ---
 
-    查询公共接口、数据类型和平台行为差异。
+    Find integration details for Android, JVM, Native, and the web.
 
-    [查看 API 参考 →](core-api.md)
+    [Browse platform guides →](platforms.md)
+
+-   **04 / Browse the API**
+
+    ---
+
+    Look up shared interfaces, data types, and platform differences.
+
+    [Read the API reference →](core-api.md)
 
 </div>
 
-## 小而清晰的核心
+## A small, focused core
 
-`LiteRTCompiler` 管理模型推理，`TFBuffer` 负责张量读写。Core 只关注运行时；数据预处理和后处理可以按需使用独立的 Tool 模块。
+`LiteRTCompiler` manages model inference, while `TFBuffer` reads and writes tensors. Core focuses on the runtime; the separate, optional Tool module can help with preprocessing and postprocessing.
 
 ```kotlin
 compiler.init()
@@ -61,7 +61,7 @@ val inputs = compiler.getInputBuffers()
 val outputs = compiler.getOutputBuffers()
 inputs.single().writeFloat(floatArrayOf(100f))
 compiler.run(inputs, outputs)
-val fahrenheit = outputs.single().readFloat().single() // 约 212f
+val fahrenheit = outputs.single().readFloat().single() // approximately 212f
 ```
 
-上面是流程概览；完整示例还包含模型准备和资源释放，请从[快速开始](getting-started.md)继续。
+This is a flow overview. For model preparation and resource cleanup, follow the [quick start](getting-started.md).

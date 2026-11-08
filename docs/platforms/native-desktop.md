@@ -1,15 +1,15 @@
-# Linux 与 Windows Native
+# Linux and Windows Native
 
-`linuxX64`、`linuxArm64` 和 `mingwX64` 使用 `nativeMain` 的 C interop 实现，与 [JVM](jvm.md) 的 JNA 实现不同。目标按宿主系统或发布任务条件配置。
+`linuxX64`, `linuxArm64`, and `mingwX64` use the `nativeMain` C interop implementation, unlike the [JVM](jvm.md) JNA implementation. Targets are configured by host or publication conditions.
 
-## 模型与链接
+## Models and linking
 
-传入可读的模型文件路径。构建和分发时，LiteRT 主库及需要的插件必须匹配目标架构与 ABI；将它们部署到目标程序能加载的位置。
+Pass a readable model file path. For builds and distribution, the LiteRT main library and required plugins must match the target architecture and ABI; deploy them where the target program can load them.
 
-仓库中的 Native 构建约定为本项目配置了链接和库复制。外部应用需要自行确认链接参数和运行时加载路径；不要依赖构建机器上的绝对路径。Linux 通常需要检查动态链接器搜索路径；Windows 则需检查可执行文件附近或进程搜索路径中的 DLL。
+The repository's Native build conventions configure linking and copying for this project. External applications must verify their own linker options and runtime search paths; do not rely on absolute paths from the build machine. On Linux, check dynamic linker search paths; on Windows, check DLLs near the executable or in the process search path.
 
-## 验证
+## Verification
 
-Core CI 配置了 Linux x64 与 Windows x64 Native 测试；Linux ARM64 在构建配置中存在，但不应因此推断其测试或发布状态。请针对实际分发包、目标机器与架构执行推理测试。
+Core CI configures Linux x64 and Windows x64 Native tests. Linux ARM64 exists in the build configuration, but this alone does not establish its test or publication status. Test inference with the actual distribution, machine, and architecture.
 
-按名称查询张量元数据当前使用签名 0；缓冲区及推理方法接收签名索引。GPU/NPU 需要匹配的平台插件和设备。
+Name-based tensor metadata queries currently use signature 0; buffer and inference methods accept a signature index. GPU/NPU requires compatible platform plugins and hardware.

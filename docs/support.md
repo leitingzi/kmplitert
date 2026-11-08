@@ -1,35 +1,36 @@
-# 支持与贡献
+# Support and Contributing
 
-## 报告问题
+## Report an issue
 
-请在 [GitHub Issues](https://github.com/leitingzi/kmplitert/issues) 提交问题，并尽可能提供：
+Open a [GitHub issue](https://github.com/leitingzi/kmplitert/issues) and include, where possible:
 
-- KMPLiteRT 版本、目标平台和设备架构。
-- Kotlin、Gradle 与 LiteRT 运行时版本。
-- 最小复现步骤、模型输入输出信息和完整错误堆栈。
-- 是否只在特定 delegate（CPU/GPU/NPU）下发生。
+- KMPLiteRT version, target platform, and device architecture.
+- Kotlin, Gradle, and LiteRT runtime versions.
+- Minimal reproduction steps, model input/output details, and the complete error stack.
+- Whether the issue only occurs with a particular delegate (CPU/GPU/NPU).
 
-提交模型或设备信息前，请确认其中不含隐私或敏感数据。
+Before sharing models or device information, make sure they contain no private or sensitive data.
 
-## 贡献代码
+## Contribute
 
-1. Fork 仓库并创建功能分支。
-2. 修改代码或文档，并运行相关测试。
-3. 提交清晰的变更说明并发起 Pull Request。
+1. Fork the repository and create a feature branch.
+2. Change code or documentation and run relevant tests.
+3. Submit a clear change description and open a pull request.
 
-在更改平台实现时，请尽量让共享 API 行为保持一致，并在可用的目标平台上验证。
+When modifying platform implementations, keep shared API behavior consistent where possible and validate on available targets.
 
-## 维护文档
+## Maintain the documentation
 
-安装 [requirements-docs.txt](https://github.com/leitingzi/kmplitert/blob/master/requirements-docs.txt) 中的文档依赖，然后在仓库根目录执行：
+Install the documentation dependencies from [requirements-docs.txt](https://github.com/leitingzi/kmplitert/blob/master/requirements-docs.txt), then run from the repository root:
 
 ```shell
 python -m mkdocs serve
 python -m mkdocs build --strict
+python .github/scripts/check_docs_i18n.py
 ```
 
-文档部署工作流在 `master` 上的文档相关变更后运行严格构建并发布到 GitHub Pages。修改 Core 版本、目标、运行时、API 或测试后，请同步检查安装示例、平台能力矩阵和限制说明；修改快速开始中的推理代码时，也要同步更新 JVM 文档示例测试。未验证的设备与加速器不要标记为已通过。
+English pages use `*.md`; their Chinese counterparts use `*.zh.md`. Keep both versions, their links, and shared anchors synchronized. The documentation workflow runs a strict build and deploys to GitHub Pages after relevant changes on `master`. When updating Core versions, targets, runtime, API, or tests, also review installation, the capability matrix, and limitations; update the JVM documentation example test when changing quick-start inference code. Do not mark unverified devices or accelerators as passed.
 
-## 许可证
+## License
 
-KMPLiteRT 使用 [Apache License 2.0](https://github.com/leitingzi/kmplitert/blob/master/LICENSE)。
+KMPLiteRT is licensed under [Apache License 2.0](https://github.com/leitingzi/kmplitert/blob/master/LICENSE).

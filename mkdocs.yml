@@ -1,5 +1,5 @@
 site_name: KMPLiteRT
-site_description: 在 Kotlin Multiplatform 中运行 LiteRT 模型
+site_description: Run LiteRT models with Kotlin Multiplatform
 site_url: https://leitingzi.github.io/kmplitert/
 repo_url: https://github.com/leitingzi/kmplitert
 repo_name: leitingzi/kmplitert
@@ -7,7 +7,7 @@ docs_dir: docs
 
 theme:
   name: material
-  language: zh
+  language: en
   logo: assets/orbit.svg
   favicon: assets/orbit.svg
   font: false
@@ -29,6 +29,34 @@ extra_css:
 
 plugins:
   - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: false
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: zh
+          name: 简体中文
+          build: true
+          site_description: 在 Kotlin Multiplatform 中运行 LiteRT 模型
+          nav_translations:
+            Home: 首页
+            Getting Started: 开始使用
+            Installation and First Inference: 安装与第一次推理
+            Platforms and Capabilities: 平台与能力
+            Core Guide: Core 指南
+            Model and Inference Lifecycle: 模型与推理生命周期
+            Tensors and Buffers: 张量与缓冲区
+            Hardware Acceleration: 硬件加速
+            Platform Guides: 平台指南
+            iOS and macOS: iOS 与 macOS
+            Linux and Windows Native: Linux 与 Windows Native
+            API Reference: API 参考
+            Web Initialization: Web 初始化
+            Troubleshooting: 问题排查
+            Support and Contributing: 支持与贡献
 
 validation:
   links:
@@ -46,23 +74,23 @@ markdown_extensions:
   - tables
 
 nav:
-  - 首页: index.md
-  - 开始使用:
-      - 安装与第一次推理: getting-started.md
-      - 平台与能力: platforms.md
-  - Core 指南:
-      - 模型与推理生命周期: guide/lifecycle.md
-      - 张量与缓冲区: guide/tensors.md
-      - 硬件加速: guide/acceleration.md
-  - 平台指南:
+  - Home: index.md
+  - Getting Started:
+      - Installation and First Inference: getting-started.md
+      - Platforms and Capabilities: platforms.md
+  - Core Guide:
+      - Model and Inference Lifecycle: guide/lifecycle.md
+      - Tensors and Buffers: guide/tensors.md
+      - Hardware Acceleration: guide/acceleration.md
+  - Platform Guides:
       - Android: platforms/android.md
       - JVM: platforms/jvm.md
-      - iOS 与 macOS: platforms/apple.md
-      - Linux 与 Windows Native: platforms/native-desktop.md
+      - iOS and macOS: platforms/apple.md
+      - Linux and Windows Native: platforms/native-desktop.md
       - JavaScript: platforms/javascript.md
       - WasmJS: platforms/wasmjs.md
-  - API 参考:
+  - API Reference:
       - Core API: core-api.md
-      - Web 初始化: api/web.md
-  - 问题排查: troubleshooting.md
-  - 支持与贡献: support.md
+      - Web Initialization: api/web.md
+  - Troubleshooting: troubleshooting.md
+  - Support and Contributing: support.md

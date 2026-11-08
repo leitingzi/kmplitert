@@ -1,17 +1,17 @@
-# 问题排查
+# Troubleshooting
 
-先确认 Core 版本、目标平台、模型和输入数据，再使用 CPU 重现。错误日志和具体平台通常比泛化的错误信息更有用。
+Check the Core version, target platform, model, and inputs, then reproduce with CPU. Error logs and the specific platform are usually more useful than a generic error message.
 
-| 现象 | 可能原因 | 检查方法 |
+| Symptom | Possible cause | What to check |
 |---|---|---|
-| 模型加载失败 | 路径不正确、文件不存在或模型损坏 | 本地检查文件权限和大小；Web 检查模型 URL 的网络请求及跨域响应。 |
-| JVM 提示无法加载 LiteRT 库 | 库缺失、架构或 ABI 不匹配 | 检查发布包和进程架构；必要时设置 `kmplitert.native.path`，参见 [JVM 指南](platforms/jvm.md)。 |
-| Native 链接或启动失败 | 链接路径、动态库部署或依赖不匹配 | 检查目标架构、库文件、搜索路径以及 Apple 应用的嵌入和签名。 |
-| Web 初始化失败 | CDN 不可达、WASM 文件路径或版本不匹配 | 检查浏览器网络面板；必要时在初始化前配置[自托管路径](api/web.md)。 |
-| 找不到张量 | 输入/输出名称或签名不匹配 | 使用模型提供的名称；注意 Native 元数据查询和 Web 签名限制。 |
-| 输入或输出不正确 | 类型、shape、长度、顺序或量化参数不匹配 | 对照模型规格和[张量指南](guide/tensors.md)，不要盲目复用示例数据。 |
-| 输出尚未初始化 | Web 上在推理完成前读取输出 | 先写入输入，等待 `run()` 完成，再读取输出。 |
-| GPU/NPU 不可用或运行较慢 | 插件、设备、浏览器或模型不支持 | 查看日志，先验证 CPU，再针对目标设备测试；参见[硬件加速](guide/acceleration.md)。 |
-| 关闭后操作失败 | 编译器或缓冲区已经释放 | 调整资源作用域；不要使用已关闭对象，参见[生命周期](guide/lifecycle.md)。 |
+| Model fails to load | Incorrect path, missing file, or corrupt model | Check local file permissions and size; on the web inspect the model URL's request and cross-origin response. |
+| JVM cannot load the LiteRT library | Missing library, incompatible architecture or ABI | Check the package and process architecture; set `kmplitert.native.path` if needed. See the [JVM guide](platforms/jvm.md). |
+| Native linking or startup fails | Link path, deployed libraries, or dependencies do not match | Check architecture, libraries and search paths, and Apple embedding and signing. |
+| Web initialization fails | CDN unavailable, incorrect WASM path, or version mismatch | Inspect browser network requests; configure a [self-hosted path](api/web.md) before initialization if needed. |
+| Tensor not found | Input/output name or signature mismatch | Use the model's names and note Native metadata and Web signature limitations. |
+| Incorrect input or output | Type, shape, length, order, or quantization mismatch | Check the model specification and [tensor guide](guide/tensors.md); do not blindly reuse example data. |
+| Output not initialized | Web output read before inference completes | Write inputs, await `run()`, then read outputs. |
+| GPU/NPU unavailable or slow | Unsupported plugin, device, browser, or model | Inspect logs, verify CPU first, then test on the target device. See [hardware acceleration](guide/acceleration.md). |
+| Operation fails after close | Compiler or buffer already released | Adjust resource scope; do not reuse closed objects. See [lifecycle](guide/lifecycle.md). |
 
-仍无法解决时，请在[报告问题](support.md)前准备可分享的最小复现与完整错误信息，不要上传敏感模型或数据。
+If the problem persists, prepare a shareable minimal reproduction and complete error details before [reporting an issue](support.md); do not upload sensitive models or data.
