@@ -1,5 +1,5 @@
-site_name: KMPLiteRT 文档
-site_description: Kotlin Multiplatform 上的 LiteRT 推理库使用指南
+site_name: KMPLiteRT
+site_description: 在 Kotlin Multiplatform 中运行 LiteRT 模型
 site_url: https://leitingzi.github.io/kmplitert/
 repo_url: https://github.com/leitingzi/kmplitert
 repo_name: leitingzi/kmplitert
@@ -8,6 +8,13 @@ docs_dir: docs
 theme:
   name: material
   language: zh
+  logo: assets/orbit.svg
+  favicon: assets/orbit.svg
+  font: false
+  palette:
+    scheme: slate
+    primary: black
+    accent: grey
   features:
     - navigation.tabs
     - navigation.sections
@@ -16,27 +23,22 @@ theme:
     - content.code.copy
     - search.suggest
     - search.highlight
-  palette:
-    - scheme: default
-      primary: indigo
-      accent: cyan
-      toggle:
-        icon: material/brightness-7
-        name: 切换到深色模式
-    - scheme: slate
-      primary: indigo
-      accent: cyan
-      toggle:
-        icon: material/brightness-4
-        name: 切换到浅色模式
+
+extra_css:
+  - stylesheets/space.css
 
 plugins:
   - search
+
+validation:
+  links:
+    anchors: warn
 
 markdown_extensions:
   - admonition
   - attr_list
   - def_list
+  - md_in_html
   - pymdownx.details
   - pymdownx.highlight
   - pymdownx.inlinehilite
@@ -46,8 +48,21 @@ markdown_extensions:
 nav:
   - 首页: index.md
   - 开始使用:
-      - 安装与快速开始: getting-started.md
-      - 平台与运行环境: platforms.md
-  - API 指南:
+      - 安装与第一次推理: getting-started.md
+      - 平台与能力: platforms.md
+  - Core 指南:
+      - 模型与推理生命周期: guide/lifecycle.md
+      - 张量与缓冲区: guide/tensors.md
+      - 硬件加速: guide/acceleration.md
+  - 平台指南:
+      - Android: platforms/android.md
+      - JVM: platforms/jvm.md
+      - iOS 与 macOS: platforms/apple.md
+      - Linux 与 Windows Native: platforms/native-desktop.md
+      - JavaScript: platforms/javascript.md
+      - WasmJS: platforms/wasmjs.md
+  - API 参考:
       - Core API: core-api.md
+      - Web 初始化: api/web.md
+  - 问题排查: troubleshooting.md
   - 支持与贡献: support.md

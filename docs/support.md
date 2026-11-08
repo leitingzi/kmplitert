@@ -19,6 +19,17 @@
 
 在更改平台实现时，请尽量让共享 API 行为保持一致，并在可用的目标平台上验证。
 
+## 维护文档
+
+安装 [requirements-docs.txt](https://github.com/leitingzi/kmplitert/blob/master/requirements-docs.txt) 中的文档依赖，然后在仓库根目录执行：
+
+```shell
+python -m mkdocs serve
+python -m mkdocs build --strict
+```
+
+文档部署工作流在 `master` 上的文档相关变更后运行严格构建并发布到 GitHub Pages。修改 Core 版本、目标、运行时、API 或测试后，请同步检查安装示例、平台能力矩阵和限制说明；修改快速开始中的推理代码时，也要同步更新 JVM 文档示例测试。未验证的设备与加速器不要标记为已通过。
+
 ## 许可证
 
 KMPLiteRT 使用 [Apache License 2.0](https://github.com/leitingzi/kmplitert/blob/master/LICENSE)。

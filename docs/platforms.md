@@ -1,24 +1,27 @@
-# 平台与运行环境
+# 平台与能力
 
-KMPLiteRT 在不同 Kotlin Multiplatform source set 中提供平台实现。各平台的模型文件访问方式、原生运行时和硬件委托并不完全相同。
+Core 在公共源集提供统一接口，由平台源集对接各自的 LiteRT 运行时。相同接口不意味着模型路径、硬件能力和资源管理完全相同。
 
-| 平台类别 | 项目中的实现 source set | 使用说明 |
-| --- | --- | --- |
-| Android | `androidMain` | 使用 Android LiteRT 运行时；使用 Android assets 时需初始化 `LiteRTFileUtils`。 |
-| JVM | `jvmMain` | 使用 JNA 与随库提供的 LiteRT 原生库。 |
-| Apple | `nativeMain` / Apple Native targets | 通过 LiteRT Native C API；Apple 构建需要配置匹配架构的原生库。 |
-| Linux / Windows | `nativeMain` / 对应 Native targets | 使用 LiteRT Native C API；原生库必须匹配操作系统和架构。 |
-| JavaScript | `jsMain` | 使用 `@litertjs/core`。 |
-| WebAssembly | `wasmJsMain` | 使用 WebAssembly JS 目标及对应 LiteRT Web 运行时。 |
+## 实现与目标
 
-## Apple Native 配置
+| 平台指南 | 实现源集 | 构建配置中的目标 | 运行时 |
+|---|---|---|---|
+| [Android](platforms/android.md) | `androidMain` | Android，最低 API 24 | Google LiteRT Android |
+| [JVM](platforms/jvm.md) | `jvmMain` | JVM | JNA + LiteRT C API |
+| [iOS / macOS](platforms/apple.md) | `nativeMain` / `nativeInterop` | `iosArm64`、`iosSimulatorArm64`、`macosArm64` | LiteRT C API |
+| [Linux / Windows Native](platforms/native-desktop.md) | `nativeMain` / `nativeInterop` | `linuxX64`、`linuxArm64`、`mingwX64` | LiteRT C API |
+| [JavaScript](platforms/javascript.md) | `webMain` / `jsMain` | 浏览器 JS | `@litertjs/core` |
+| [WasmJS](platforms/wasmjs.md) | `webMain` / `wasmJsMain` | 浏览器 WasmJS | `@litertjs/core` |
 
-Apple Native 构建需为目标架构准备匹配的 LiteRT 原生库，并让最终应用能够找到这些动态库。iOS 应用还需检查 framework 的链接方式和运行时搜索路径。项目 README 中提供了完整的 Gradle 配置示例及库文件目录约定：
+Native 目标按构建宿主系统或发布任务条件配置；目标的存在不代表所有设备、加速器或已发布制品都经过验证。具体目标以 [Core 构建配置](https://github.com/leitingzi/kmplitert/blob/master/core/build.gradle.kts)为准。
 
-[查看 README 中的 iOS & Native 配置](https://github.com/leitingzi/kmplitert#-ios--native-setup-critical)
+## 验证范围
 
-不要把不同平台或架构的二进制库混用。构建与分发前，请确认 LiteRT 二进制版本、C ABI 和目标架构一致。
+仓库有 Android 设备、JVM、Native、JS 和 WasmJS 的 CPU 温度转换测试。现有 Core CI 配置执行 Linux、macOS、iOS 模拟器、Windows Native 和浏览器测试，并构建 Android；Android 设备测试和 JVM 测试**未在该工作流中列为运行步骤**。测试代码存在或 CI 配置存在，均不代表当前版本在所有环境中已经通过。查看最新运行结果并在目标设备上验证。
 
-## 硬件加速
+## 需要留意的差异 {#differences}
 
-API 提供 `CPU`、`GPU`、`NPU` 三种加速器选择。具体后端能力取决于目标平台和设备；例如平台上的 GPU/NPU delegate 并非自动可用。不要将某一设备上的加速结果视为其他设备的保证。
+- **签名：**Android、JVM 和 Native 的缓冲区创建与运行接收签名索引；Native 按名称查询元数据固定使用签名 0；JS/WasmJS 当前忽略缓冲区和运行方法的签名索引。
+- **加速：**CPU/GPU/NPU 是请求，不保证硬件可用；参见[硬件加速](guide/acceleration.md)。
+- **路径：**本地平台使用文件路径；Web 使用浏览器可访问的模型 URL 和运行时资源。
+- **资源：**Native 测试显式关闭缓冲区；不要假设所有平台的所有权和重复关闭行为相同。
