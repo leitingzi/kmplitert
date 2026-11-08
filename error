@@ -5,95 +5,61 @@ sudo xcodebuild -license accept
 xcodebuild -version
 xcrun --find xcodebuild
 
-15:20:16: 正在执行 ':app:shared:embedAndSignAppleFrameworkForXcode'…
+/Users/yebintang/Library/Caches/JetBrains/IntelliJIdea2026.3/DerivedData/iosApp-ecogbihofaoysgaivywvywblgeyy/Build/Products/Debug-iphonesimulator/kmplitert.app
+INFO: [environment.cc:30] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1030fd450, name=CpuAccelerator
+INFO: [cpu_registry.cc:42] CPU accelerator registered.
+2026-11-08 15:52:51.334514+0800 kmplitert[8138:165152] Could not open 'file:///Users/yebintang/Library/Developer/CoreSimulator/Devices/E8360961-9AB6-490A-9171-42A3DA1900FB/data/Containers/Bundle/Application/7E1230F0-A6E8-4600-A55F-E18690B83BB9/kmplitert.app/compose-resources/composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite'.
+ERROR: Could not open 'file:///Users/yebintang/Library/Developer/CoreSimulator/Devices/E8360961-9AB6-490A-9171-42A3DA1900FB/data/Containers/Bundle/Application/7E1230F0-A6E8-4600-A55F-E18690B83BB9/kmplitert.app/compose-resources/composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite'.
+2026-11-08 15:52:51.334700+0800 kmplitert[8138:165152] The model allocation is null/empty
+ERROR: The model allocation is null/empty
+2026-11-08 15:52:51.415792+0800 kmplitert[8138:165152] fopen failed for data file: errno = 2 (No such file or directory)
+2026-11-08 15:52:52.281657+0800 kmplitert[8138:165152] fopen failed for data file: errno = 2 (No such file or directory)
+2026-11-08 15:52:52.684385+0800 kmplitert[8138:165191] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-11-08 15:52:52.713664+0800 kmplitert[8138:165188] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+2026-11-08 15:53:09.225186+0800 kmplitert[8138:165152] [XPCErrors] non-launching port is incompatible with service identifier "com.apple.PointerUI.pointeruid.default-service"
+INFO: [environment.cc:30] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1031fce10, name=CpuAccelerator
+INFO: [cpu_registry.cc:42] CPU accelerator registered.
+2026-11-08 15:53:10.088424+0800 kmplitert[8138:165152] Could not open 'file:///Users/yebintang/Library/Developer/CoreSimulator/Devices/E8360961-9AB6-490A-9171-42A3DA1900FB/data/Containers/Bundle/Application/7E1230F0-A6E8-4600-A55F-E18690B83BB9/kmplitert.app/compose-resources/composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite'.
+ERROR: Could not open 'file:///Users/yebintang/Library/Developer/CoreSimulator/Devices/E8360961-9AB6-490A-9171-42A3DA1900FB/data/Containers/Bundle/Application/7E1230F0-A6E8-4600-A55F-E18690B83BB9/kmplitert.app/compose-resources/composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite'.
+2026-11-08 15:53:10.088501+0800 kmplitert[8138:165152] The model allocation is null/empty
+ERROR: The model allocation is null/empty
+INFO: [environment.cc:30] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1031fd4a0, name=CpuAccelerator
+INFO: [cpu_registry.cc:42] CPU accelerator registered.
+2026-11-08 15:53:12.270239+0800 kmplitert[8138:165152] Could not open 'file:///Users/yebintang/Library/Developer/CoreSimulator/Devices/E8360961-9AB6-490A-9171-42A3DA1900FB/data/Containers/Bundle/Application/7E1230F0-A6E8-4600-A55F-E18690B83BB9/kmplitert.app/compose-resources/composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite'.
+ERROR: Could not open 'file:///Users/yebintang/Library/Developer/CoreSimulator/Devices/E8360961-9AB6-490A-9171-42A3DA1900FB/data/Containers/Bundle/Application/7E1230F0-A6E8-4600-A55F-E18690B83BB9/kmplitert.app/compose-resources/composeResources/kmplitert.app.shared.generated.resources/files/CelsiusToFahrenheit.tflite'.
+2026-11-08 15:53:12.270310+0800 kmplitert[8138:165152] The model allocation is null/empty
+ERROR: The model allocation is null/empty
+2026-11-08 15:53:14.390227+0800 kmplitert[8138:165152] [API] cannot add handler to 0 from 0 - dropping
+2026-11-08 15:53:18.715956+0800 kmplitert[8138:165152] [DocumentManager] Unable to get ISSymbol for UTI: com.apple.ios-simulator Error: Error Domain=com.apple.iconServices.symbol-error Code=-1 "Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0" UserInfo={NSLocalizedDescription=Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0}
+2026-11-08 15:53:18.834277+0800 kmplitert[8138:165152] [API] cannot add handler to 0 from 0 - dropping
+2026-11-08 15:53:18.882095+0800 kmplitert[8138:165152] [API] cannot add handler to 0 from 0 - dropping
+2026-11-08 15:53:18.882152+0800 kmplitert[8138:165152] [API] cannot add handler to 0 from 0 - dropping
+2026-11-08 15:53:18.882194+0800 kmplitert[8138:165152] [API] cannot add handler to 0 from 0 - dropping
+2026-11-08 15:53:18.933210+0800 kmplitert[8138:165152] [DocumentManager] Unable to get ISSymbol for UTI: com.apple.ios-simulator Error: Error Domain=com.apple.iconServices.symbol-error Code=-1 "Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0" UserInfo={NSLocalizedDescription=Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0}
+2026-11-08 15:53:20.496367+0800 kmplitert[8138:165152] [DocumentManager] Unable to get ISSymbol for UTI: com.apple.ios-simulator Error: Error Domain=com.apple.iconServices.symbol-error Code=-1 "Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0" UserInfo={NSLocalizedDescription=Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0}
+2026-11-08 15:53:20.673036+0800 kmplitert[8138:165152] [DocumentManager] Unable to get ISSymbol for UTI: com.apple.ios-simulator Error: Error Domain=com.apple.iconServices.symbol-error Code=-1 "Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0" UserInfo={NSLocalizedDescription=Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0}
+2026-11-08 15:53:22.070037+0800 kmplitert[8138:165152] [DocumentManager] Unable to get ISSymbol for UTI: com.apple.ios-simulator Error: Error Domain=com.apple.iconServices.symbol-error Code=-1 "Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0" UserInfo={NSLocalizedDescription=Failed to find symbol using type id: com.apple.ios-simulator. Options: 1, strategy: 0}
+2026-11-08 15:53:23.950916+0800 kmplitert[8138:165152] Unbalanced calls to begin/end appearance transitions for <AppCoreandroidx.compose.ui.scene.ComposeLayersViewController19: 0x10d799c00>.
+2026-11-08 15:53:25.041689+0800 kmplitert[8138:165152] Unbalanced calls to begin/end appearance transitions for <AppCoreandroidx.compose.ui.scene.ComposeLayersViewController19: 0x10d799c00>.
+2026-11-08 15:53:25.329572+0800 kmplitert[8138:165152] Unbalanced calls to begin/end appearance transitions for <AppCoreandroidx.compose.ui.scene.ComposeLayersViewController19: 0x10d799c00>.
+2026-11-08 15:53:26.091951+0800 kmplitert[8138:165152] Unbalanced calls to begin/end appearance transitions for <AppCoreandroidx.compose.ui.scene.ComposeLayersViewController19: 0x10d799c00>.
 
-Reusing configuration cache.
-> Task :app:shared:checkSyntheticImportProjectIsCorrectlyIntegrated SKIPPED
-> Task :app:shared:generateSyntheticLinkageSwiftPMImportProjectForEmbedAndSignLinkage SKIPPED
-> Task :app:shared:bundleLiteRtToIosSimulatorArm64ReleaseFramework UP-TO-DATE
-> Task :core:kmpPartiallyResolvedDependenciesChecker
-> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :app:shared:copyNonXmlValueResourcesForAppleMain NO-SOURCE
-> Task :app:shared:checkIosSimulatorArm64MainComposeLibrariesCompatibility
-> Task :app:shared:kmpPartiallyResolvedDependenciesChecker
-> Task :app:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :app:shared:checkSandboxAndWriteProtection
-> Task :app:shared:bundleLiteRtToIosSimulatorArm64DebugFramework UP-TO-DATE
-> Task :app:shared:convertXmlValueResourcesForAppleMain NO-SOURCE
-> Task :core:exportCrossCompilationMetadataForIosSimulatorArm64ApiElements UP-TO-DATE
-> Task :app:shared:convertXmlValueResourcesForIosMain NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
-> Task :app:shared:convertXmlValueResourcesForIosSimulatorArm64Main NO-SOURCE
-> Task :app:shared:downloadKotlinNativeDistribution UP-TO-DATE
-> Task :app:shared:convertXmlValueResourcesForNativeMain NO-SOURCE
-> Task :app:shared:generateComposeResClass UP-TO-DATE
-> Task :app:shared:prepareComposeResourcesTaskForAppleMain NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForIosMain NO-SOURCE
-> Task :app:shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
-> Task :app:shared:copyNonXmlValueResourcesForIosSimulatorArm64Main NO-SOURCE
-> Task :app:shared:computeLocalPackageDependencyInputFiles UP-TO-DATE
-> Task :app:shared:generateSyntheticLinkageSwiftPMImportProjectForCinteropsAndLdDump SKIPPED
-> Task :app:shared:convertXmlValueResourcesForCommonMain NO-SOURCE
-> Task :core:cinteropLitertIosSimulatorArm64 UP-TO-DATE
-> Task :app:shared:copyNonXmlValueResourcesForNativeMain NO-SOURCE
-> Task :app:shared:createBuildSystemDirectory
-> Task :dataproces:serializeSwiftPMDependenciesMetadataForLockFiles UP-TO-DATE
-> Task :app:shared:symbolicLinkToAssembleDebugAppleFrameworkForXcodeIosSimulatorArm64 UP-TO-DATE
-> Task :app:shared:generateResourceAccessorsForAppleMain NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosSimulatorArm64Main NO-SOURCE
-> Task :app:shared:checkCanSyncComposeResourcesForIos
-> Task :app:shared:serializeSwiftPMDependenciesMetadataForLockFiles UP-TO-DATE
-> Task :core:serializeSwiftPMDependenciesMetadataForLockFiles UP-TO-DATE
-> Task :app:shared:prepareComposeResourcesTaskForIosMain NO-SOURCE
-> Task :app:shared:iosArm64ResolveResourcesFromDependencies UP-TO-DATE
-> Task :app:shared:generateResourceAccessorsForIosSimulatorArm64Main NO-SOURCE
-> Task :app:shared:validateArchitecturesForEmbedAndSignAppleFrameworkForXcode
-> Task :app:shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
-> Task :app:shared:convertXmlValueResourcesForIosArm64Main NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForNativeMain NO-SOURCE
-> Task :core:downloadKotlinNativeDistribution UP-TO-DATE
-> Task :app:shared:iosSimulatorArm64ResolveResourcesFromDependencies UP-TO-DATE
-> Task :app:shared:generateResourceAccessorsForNativeMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForCommonMain UP-TO-DATE
-> Task :core:generateUmbrellaPackageIdentifierBasedResolutionForDefault SKIPPED
-> Task :app:shared:copyNonXmlValueResourcesForIosArm64Main NO-SOURCE
-> Task :app:shared:assembleIosSimulatorArm64MainResources UP-TO-DATE
-> Task :app:shared:generateResourceAccessorsForIosMain NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosArm64Main NO-SOURCE
-> Task :app:shared:iosSimulatorArm64ResolveSelfResourcesCopyHierarchicalMultiplatformResources UP-TO-DATE
-> Task :core:fetchUmbrellaPackageIdentifierForDefault SKIPPED
-> Task :app:shared:syncPersistedPackageResolvedToSynthetic SKIPPED
-> Task :app:shared:fetchSyntheticImportProjectPackages SKIPPED
-> Task :app:shared:assembleIosArm64MainResources UP-TO-DATE
-> Task :app:shared:iosArm64ResolveSelfResourcesCopyHierarchicalMultiplatformResources UP-TO-DATE
-> Task :app:shared:iosArm64AggregateResources UP-TO-DATE
-> Task :app:shared:generateActualResourceCollectorsForIosSimulatorArm64Main UP-TO-DATE
-> Task :app:shared:convertSyntheticImportProjectIntoDefFileIphonesimulator UP-TO-DATE
-> Task :app:shared:iosSimulatorArm64AggregateResources UP-TO-DATE
-> Task :app:shared:syncComposeResourcesForIos UP-TO-DATE
-> Task :core:compileKotlinIosSimulatorArm64 UP-TO-DATE
-
-> Task :app:shared:compileKotlinIosSimulatorArm64 FAILED
-36 actionable tasks: 8 executed, 28 up-to-date
-Configuration cache entry reused.
-/Users/yebintang/IdeaProjects/kmplitert/app/shared/src/iosMain/kotlin/org/example/kmplitert/ModelFilePicker.ios.kt:49:42: error: Cannot infer type for type parameter 'T'. Specify it explicitly.
-/Users/yebintang/IdeaProjects/kmplitert/app/shared/src/iosMain/kotlin/org/example/kmplitert/ModelFilePicker.ios.kt:49:56: error: Unresolved reference 'data'.
-error: Compilation finished with errors
-error: Compilation finished with errors
-error: Compilation finished with errors
-error: Compilation finished with errors
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:shared:compileKotlinIosSimulatorArm64'.
-> Compilation finished with errors
-
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights from a Build Scan (powered by Develocity).
-> Get more help at https://help.gradle.org.
-
-BUILD FAILED in 688ms
-15:20:17: 执行完成 ':app:shared:embedAndSignAppleFrameworkForXcode'。
+进程已结束，退出代码为 0
