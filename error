@@ -1,5 +1,3 @@
-Starting Gradle Daemon...
-Gradle Daemon started in 662 ms
 Type-safe project accessors is an incubating feature.
 > Task :build-logic:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :build-logic:compileKotlin UP-TO-DATE
@@ -57,7 +55,7 @@ Type-safe project accessors is an incubating feature.
 > Task :app:shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
 > Task :app:shared:copyNonXmlValueResourcesForAppleMain NO-SOURCE
 > Task :app:shared:copyNonXmlValueResourcesForAppleTest NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForCommonMain
+> Task :app:shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
 > Task :app:shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
 > Task :app:shared:copyNonXmlValueResourcesForIosArm64Main NO-SOURCE
 > Task :app:shared:copyNonXmlValueResourcesForIosArm64Test NO-SOURCE
@@ -65,228 +63,117 @@ Type-safe project accessors is an incubating feature.
 > Task :app:shared:copyNonXmlValueResourcesForIosSimulatorArm64Main NO-SOURCE
 > Task :app:shared:copyNonXmlValueResourcesForIosSimulatorArm64Test NO-SOURCE
 > Task :app:shared:copyNonXmlValueResourcesForIosTest NO-SOURCE
-
-> Task :core:cinteropLitertIosArm64
-Warning: Failed to generate cinterop for :core:cinteropLitertIosArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
-org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
-	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:459)
-	at org.gradle.process.internal.DefaultJavaExecAction.execute(DefaultJavaExecAction.java:58)
-	at org.gradle.process.internal.DefaultExecActionFactory.javaexec(DefaultExecActionFactory.java:209)
-	at org.gradle.process.internal.DefaultExecOperations.javaexec(DefaultExecOperations.java:42)
-	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runViaExec(KotlinNativeToolRunner.kt:115)
-	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runTool(KotlinNativeToolRunner.kt:68)
-	at org.jetbrains.kotlin.gradle.targets.native.tasks.CInteropWorkAction.execute(CInteropWorkAction.kt:84)
-	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
-	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
-	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
-	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
-	at org.gradle.internal.Factories$1.create(Factories.java:30)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
-	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
-	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
-	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
-	at java.base/java.lang.Thread.run(Thread.java:1474)
-
 > Task :app:shared:copyNonXmlValueResourcesForJsMain NO-SOURCE
-> Task :core:iosArm64Cinterop-litertKlib NO-SOURCE
-
-> Task :core:cinteropLitertIosSimulatorArm64
-Warning: Failed to generate cinterop for :core:cinteropLitertIosSimulatorArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
-org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
-	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:459)
-	at org.gradle.process.internal.DefaultJavaExecAction.execute(DefaultJavaExecAction.java:58)
-	at org.gradle.process.internal.DefaultExecActionFactory.javaexec(DefaultExecActionFactory.java:209)
-	at org.gradle.process.internal.DefaultExecOperations.javaexec(DefaultExecOperations.java:42)
-	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runViaExec(KotlinNativeToolRunner.kt:115)
-	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runTool(KotlinNativeToolRunner.kt:68)
-	at org.jetbrains.kotlin.gradle.targets.native.tasks.CInteropWorkAction.execute(CInteropWorkAction.kt:84)
-	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
-	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
-	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
-	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
-WARNING: A restricted method in java.lang.System has been called
-WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
-WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
-WARNING: Restricted methods will be blocked in a future release unless native access is enabled
-
-Print: Entry, ":CFBundleShortVersionString", Does Not Exist
-xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
-Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
-Failed command: /usr/bin/xcrun xcodebuild -version
-Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
-	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
-	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
-	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
-	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
-Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
-output:
-
-	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
-	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
-	... 21 more
-WARNING: A restricted method in java.lang.System has been called
-WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
-WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
-WARNING: Restricted methods will be blocked in a future release unless native access is enabled
-
-Print: Entry, ":CFBundleShortVersionString", Does Not Exist
-xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
-Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
-Failed command: /usr/bin/xcrun xcodebuild -version
-Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
-	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
-	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
-	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
-	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
-Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
-output:
-
-	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
-	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
-	... 21 more
-WARNING: A restricted method in java.lang.System has been called
-WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
-WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
-WARNING: Restricted methods will be blocked in a future release unless native access is enabled
-
-Print: Entry, ":CFBundleShortVersionString", Does Not Exist
-xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
-Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
-Failed command: /usr/bin/xcrun xcodebuild -version
-Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
-	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
-	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
-	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
-	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
-Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
-output:
-
-	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
-	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
-	... 21 more
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
-	at org.gradle.internal.Factories$1.create(Factories.java:30)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
-	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
-	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
-	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
-	at java.base/java.lang.Thread.run(Thread.java:1474)
+> Task :app:shared:copyNonXmlValueResourcesForJsTest NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForJvmDev NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForJvmTest NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForNativeMain NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForNativeTest NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForWasmJsTest NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :app:shared:copyNonXmlValueResourcesForWebTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :app:shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :app:shared:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :app:shared:prepareComposeResourcesTaskForAppleMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForAppleMain NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForIosArm64Main NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForIosArm64Main NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForIosMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForIosMain NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForNativeMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForNativeMain NO-SOURCE
+> Task :app:shared:generateActualResourceCollectorsForIosArm64Main UP-TO-DATE
+> Task :app:shared:prepareComposeResourcesTaskForIosSimulatorArm64Main NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForIosSimulatorArm64Main NO-SOURCE
+> Task :app:shared:generateActualResourceCollectorsForIosSimulatorArm64Main UP-TO-DATE
+> Task :app:shared:prepareComposeResourcesTaskForJsMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForJsMain NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :app:shared:generateActualResourceCollectorsForJsMain UP-TO-DATE
+> Task :app:shared:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :app:shared:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :app:shared:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :app:shared:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :app:shared:generateComposeResClass UP-TO-DATE
+> Task :app:shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :app:shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForAppleTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForAppleTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForIosArm64Test NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForIosArm64Test NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForIosSimulatorArm64Test NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForIosSimulatorArm64Test NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForIosTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForIosTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForJsTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForJsTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForJvmDev NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForJvmDev NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForJvmTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForJvmTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForNativeTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForNativeTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForWasmJsTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForWasmJsTest NO-SOURCE
+> Task :app:shared:prepareComposeResourcesTaskForWebTest NO-SOURCE
+> Task :app:shared:generateResourceAccessorsForWebTest NO-SOURCE
+> Task :app:shared:transformNativeMainCInteropDependenciesMetadataForIde UP-TO-DATE
+> Task :app:shared:transformAppleMainCInteropDependenciesMetadataForIde UP-TO-DATE
+> Task :app:shared:transformIosMainCInteropDependenciesMetadataForIde UP-TO-DATE
+> Task :app:shared:transformNativeTestCInteropDependenciesMetadataForIde UP-TO-DATE
+> Task :app:shared:transformAppleTestCInteropDependenciesMetadataForIde UP-TO-DATE
+> Task :app:shared:transformIosTestCInteropDependenciesMetadataForIde UP-TO-DATE
+> Task :core:exportRootPublicationCoordinatesForMetadataApiElements UP-TO-DATE
+> Task :app:shared:generateProjectStructureMetadata UP-TO-DATE
+> Task :app:webApp:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForJsMain NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForJsTest NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForWasmJsTest NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :app:webApp:convertXmlValueResourcesForWebTest NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForJsMain NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForJsTest NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForWasmJsTest NO-SOURCE
+> Task :app:webApp:copyNonXmlValueResourcesForWebMain UP-TO-DATE
+> Task :app:webApp:copyNonXmlValueResourcesForWebTest NO-SOURCE
+> Task :app:webApp:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForCommonMain NO-SOURCE
+> Task :app:webApp:prepareComposeResourcesTaskForJsMain NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForJsMain NO-SOURCE
+> Task :app:webApp:prepareComposeResourcesTaskForWebMain UP-TO-DATE
+> Task :app:webApp:generateResourceAccessorsForWebMain UP-TO-DATE
+> Task :app:webApp:generateActualResourceCollectorsForJsMain UP-TO-DATE
+> Task :app:webApp:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :app:webApp:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :app:webApp:generateComposeResClass UP-TO-DATE
+> Task :app:webApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :app:webApp:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :app:webApp:prepareComposeResourcesTaskForJsTest NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForJsTest NO-SOURCE
+> Task :app:webApp:prepareComposeResourcesTaskForWasmJsTest NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForWasmJsTest NO-SOURCE
+> Task :app:webApp:prepareComposeResourcesTaskForWebTest NO-SOURCE
+> Task :app:webApp:generateResourceAccessorsForWebTest NO-SOURCE
+> Task :app:webApp:prepareKotlinIdeaImport UP-TO-DATE
+> Task :prepareKotlinBuildScriptModel UP-TO-DATE
 
 > Task :core:cinteropLitertMacosArm64
 Warning: Failed to generate cinterop for :core:cinteropLitertMacosArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
@@ -336,10 +223,133 @@ org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
 	at java.base/java.lang.Thread.run(Thread.java:1474)
 
-> Task :app:shared:copyNonXmlValueResourcesForJsTest NO-SOURCE
+> Task :core:macosArm64Cinterop-litertKlib NO-SOURCE
 
-> Task :dataproces:cinteropLitertIosArm64
-Warning: Failed to generate cinterop for :dataproces:cinteropLitertIosArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
+> Task :core:cinteropLitertIosSimulatorArm64
+Warning: Failed to generate cinterop for :core:cinteropLitertIosSimulatorArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Print: Entry, ":CFBundleShortVersionString", Does Not Exist
+xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
+Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
+Failed command: /usr/bin/xcrun xcodebuild -version
+Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
+	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
+	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
+	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
+	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
+Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
+output:
+
+	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
+	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
+	... 21 more
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Print: Entry, ":CFBundleShortVersionString", Does Not Exist
+xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
+Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
+Failed command: /usr/bin/xcrun xcodebuild -version
+Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
+	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
+	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
+	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
+	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
+Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
+output:
+
+	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
+	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
+	... 21 more
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Print: Entry, ":CFBundleShortVersionString", Does Not Exist
+xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
+Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
+Failed command: /usr/bin/xcrun xcodebuild -version
+Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
+	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
+	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
+	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
+	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
+Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
+output:
+
+	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
+	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
+	... 21 more
 org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
 	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:459)
 	at org.gradle.process.internal.DefaultJavaExecAction.execute(DefaultJavaExecAction.java:58)
@@ -385,118 +395,56 @@ org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang
 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
 	at java.base/java.lang.Thread.run(Thread.java:1474)
-WARNING: A restricted method in java.lang.System has been called
-WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
-WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
-WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-Print: Entry, ":CFBundleShortVersionString", Does Not Exist
-xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
-Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
-Failed command: /usr/bin/xcrun xcodebuild -version
-Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
-	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
-	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
-	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
-	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
-	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
-	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
-	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
-	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
-Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
-output:
-
-	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
-	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
-	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
-	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
-	... 21 more
-
-> Task :core:commonizeCInterop UP-TO-DATE
-> Task :core:copyCommonizeCInteropForIde UP-TO-DATE
-> Task :core:commonize UP-TO-DATE
 > Task :core:iosSimulatorArm64Cinterop-litertKlib NO-SOURCE
-> Task :core:macosArm64Cinterop-litertKlib NO-SOURCE
-> Task :core:prepareKotlinIdeaImport UP-TO-DATE
-> Task :dataproces:iosArm64Cinterop-litertKlib NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForJvmDev NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForJvmMain NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForJvmTest NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForNativeMain NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForNativeTest NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForWasmJsTest NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForWebMain NO-SOURCE
-> Task :app:shared:copyNonXmlValueResourcesForWebTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForAndroidMain NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForCommonMain
-> Task :app:shared:generateResourceAccessorsForCommonMain
-> Task :app:shared:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
-> Task :app:shared:prepareComposeResourcesTaskForAppleMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForAppleMain NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosArm64Main NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForIosArm64Main NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForIosMain NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForNativeMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForNativeMain NO-SOURCE
-> Task :app:shared:generateActualResourceCollectorsForIosArm64Main
-> Task :app:shared:prepareComposeResourcesTaskForIosSimulatorArm64Main NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForIosSimulatorArm64Main NO-SOURCE
-> Task :app:shared:generateActualResourceCollectorsForIosSimulatorArm64Main UP-TO-DATE
-> Task :app:shared:prepareComposeResourcesTaskForJsMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForJsMain NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForWebMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForWebMain NO-SOURCE
-> Task :app:shared:generateActualResourceCollectorsForJsMain UP-TO-DATE
-> Task :app:shared:prepareComposeResourcesTaskForJvmMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForJvmMain NO-SOURCE
-> Task :app:shared:generateActualResourceCollectorsForJvmMain UP-TO-DATE
-> Task :app:shared:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForWasmJsMain NO-SOURCE
-> Task :app:shared:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
-> Task :app:shared:generateComposeResClass
-> Task :app:shared:generateExpectResourceCollectorsForCommonMain
-> Task :app:shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForAppleTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForAppleTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForCommonTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosArm64Test NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForIosArm64Test NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosSimulatorArm64Test NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForIosSimulatorArm64Test NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForIosTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForIosTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForJsTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForJsTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForJvmDev NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForJvmDev NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForJvmTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForJvmTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForNativeTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForNativeTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForWasmJsTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForWasmJsTest NO-SOURCE
-> Task :app:shared:prepareComposeResourcesTaskForWebTest NO-SOURCE
-> Task :app:shared:generateResourceAccessorsForWebTest NO-SOURCE
+
+> Task :core:cinteropLitertIosArm64
+Warning: Failed to generate cinterop for :core:cinteropLitertIosArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
+org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:459)
+	at org.gradle.process.internal.DefaultJavaExecAction.execute(DefaultJavaExecAction.java:58)
+	at org.gradle.process.internal.DefaultExecActionFactory.javaexec(DefaultExecActionFactory.java:209)
+	at org.gradle.process.internal.DefaultExecOperations.javaexec(DefaultExecOperations.java:42)
+	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runViaExec(KotlinNativeToolRunner.kt:115)
+	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runTool(KotlinNativeToolRunner.kt:68)
+	at org.jetbrains.kotlin.gradle.targets.native.tasks.CInteropWorkAction.execute(CInteropWorkAction.kt:84)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
 
 > Task :dataproces:cinteropLitertMacosArm64
 Warning: Failed to generate cinterop for :dataproces:cinteropLitertMacosArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
@@ -593,8 +541,6 @@ org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang
 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
 	at java.base/java.lang.Thread.run(Thread.java:1474)
-
-> Task :app:shared:transformNativeMainCInteropDependenciesMetadataForIde UP-TO-DATE
 WARNING: A restricted method in java.lang.System has been called
 WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
@@ -677,58 +623,110 @@ output:
 	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
 	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
 	... 21 more
+
+> Task :core:commonizeCInterop UP-TO-DATE
+> Task :core:copyCommonizeCInteropForIde UP-TO-DATE
+> Task :core:commonize UP-TO-DATE
+> Task :core:iosArm64Cinterop-litertKlib NO-SOURCE
+> Task :core:prepareKotlinIdeaImport UP-TO-DATE
+> Task :dataproces:iosSimulatorArm64Cinterop-litertKlib NO-SOURCE
+> Task :dataproces:macosArm64Cinterop-litertKlib NO-SOURCE
+> Task :app:shared:prepareKotlinIdeaImport
+
+> Task :dataproces:cinteropLitertIosArm64
+Warning: Failed to generate cinterop for :dataproces:cinteropLitertIosArm64: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
+org.gradle.process.ProcessExecutionException: Process 'command '/Users/yebintang/Library/Java/JavaVirtualMachines/jbrsdk_jcef-25.0.4.1/Contents/Home/bin/java'' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:459)
+	at org.gradle.process.internal.DefaultJavaExecAction.execute(DefaultJavaExecAction.java:58)
+	at org.gradle.process.internal.DefaultExecActionFactory.javaexec(DefaultExecActionFactory.java:209)
+	at org.gradle.process.internal.DefaultExecOperations.javaexec(DefaultExecOperations.java:42)
+	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runViaExec(KotlinNativeToolRunner.kt:115)
+	at org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner.runTool(KotlinNativeToolRunner.kt:68)
+	at org.jetbrains.kotlin.gradle.targets.native.tasks.CInteropWorkAction.execute(CInteropWorkAction.kt:84)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:275)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:273)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:265)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:133)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+
 > Task :dataproces:commonizeCInterop UP-TO-DATE
 > Task :dataproces:copyCommonizeCInteropForIde UP-TO-DATE
 > Task :dataproces:commonize UP-TO-DATE
-> Task :dataproces:iosSimulatorArm64Cinterop-litertKlib NO-SOURCE
-> Task :dataproces:macosArm64Cinterop-litertKlib NO-SOURCE
+> Task :dataproces:iosArm64Cinterop-litertKlib NO-SOURCE
 > Task :dataproces:prepareKotlinIdeaImport
-> Task :app:shared:transformAppleMainCInteropDependenciesMetadataForIde UP-TO-DATE
-> Task :app:shared:transformIosMainCInteropDependenciesMetadataForIde UP-TO-DATE
-> Task :app:shared:transformNativeTestCInteropDependenciesMetadataForIde UP-TO-DATE
-> Task :app:shared:transformAppleTestCInteropDependenciesMetadataForIde UP-TO-DATE
-> Task :app:shared:transformIosTestCInteropDependenciesMetadataForIde UP-TO-DATE
-> Task :app:shared:prepareKotlinIdeaImport
-> Task :core:exportRootPublicationCoordinatesForMetadataApiElements UP-TO-DATE
-> Task :app:shared:generateProjectStructureMetadata UP-TO-DATE
-> Task :app:webApp:convertXmlValueResourcesForCommonMain NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForCommonTest NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForJsMain NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForJsTest NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForWasmJsMain NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForWasmJsTest NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForWebMain NO-SOURCE
-> Task :app:webApp:convertXmlValueResourcesForWebTest NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForCommonMain NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForCommonTest NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForJsMain NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForJsTest NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForWasmJsTest NO-SOURCE
-> Task :app:webApp:copyNonXmlValueResourcesForWebMain UP-TO-DATE
-> Task :app:webApp:copyNonXmlValueResourcesForWebTest NO-SOURCE
-> Task :app:webApp:prepareComposeResourcesTaskForCommonMain NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForCommonMain NO-SOURCE
-> Task :app:webApp:prepareComposeResourcesTaskForJsMain NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForJsMain NO-SOURCE
-> Task :app:webApp:prepareComposeResourcesTaskForWebMain UP-TO-DATE
-> Task :app:webApp:generateResourceAccessorsForWebMain UP-TO-DATE
-> Task :app:webApp:generateActualResourceCollectorsForJsMain UP-TO-DATE
-> Task :app:webApp:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForWasmJsMain NO-SOURCE
-> Task :app:webApp:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
-> Task :app:webApp:generateComposeResClass UP-TO-DATE
-> Task :app:webApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
-> Task :app:webApp:prepareComposeResourcesTaskForCommonTest NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForCommonTest NO-SOURCE
-> Task :app:webApp:prepareComposeResourcesTaskForJsTest NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForJsTest NO-SOURCE
-> Task :app:webApp:prepareComposeResourcesTaskForWasmJsTest NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForWasmJsTest NO-SOURCE
-> Task :app:webApp:prepareComposeResourcesTaskForWebTest NO-SOURCE
-> Task :app:webApp:generateResourceAccessorsForWebTest NO-SOURCE
-> Task :app:webApp:prepareKotlinIdeaImport UP-TO-DATE
-> Task :prepareKotlinBuildScriptModel UP-TO-DATE
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by kotlinx.cinterop.JvmUtilsKt in an unnamed module (file:/Users/yebintang/.konan/kotlin-native-prebuilt-macos-aarch64-2.4.0/konan/lib/kotlin-native-compiler-embeddable.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-BUILD SUCCESSFUL in 15s
-61 actionable tasks: 12 executed, 49 up-to-date
+Print: Entry, ":CFBundleShortVersionString", Does Not Exist
+xcrun: error: unable to find utility "xcodebuild", not a developer tool or in PATH
+Exception in thread "main" org.jetbrains.kotlin.konan.MissingXcodeException: An error occurred during an xcrun execution. Make sure that Xcode and its command line tools are properly installed.
+Failed command: /usr/bin/xcrun xcodebuild -version
+Try running this command in Terminal and fix the errors by making Xcode (and its command line tools) configuration correct.
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:141)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getXcodebuildVersion$kotlin_native_utils(Xcode.kt:114)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:126)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode$version$2.invoke(Xcode.kt:122)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.getVersion(Xcode.kt:122)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:70)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl$xcodePartsProvider$2.invoke(Apple.kt:62)
+	at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:86)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getXcodePartsProvider(Apple.kt:62)
+	at org.jetbrains.kotlin.konan.target.AppleConfigurablesImpl.getAbsoluteTargetSysRoot(Apple.kt:35)
+	at org.jetbrains.kotlin.konan.target.Platform.getAbsoluteTargetSysRoot(Platform.kt)
+	at org.jetbrains.kotlin.konan.target.AbstractToolConfig.<init>(AbstractToolConfig.kt:20)
+	at org.jetbrains.kotlin.native.interop.tool.ToolConfig.<init>(ToolConfig.kt:25)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.prepareTool(main.kt:586)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLib(main.kt:265)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.processCLibSafe(main.kt:246)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.MainKt.access$processCLibSafe(main.kt:1)
+	at org.jetbrains.kotlin.native.interop.gen.jvm.Interop.interop(main.kt:105)
+	at org.jetbrains.kotlin.cli.utilities.InteropCompilerKt.invokeInterop(InteropCompiler.kt:49)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.mainImpl(main.kt:23)
+	at org.jetbrains.kotlin.cli.utilities.MainKt.main(main.kt:40)
+Caused by: org.jetbrains.kotlin.konan.KonanExternalToolFailure: The /usr/bin/xcrun command returned non-zero exit code: 72.
+output:
+
+	at org.jetbrains.kotlin.konan.exec.Command.handleExitCode(ExecuteCommand.kt:123)
+	at org.jetbrains.kotlin.konan.exec.Command.getResult(ExecuteCommand.kt:112)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines(ExecuteCommand.kt:87)
+	at org.jetbrains.kotlin.konan.exec.Command.getOutputLines$default(ExecuteCommand.kt:86)
+	at org.jetbrains.kotlin.konan.target.CurrentXcode.xcrun(Xcode.kt:131)
+	... 21 more
+
+BUILD SUCCESSFUL in 2s
+61 actionable tasks: 6 executed, 55 up-to-date
