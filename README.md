@@ -327,6 +327,32 @@ val processedImage = LiteRtImage.fromBytes(bytes)
 processedImage.writeFloatBuffer(buffer, mean = 0f, std = 255f)
 ```
 
+The `dataproces` module also accepts encoded bytes, raw pixels, and platform
+video frames:
+
+```kotlin
+import io.github.kmplitert.dataprocess.image.LiteRtImage
+import io.github.kmplitert.dataprocess.image.ImageRotation
+
+val image = LiteRtImage(encodedImageBytes).resize(320, 320).toRgb()
+val pixels: ByteArray = image.data
+val normalized: FloatArray = image.toFloatArray(mean = 0f, std = 255f)
+// For raw RGB pixels, use LiteRtImage.fromRawRgb(pixels, width, height).
+// For a platform frame, use LiteRtImage.fromVideoFrame(frame, ImageRotation.ROTATION_90).
+image.writeFloatBuffer(buffer, mean = 0f, std = 255f)
+```
+
+Pixel data is row-major and interleaved (grayscale, RGB, or RGBA). Android and
+JVM use their platform image decoders; JS, Wasm, and Native currently support
+uncompressed 24-bit BMP for synchronous encoded-byte input. Frame input supports
+Android `Bitmap`, `Image` (YUV_420_888), and CameraX `ImageProxy` (with an
+underlying `Image`); JVM `BufferedImage`; browser canvas, image, and video
+elements; and Apple `CVPixelBuffer` (plus iOS `UIImage`). JVM NV12/NV21 buffers
+use `fromYuvByteBuffer` with explicit dimensions. Native Windows/Linux frame
+objects and macOS image objects are not supported. Rotation is applied before
+flipping. The `dataproces` module depends on `core` for TFBuffer writes; the
+original `tool` API remains available.
+
 ---
 
 ## 🔊 Audio Processing (`LiteRtAudio`)
@@ -341,6 +367,11 @@ val pcmData = audio.data // FloatArray
 // Basic signal processing
 val normalized = SignalProcessing.normalize(pcmData)
 ```
+
+The `dataproces` module provides `LiteRtAudio.fromWav(wavBytes)`,
+`resample`, `toMono`, and `SignalProcessing` FFT and spectrogram helpers.
+Its WAV decoder supports little-endian PCM (8/16/24/32-bit) and 32-bit
+IEEE float; unsupported formats and malformed files are rejected.
 
 ---
 

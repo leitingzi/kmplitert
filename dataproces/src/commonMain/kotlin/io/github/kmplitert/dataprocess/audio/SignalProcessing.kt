@@ -1,4 +1,4 @@
-package io.github.kmplitert.tool.audio
+package io.github.kmplitert.dataprocess.audio
 
 import kotlin.math.*
 
@@ -15,6 +15,9 @@ object SignalProcessing {
      */
     fun fft(real: FloatArray, imag: FloatArray) {
         val n = real.size
+        require(imag.size == n && n > 0 && n and (n - 1) == 0) {
+            "FFT arrays must have the same non-zero power-of-two length"
+        }
         if (n <= 1) return
         
         // Bit-reversal permutation
@@ -60,6 +63,7 @@ object SignalProcessing {
                     wReal = nextWReal
                 }
             }
+            if (len == n) break
             len = len shl 1
         }
     }
@@ -69,6 +73,8 @@ object SignalProcessing {
      */
     @Suppress("SpellCheckingInspection")
     fun hanningWindow(size: Int): FloatArray {
+        require(size > 0) { "Window size must be positive" }
+        if (size == 1) return floatArrayOf(1f)
         return FloatArray(size) { i ->
             0.5f * (1f - cos(2f * PI.toFloat() * i / (size - 1)))
         }
@@ -78,6 +84,8 @@ object SignalProcessing {
      * Applies a Hamming window to the signal.
      */
     fun hammingWindow(size: Int): FloatArray {
+        require(size > 0) { "Window size must be positive" }
+        if (size == 1) return floatArrayOf(1f)
         return FloatArray(size) { i ->
             0.54f - 0.46f * cos(2f * PI.toFloat() * i / (size - 1))
         }
@@ -107,6 +115,10 @@ object SignalProcessing {
         lowFreq: Float = 0f,
         highFreq: Float = sampleRate / 2f
     ): Array<FloatArray> {
+        require(numFilters > 0 && numFilters <= Int.MAX_VALUE - 2 && fftSize >= 2 &&
+            fftSize and (fftSize - 1) == 0 && sampleRate > 0 &&
+            lowFreq.isFinite() && highFreq.isFinite() && lowFreq >= 0f &&
+            highFreq > lowFreq && highFreq <= sampleRate / 2f) { "Invalid Mel filter parameters" }
         val lowMel = hzToMel(lowFreq)
         val highMel = hzToMel(highFreq)
         val melPoints = FloatArray(numFilters + 2) { i ->
@@ -139,9 +151,11 @@ object SignalProcessing {
         hopSize: Int,
         window: FloatArray
     ): List<FloatArray> {
+        require(fftSize > 0 && fftSize and (fftSize - 1) == 0 && hopSize > 0 &&
+            window.size == fftSize) { "Invalid spectrogram parameters" }
         val spectrogram = mutableListOf<FloatArray>()
         var offset = 0
-        while (offset + fftSize <= signal.size) {
+        while (offset <= signal.size - fftSize) {
             val frame = FloatArray(fftSize) { i -> signal[offset + i] * window[i] }
             val imag = FloatArray(fftSize)
             fft(frame, imag)
@@ -150,6 +164,7 @@ object SignalProcessing {
                 (frame[i] * frame[i] + imag[i] * imag[i])
             }
             spectrogram.add(powerFrame)
+            if (hopSize > signal.size - offset) break
             offset += hopSize
         }
         return spectrogram

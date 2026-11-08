@@ -157,7 +157,6 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutinesCore)
-            api(projects.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

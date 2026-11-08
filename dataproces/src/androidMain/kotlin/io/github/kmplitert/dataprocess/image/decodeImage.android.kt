@@ -2,9 +2,14 @@ package io.github.kmplitert.dataprocess.image
 
 import android.graphics.BitmapFactory
 
-internal actual fun decodeImage(bytes: ByteArray): LiteRtImage {
+actual fun decodeImage(bytes: ByteArray): LiteRtImage {
     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         ?: throw IllegalArgumentException("Unable to decode image bytes")
+    return bitmap.asLiteRtImage()
+}
+
+fun android.graphics.Bitmap.asLiteRtImage(): LiteRtImage {
+    val bitmap = this
     val width = bitmap.width
     val height = bitmap.height
     val channels = if (bitmap.hasAlpha()) 4 else 3

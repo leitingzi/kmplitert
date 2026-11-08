@@ -1,4 +1,4 @@
-package io.github.kmplitert.tool.image
+package io.github.kmplitert.dataprocess.image
 
 /**
  * Represents a rotation angle for image processing.

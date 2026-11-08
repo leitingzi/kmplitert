@@ -1,216 +1,183 @@
-@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-
-package io.github.kmplitert.tool.image
+package io.github.kmplitert.dataprocess.image
 
 import io.github.kmplitert.core.TFBuffer
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.floor
+import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /**
- * Represents an image that can be preprocessed before being fed into a LiteRT model.
+ * An image stored as interleaved, row-major grayscale, RGB, or RGBA pixels.
  *
- * This class provides common image operations such as resizing and converting
- * pixel data into a normalized [FloatArray].
- *
- * Platform-specific implementations are provided for each supported target.
+ * [data] and [toInt8Array] return copies of the unsigned 8-bit channel values.
+ * The constructor and [fromBytes] decode encoded image bytes; supported formats
+ * depend on the platform. Use [fromRawRgb] for unencoded RGB pixels.
  */
-expect class LiteRtImage {
+class LiteRtImage private constructor(
+    private val pixels: ByteArray,
+    val width: Int,
+    val height: Int,
+    val channels: Int,
+) {
+    private constructor(image: LiteRtImage) : this(image.pixels, image.width, image.height, image.channels)
 
-    /**
-     * The width of the image in pixels.
-     */
-    val width: Int
+    constructor(data: ByteArray) : this(decodeImage(data))
 
-    /**
-     * The height of the image in pixels.
-     */
-    val height: Int
+    val data: ByteArray get() = pixels.copyOf()
 
-    /**
-     * The number of color channels in the image (e.g., 3 for RGB, 4 for RGBA, 1 for Grayscale).
-     */
-    val channels: Int
+    fun resize(width: Int, height: Int): LiteRtImage {
+        val result = ByteArray(pixelCount(width, height, channels))
+        for (y in 0 until height) {
+            val sy = if (height == 1) 0f else y.toFloat() * (this.height - 1) / (height - 1)
+            val y0 = sy.toInt()
+            val y1 = (y0 + 1).coerceAtMost(this.height - 1)
+            for (x in 0 until width) {
+                val sx = if (width == 1) 0f else x.toFloat() * (this.width - 1) / (width - 1)
+                val x0 = sx.toInt()
+                val x1 = (x0 + 1).coerceAtMost(this.width - 1)
+                val dx = sx - x0
+                val dy = sy - y0
+                for (c in 0 until channels) {
+                    fun value(px: Int, py: Int) = pixels[(py * this.width + px) * channels + c].toInt() and 255
+                    val top = value(x0, y0) * (1 - dx) + value(x1, y0) * dx
+                    val bottom = value(x0, y1) * (1 - dx) + value(x1, y1) * dx
+                    result[(y * width + x) * channels + c] = (top * (1 - dy) + bottom * dy).roundToInt().toByte()
+                }
+            }
+        }
+        return LiteRtImage(result, width, height, channels)
+    }
 
-    /**
-     * Returns a resized copy of this image.
-     *
-     * The original image is not modified.
-     *
-     * @param width The target image width in pixels.
-     * @param height The target image height in pixels.
-     * @return A new [LiteRtImage] with the specified dimensions.
-     */
-    fun resize(width: Int, height: Int): LiteRtImage
+    fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage {
+        val size = pixelCount(width, height, channels)
+        require(x >= 0 && y >= 0 && width <= this.width && height <= this.height &&
+            x <= this.width - width && y <= this.height - height) { "Crop region is outside the image" }
+        val result = ByteArray(size)
+        for (row in 0 until height) {
+            val start = ((y + row) * this.width + x) * channels
+            pixels.copyInto(result, row * width * channels, start, start + width * channels)
+        }
+        return LiteRtImage(result, width, height, channels)
+    }
 
-    /**
-     * Returns a cropped copy of this image.
-     *
-     * @param x The leftmost pixel of the crop region.
-     * @param y The topmost pixel of the crop region.
-     * @param width The width of the crop region.
-     * @param height The height of the crop region.
-     * @return A new [LiteRtImage] containing the cropped region.
-     */
-    fun crop(x: Int, y: Int, width: Int, height: Int): LiteRtImage
+    fun centerCrop(width: Int, height: Int): LiteRtImage {
+        require(width <= this.width && height <= this.height) { "Crop region is outside the image" }
+        return crop((this.width - width) / 2, (this.height - height) / 2, width, height)
+    }
 
-    /**
-     * Returns a center-cropped copy of this image.
-     *
-     * @param width The target width of the crop.
-     * @param height The target height of the crop.
-     * @return A new [LiteRtImage] containing the center-cropped region.
-     */
-    fun centerCrop(width: Int, height: Int): LiteRtImage
+    /** Rotates clockwise, using nearest-neighbor sampling and zero-filled uncovered pixels. */
+    fun rotate(degrees: Float): LiteRtImage {
+        require(degrees.isFinite()) { "Rotation must be finite" }
+        val normalized = ((degrees % 360f) + 360f) % 360f
+        val radians = normalized.toDouble() * kotlin.math.PI / 180.0
+        val cosine = cos(radians).let { if (abs(it) < 1e-10) 0.0 else it }
+        val sine = sin(radians).let { if (abs(it) < 1e-10) 0.0 else it }
+        val newWidth = ceil(width * abs(cosine) + height * abs(sine)).toInt()
+        val newHeight = ceil(height * abs(cosine) + width * abs(sine)).toInt()
+        val result = ByteArray(pixelCount(newWidth, newHeight, channels))
+        for (y in 0 until newHeight) {
+            for (x in 0 until newWidth) {
+                val dx = x + 0.5 - newWidth / 2.0
+                val dy = y + 0.5 - newHeight / 2.0
+                val sx = floor(cosine * dx + sine * dy + width / 2.0).toInt()
+                val sy = floor(-sine * dx + cosine * dy + height / 2.0).toInt()
+                if (sx in 0 until width && sy in 0 until height) {
+                    val source = (sy * width + sx) * channels
+                    pixels.copyInto(result, (y * newWidth + x) * channels, source, source + channels)
+                }
+            }
+        }
+        return LiteRtImage(result, newWidth, newHeight, channels)
+    }
 
-    /**
-     * Returns a rotated copy of this image.
-     *
-     * @param degrees The angle to rotate in degrees (clockwise).
-     * @return A new [LiteRtImage] rotated by the specified angle.
-     */
-    fun rotate(degrees: Float): LiteRtImage
+    fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage {
+        val result = ByteArray(pixels.size)
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val sourceX = if (horizontal) width - 1 - x else x
+                val sourceY = if (vertical) height - 1 - y else y
+                val source = (sourceY * width + sourceX) * channels
+                pixels.copyInto(result, (y * width + x) * channels, source, source + channels)
+            }
+        }
+        return LiteRtImage(result, width, height, channels)
+    }
 
-    /**
-     * Returns a flipped copy of this image.
-     *
-     * @param horizontal Whether to flip the image horizontally.
-     * @param vertical Whether to flip the image vertically.
-     * @return A new [LiteRtImage] flipped as specified.
-     */
-    fun flip(horizontal: Boolean, vertical: Boolean): LiteRtImage
+    fun toGrayscale(): LiteRtImage {
+        if (channels == 1) return this
+        val result = ByteArray(width * height)
+        for (i in result.indices) {
+            val offset = i * channels
+            val red = pixels[offset].toInt() and 255
+            val green = pixels[offset + 1].toInt() and 255
+            val blue = pixels[offset + 2].toInt() and 255
+            result[i] = (0.299 * red + 0.587 * green + 0.114 * blue).roundToInt().toByte()
+        }
+        return LiteRtImage(result, width, height, 1)
+    }
 
-    /**
-     * Converts the image to grayscale.
-     *
-     * @return A new [LiteRtImage] in grayscale format (typically 1 channel).
-     */
-    fun toGrayscale(): LiteRtImage
+    fun toRgb(): LiteRtImage {
+        if (channels == 3) return this
+        val result = ByteArray(pixelCount(width, height, 3))
+        for (i in 0 until width * height) {
+            for (c in 0..2) result[i * 3 + c] = pixels[i * channels + if (channels == 1) 0 else c]
+        }
+        return LiteRtImage(result, width, height, 3)
+    }
 
-    /**
-     * Converts the image to RGB format (discarding alpha if present).
-     *
-     * @return A new [LiteRtImage] in RGB format (3 channels).
-     */
-    fun toRgb(): LiteRtImage
+    fun toFloatArray(mean: Float = 0f, std: Float = 1f): FloatArray {
+        require(std.isFinite() && std != 0f && mean.isFinite()) { "Normalization parameters must be finite and std non-zero" }
+        return FloatArray(pixels.size) { ((pixels[it].toInt() and 255) - mean) / std }
+    }
 
-    /**
-     * Converts the image into a normalized float array.
-     *
-     * Each pixel channel is converted using the following formula:
-     *
-     * `normalized = (value - mean) / std`
-     *
-     * where `value` is the original channel value in the range `[0, 255]`.
-     *
-     * The output array is arranged in platform-defined channel order
-     * (typically RGB) and is suitable for use as model input.
-     *
-     * @param mean The value subtracted from each channel. Defaults to `0f`.
-     * @param std The value used to divide each channel after subtraction.
-     * Defaults to `1f`.
-     * @return A normalized float array containing the image pixel data.
-     */
-    fun toFloatArray(mean: Float = 0f, std: Float = 1f): FloatArray
+    fun toInt8Array(): ByteArray = data
+    fun toIntArray(): IntArray = IntArray(pixels.size) { pixels[it].toInt() and 255 }
+    fun toBooleanArray(): BooleanArray = BooleanArray(pixels.size) { (pixels[it].toInt() and 255) > 127 }
+    fun toLongArray(): LongArray = LongArray(pixels.size) { (pixels[it].toInt() and 255).toLong() }
 
-    /**
-     * Converts the image into a signed 8-bit integer array (ByteArray).
-     *
-     * Each pixel channel (0-255) is cast directly to a signed [Byte].
-     * This is commonly used for quantized models.
-     *
-     * @return A byte array containing the image pixel data in RGB order.
-     */
-    fun toInt8Array(): ByteArray
-
-    /**
-     * Converts the image into an integer array.
-     *
-     * Each pixel channel (0-255) is stored as an [Int].
-     *
-     * @return An integer array containing the image pixel data in RGB order.
-     */
-    fun toIntArray(): IntArray
-
-    /**
-     * Converts the image into a boolean array.
-     *
-     * Each pixel channel is converted to boolean: `true` if > 127, `false` otherwise.
-     *
-     * @return A boolean array containing the image pixel data in RGB order.
-     */
-    fun toBooleanArray(): BooleanArray
-
-    /**
-     * Converts the image into a long array.
-     *
-     * Each pixel channel (0-255) is stored as a [Long].
-     *
-     * @return A long array containing the image pixel data in RGB order.
-     */
-    fun toLongArray(): LongArray
-
-    /**
-     * Directly writes the image pixel data to a signed 8-bit integer [io.github.kmplitert.core.TFBuffer].
-     *
-     * This is an optimized operation that avoids creating intermediate Kotlin arrays
-     * when possible.
-     *
-     * @param buffer The target [io.github.kmplitert.core.TFBuffer] to write to.
-     */
-    fun writeInt8Buffer(buffer: TFBuffer)
-
-    /**
-     * Directly writes the image pixel data to a float [TFBuffer] with normalization.
-     *
-     * This is an optimized operation that avoids creating intermediate Kotlin arrays
-     * when possible.
-     *
-     * @param buffer The target [TFBuffer] to write to.
-     * @param mean The value subtracted from each channel. Defaults to `0f`.
-     * @param std The value used to divide each channel after subtraction. Defaults to `1f`.
-     */
-    fun writeFloatBuffer(buffer: TFBuffer, mean: Float = 0f, std: Float = 1f)
+    fun writeInt8Buffer(buffer: TFBuffer) = buffer.writeInt8(data)
+    fun writeFloatBuffer(buffer: TFBuffer, mean: Float = 0f, std: Float = 1f) =
+        buffer.writeFloat(toFloatArray(mean, std))
 
     companion object {
+        fun fromBytes(bytes: ByteArray): LiteRtImage = LiteRtImage(bytes)
+
+        fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage =
+            fromPixels(data, width, height, 3)
 
         /**
-         * Decodes an image from its encoded byte representation.
-         *
-         * Supported image formats depend on the underlying platform
-         * implementation (for example PNG or JPEG).
-         *
-         * @param bytes The encoded image bytes.
-         * @return A decoded [LiteRtImage].
-         * @throws IllegalArgumentException If the image cannot be decoded.
-         */
-        fun fromBytes(bytes: ByteArray): LiteRtImage
-
-        /**
-         * Creates a [LiteRtImage] from raw RGB pixel data.
-         *
-         * @param data The raw RGB pixel data (3 bytes per pixel).
-         * @param width The image width.
-         * @param height The image height.
-         * @return A [LiteRtImage].
-         */
-        fun fromRawRgb(data: ByteArray, width: Int, height: Int): LiteRtImage
-
-        /**
-         * Creates a [LiteRtImage] from a platform-specific video frame or image object.
-         *
-         * - On Android: Expects [android.media.Image] or [androidx.camera.core.ImageProxy].
-         * - On iOS: Expects [platform.CoreVideo.CVPixelBufferRef].
-         * - On JVM: Expects [java.awt.image.BufferedImage] or [java.nio.ByteBuffer].
-         * - On Web: Expects [org.w3c.dom.HTMLCanvasElement] or [org.w3c.dom.HTMLImageElement] or [org.w3c.dom.HTMLVideoElement].
-         *
-         * @param frame The platform-specific frame object.
-         * @param rotation The rotation to apply.
-         * @param flip The flipping to apply.
-         * @return A [LiteRtImage].
-         * @throws IllegalArgumentException If the frame type is not supported on the current platform.
+         * Converts a platform frame to an image, then rotates clockwise and applies the flip.
+         * Supported frame types vary by platform; see the image processing documentation.
          */
         fun fromVideoFrame(
             frame: Any,
             rotation: ImageRotation = ImageRotation.ROTATION_0,
-            flip: ImageFlip = ImageFlip()
-        ): LiteRtImage
+            flip: ImageFlip = ImageFlip(),
+        ): LiteRtImage = decodeVideoFrame(frame).transformFrame(rotation, flip)
+
+        internal fun fromPixels(data: ByteArray, width: Int, height: Int, channels: Int): LiteRtImage {
+            require(channels == 1 || channels == 3 || channels == 4) { "Unsupported channel count: $channels" }
+            require(data.size == pixelCount(width, height, channels)) { "Pixel data size does not match image dimensions" }
+            return LiteRtImage(data.copyOf(), width, height, channels)
+        }
     }
+}
+
+internal fun LiteRtImage.transformFrame(rotation: ImageRotation, flip: ImageFlip): LiteRtImage {
+    val rotated = if (rotation == ImageRotation.ROTATION_0) this else rotate(rotation.degrees.toFloat())
+    return if (flip.horizontal || flip.vertical) rotated.flip(flip.horizontal, flip.vertical) else rotated
+}
+
+internal expect fun decodeVideoFrame(frame: Any): LiteRtImage
+
+fun pixelCount(width: Int, height: Int, channels: Int): Int {
+    require(width > 0 && height > 0 && channels > 0) {
+        "Image dimensions and channels must be positive"
+    }
+    require(width <= Int.MAX_VALUE / height && width * height <= Int.MAX_VALUE / channels) {
+        "Image is too large"
+    }
+    return width * height * channels
 }

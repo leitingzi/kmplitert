@@ -45,3 +45,4 @@ plugins {
 
 include(":core")
 include(":tool")
+include(":dataproces")
