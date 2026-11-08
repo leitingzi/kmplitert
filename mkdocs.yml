@@ -12,12 +12,12 @@ theme:
   favicon: assets/orbit.svg
   font: false
   palette:
-    scheme: slate
-    primary: black
-    accent: grey
+    scheme: default
+    primary: indigo
+    accent: blue
   features:
-    - navigation.tabs
     - navigation.sections
+    - navigation.expand
     - navigation.top
     - toc.follow
     - content.code.copy
@@ -25,7 +25,7 @@ theme:
     - search.highlight
 
 extra_css:
-  - stylesheets/space.css
+  - stylesheets/docs.css
 
 plugins:
   - search
@@ -43,20 +43,25 @@ plugins:
           site_description: 在 Kotlin Multiplatform 中运行 LiteRT 模型
           nav_translations:
             Home: 首页
+            Start Here: 开始使用
+            Getting Started: 快速开始
             Interactive Demo: 在线示例
-            Getting Started: 开始使用
-            Installation and First Inference: 安装与第一次推理
-            Data Processing: 数据处理
-            Image and Audio Pipelines: 图像与音频处理流程
-            Platforms and Capabilities: 平台与能力
-            Core Runtime: Core 运行时
-            Model and Inference Lifecycle: 模型与推理生命周期
+            Modules: 模块
+            Core Runtime: Core 推理
+            Inference Lifecycle: 推理生命周期
             Tensors and Buffers: 张量与缓冲区
             Hardware Acceleration: 硬件加速
+            Data Processing: 数据处理
             Platform Guides: 平台指南
+            Platform Support: 平台支持
+            Android: Android
+            JVM: JVM
             iOS and macOS: iOS 与 macOS
             Linux and Windows Native: Linux 与 Windows Native
-            API Reference: API 参考
+            JavaScript: JavaScript
+            WasmJS: WasmJS
+            Reference: 参考
+            Core API: Core API
             Web Initialization: Web 初始化
             Troubleshooting: 问题排查
             Support and Contributing: 支持与贡献
@@ -78,25 +83,25 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Interactive Demo: demo.md
-  - Getting Started:
-      - Installation and First Inference: getting-started.md
-      - Platforms and Capabilities: platforms.md
-  - Core Runtime:
-      - Model and Inference Lifecycle: guide/lifecycle.md
-      - Tensors and Buffers: guide/tensors.md
-      - Hardware Acceleration: guide/acceleration.md
-  - Data Processing:
-      - Image and Audio Pipelines: dataprocess.md
+  - Start Here:
+      - Getting Started: getting-started.md
+      - Interactive Demo: demo.md
+  - Modules:
+      - Core Runtime:
+          - Inference Lifecycle: guide/lifecycle.md
+          - Tensors and Buffers: guide/tensors.md
+          - Hardware Acceleration: guide/acceleration.md
+          - Core API: core-api.md
+      - Data Processing: dataprocess.md
   - Platform Guides:
+      - Platform Support: platforms.md
       - Android: platforms/android.md
       - JVM: platforms/jvm.md
       - iOS and macOS: platforms/apple.md
       - Linux and Windows Native: platforms/native-desktop.md
       - JavaScript: platforms/javascript.md
       - WasmJS: platforms/wasmjs.md
-  - API Reference:
-      - Core API: core-api.md
+  - Reference:
       - Web Initialization: api/web.md
   - Troubleshooting: troubleshooting.md
   - Support and Contributing: support.md

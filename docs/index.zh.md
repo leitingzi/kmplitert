@@ -1,74 +1,54 @@
-<div class="space-hero" markdown="1">
+# KMPLiteRT 文档
 
-<span class="eyebrow">Kotlin Multiplatform · LiteRT</span>
+KMPLiteRT 让 Kotlin Multiplatform 应用能够运行 LiteRT 模型。使用 **Core** 加载模型并执行推理；只有需要图像或音频预处理时，才添加 **Data Processing**。
 
-# 让端侧 AI，<br>随 Kotlin 一起运行
+<div class="grid cards" markdown>
 
-<p class="lead">KMPLiteRT 是面向 LiteRT 的 Kotlin Multiplatform 运行时。用一套类型安全的推理流程，把模型带到 Android、iOS、桌面与浏览器。</p>
-
-<div class="actions">
-  <a class="md-button md-button--primary" href="getting-started/">开始使用 →</a>
-  <a class="md-button" href="dataprocess/">探索数据处理</a>
-  <a class="md-button" href="demo/">试用在线示例</a>
-</div>
-
-</div>
-
-<div class="capability-strip" markdown="1">
-
-**共享 Kotlin API** · **类型安全张量缓冲区** · **图像与音频工具** · **浏览器在线示例**
-
-</div>
-
-## 从模型到产品的路径
-
-<div class="grid cards" markdown="1">
-
--   **01 / 快速运行**
+-   **快速开始**
 
     ---
 
-    从安装依赖到运行第一个温度转换模型。
+    添加 Core、准备模型并完成第一次推理。
 
-    [开始第一次推理 →](getting-started.md)
+    [安装并运行第一次推理 →](getting-started.md)
 
--   **02 / 构建数据流程**
-
-    ---
-
-    准备图像或音频，并写入模型所需的准确张量。
-
-    [探索数据处理 →](dataprocess.md)
-
--   **03 / 理解运行时**
+-   **Core 推理**
 
     ---
 
-    了解模型生命周期、类型化缓冲区、硬件委托与资源所有权。
+    了解模型生命周期、张量缓冲区与硬件加速。
 
-    [探索 Core →](guide/lifecycle.md)
+    [了解 Core →](guide/lifecycle.md)
 
--   **04 / 选择平台**
+-   **数据处理**
 
     ---
 
-    查看 Android、JVM、Native、JavaScript 与 WasmJS 的集成细节。
+    解码、变换和归一化图像或音频输入。
 
-    [查看平台指南 →](platforms.md)
+    [了解数据处理 →](dataprocess.md)
+
+-   **平台指南**
+
+    ---
+
+    配置 Android、JVM、Apple、Native、JavaScript 或 WasmJS。
+
+    [选择平台 →](platforms.md)
 
 </div>
 
-## 一个模型，一条可预期的生命周期
+## 两个模块，各司其职
 
-`LiteRTCompiler` 管理模型会话，`TFBuffer` 负责精确类型的张量读写。可选的 `dataproces` 模块可在共享 Kotlin 代码中将原始图像和音频转换为模型所需的数组。
+| 模块 | 职责 | 适用场景 |
+|---|---|---|
+| **Core** | 加载 LiteRT 模型、管理张量缓冲区并执行推理。 | 应用已经准备好符合模型要求的张量。 |
+| **Data Processing**（`dataproces`） | 解码和变换图像或音频，生成模型所需的数据。 | 推理前还需要数据预处理。 |
 
-```kotlin
-compiler.init()
-val inputs = compiler.getInputBuffers()
-val outputs = compiler.getOutputBuffers()
-inputs.single().writeFloat(floatArrayOf(100f))
-compiler.run(inputs, outputs)
-val fahrenheit = outputs.single().readFloat().single() // 约 212f
-```
+Core 可单独使用，不依赖 Data Processing。Data Processing 是可选模块；它仅为直接写入 `TFBuffer` 而依赖 Core。
 
-这条流程同样驱动[浏览器在线示例](demo.md)。完整示例还包含模型准备和资源释放，请从[快速开始](getting-started.md)继续。
+## 继续阅读
+
+- [试用浏览器在线示例](demo.md)
+- [查看 Core API](core-api.md)
+- [排查常见问题](troubleshooting.md)

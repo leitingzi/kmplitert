@@ -1,10 +1,12 @@
-# Image and Audio Pipelines
+# Data Processing
 
-`dataproces` is the optional companion to Core. It keeps common preprocessing close to the model: decode data, transform it deterministically, create a typed array, and write it into a `TFBuffer`.
+Data Processing (`dataproces`) is a separate, optional module for preparing model inputs. It handles image and audio data; **Core** remains responsible for model loading and inference.
+
+Core can be used without Data Processing. Data Processing depends on Core only to write prepared values directly to `TFBuffer`.
 
 ## Add the module
 
-The module depends on `:core`. In this repository, add it to the shared source set:
+In this repository, add it to your shared source set:
 
 ```kotlin
 kotlin {
@@ -16,11 +18,9 @@ kotlin {
 }
 ```
 
-Use it when your model accepts pixels or audio samples. Core remains the right dependency when your application already owns correctly shaped tensors.
+## Images
 
-## Image pipeline
-
-`LiteRtImage` stores row-major, interleaved grayscale, RGB, or RGBA pixels. Its transforms return a new image, so each stage is explicit and safe to reuse.
+`LiteRtImage` supports encoded image bytes, raw pixels, and supported platform frames. Transformations return a new image. Convert it to the model's expected size, channel order, and value range before writing it to a tensor:
 
 ```kotlin
 import io.github.kmplitert.dataprocess.image.LiteRtImage
@@ -30,53 +30,27 @@ val image = LiteRtImage(encodedBytes)
     .resize(224, 224)
     .toRgb()
 
-image.writeFloatBuffer(
-    buffer = inputBuffer,
-    mean = 127.5f,
-    std = 127.5f,
-)
+image.writeFloatBuffer(inputBuffer, mean = 127.5f, std = 127.5f)
 ```
 
-The final call writes normalized `FloatArray` data directly to the Core buffer. For quantized models, use `writeInt8Buffer`. Verify the model's dimensions, channel order, quantization, and tensor type before writing.
+For quantized inputs, use `writeInt8Buffer`. Check the model's tensor type, dimensions, and quantization parameters before writing.
 
-| Need | API |
-|---|---|
-| Encoded image bytes | `LiteRtImage(bytes)` or `LiteRtImage.fromBytes(bytes)` |
-| Raw RGB bytes | `LiteRtImage.fromRawRgb(data, width, height)` |
-| Camera or platform frame | `LiteRtImage.fromVideoFrame(frame, rotation, flip)` |
-| Geometry | `resize`, `crop`, `centerCrop`, `rotate`, `flip` |
-| Channels | `toGrayscale`, `toRgb` |
-| Tensor values | `toFloatArray`, `toInt8Array`, `writeFloatBuffer`, `writeInt8Buffer` |
+## Audio
 
-Encoded-image and platform-frame support is target-specific. The API validates dimensions and raw pixel length; invalid inputs fail early rather than producing a malformed tensor.
-
-## Audio pipeline
-
-`LiteRtAudio` holds interleaved floating-point samples. Decode a WAV file, make its channel and sample rate match the model, then derive the feature representation your model requires.
+`LiteRtAudio` provides WAV decoding, channel conversion, and resampling. `SignalProcessing` includes FFT and spectrogram helpers:
 
 ```kotlin
 import io.github.kmplitert.dataprocess.audio.LiteRtAudio
-import io.github.kmplitert.dataprocess.audio.SignalProcessing
-import io.github.kmplitert.dataprocess.audio.fromWav
 
 val audio = LiteRtAudio.fromWav(wavBytes)
     .toMono()
     .resample(targetSampleRate = 16_000)
-
-val melFrames = SignalProcessing.melSpectrogram(
-    signal = audio.data,
-    sampleRate = audio.sampleRate,
-    fftSize = 512,
-    hopSize = 160,
-    numMels = 40,
-)
 ```
 
-`WavDecoder` accepts little-endian PCM WAV (8/16/24/32-bit) and 32-bit IEEE float WAV. It rejects malformed headers and unsupported formats. `SignalProcessing` provides FFT, Hanning/Hamming windows, Mel conversion and filter banks, power spectrograms, and Mel spectrograms. FFT input lengths must be powers of two.
+The WAV decoder accepts little-endian PCM (8/16/24/32-bit) and 32-bit IEEE float. The sample rate, channel count, normalization, and feature shape must match the model.
 
-!!! tip "Keep model contracts visible"
-    A preprocessing pipeline is part of the model contract. Keep its sample rate, crop policy, normalization constants, tensor shape, and output flattening alongside the model integration.
+## Next steps
 
-## Run it online
-
-The [interactive demo](demo.md) executes a LiteRT model in the browser. Use it to inspect a model's input and output types, try a built-in model, or load a local `.tflite` file before integrating it into an application.
+- [Run inference with Core](getting-started.md)
+- [Check platform-specific support](platforms.md)
+- [Try the browser demo](demo.md)
