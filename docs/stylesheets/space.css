@@ -103,6 +103,18 @@ body {
     radial-gradient(ellipse at 82% 30%, #292d35 0, #15171c 35%, #101115 75%);
 }
 
+.space-hero::before {
+  content: "KMP";
+  position: absolute;
+  right: 3.25rem;
+  bottom: -.8rem;
+  color: #ffffff0d;
+  font-size: clamp(5rem, 18vw, 11rem);
+  font-weight: 800;
+  letter-spacing: -.1em;
+  line-height: 1;
+}
+
 .space-hero::after {
   content: "";
   position: absolute;
@@ -119,6 +131,15 @@ body {
 .space-hero > * {
   position: relative;
   z-index: 1;
+}
+
+.capability-strip {
+  margin: -1.25rem 0 2.8rem;
+  color: #aeb3bd;
+  font-size: .73rem;
+  font-weight: 650;
+  letter-spacing: .04em;
+  text-align: center;
 }
 
 .space-hero .eyebrow {

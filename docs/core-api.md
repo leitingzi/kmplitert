@@ -50,4 +50,4 @@ The caller must ensure the type and length match the model. See [lifecycle](guid
 | `LiteRTBufferRequirements` | `supportedTypes`, `bufferSize` in bytes, and `strides`; see [stride considerations](guide/tensors.md#requirements). |
 | `LiteRTTensorBufferType` | Host and platform buffer types; `type` is the native value and `from(type)` converts it. |
 
-See the [quick start](getting-started.md) for examples and the [Web initialization API](api/web.md) for web-specific setup.
+See the [quick start](getting-started.md) for examples, [image and audio pipelines](dataprocess.md) for optional preprocessing APIs, and the [Web initialization API](api/web.md) for web-specific setup.

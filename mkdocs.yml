@@ -46,8 +46,10 @@ plugins:
             Interactive Demo: 在线示例
             Getting Started: 开始使用
             Installation and First Inference: 安装与第一次推理
+            Data Processing: 数据处理
+            Image and Audio Pipelines: 图像与音频处理流程
             Platforms and Capabilities: 平台与能力
-            Core Guide: Core 指南
+            Core Runtime: Core 运行时
             Model and Inference Lifecycle: 模型与推理生命周期
             Tensors and Buffers: 张量与缓冲区
             Hardware Acceleration: 硬件加速
@@ -80,10 +82,12 @@ nav:
   - Getting Started:
       - Installation and First Inference: getting-started.md
       - Platforms and Capabilities: platforms.md
-  - Core Guide:
+  - Core Runtime:
       - Model and Inference Lifecycle: guide/lifecycle.md
       - Tensors and Buffers: guide/tensors.md
       - Hardware Acceleration: guide/acceleration.md
+  - Data Processing:
+      - Image and Audio Pipelines: dataprocess.md
   - Platform Guides:
       - Android: platforms/android.md
       - JVM: platforms/jvm.md

@@ -2,19 +2,25 @@
 
 <span class="eyebrow">Kotlin Multiplatform · LiteRT</span>
 
-# 一份推理逻辑，<br>跨越不同平台
+# 让端侧 AI，<br>随 Kotlin 一起运行
 
-<p class="lead">用 Kotlin 连接 LiteRT。在共享代码中加载模型、读写张量并执行推理，让应用从移动端延伸到桌面与 Web。</p>
+<p class="lead">KMPLiteRT 是面向 LiteRT 的 Kotlin Multiplatform 运行时。用一套类型安全的推理流程，把模型带到 Android、iOS、桌面与浏览器。</p>
 
 <div class="actions">
   <a class="md-button md-button--primary" href="getting-started/">开始使用 →</a>
-  <a class="md-button" href="core-api/">探索 Core API</a>
+  <a class="md-button" href="dataprocess/">探索数据处理</a>
   <a class="md-button" href="demo/">试用在线示例</a>
 </div>
 
 </div>
 
-## 从这里出发
+<div class="capability-strip" markdown="1">
+
+**共享 Kotlin API** · **类型安全张量缓冲区** · **图像与音频工具** · **浏览器在线示例**
+
+</div>
+
+## 从模型到产品的路径
 
 <div class="grid cards" markdown="1">
 
@@ -26,35 +32,35 @@
 
     [开始第一次推理 →](getting-started.md)
 
--   **02 / 理解 Core**
+-   **02 / 构建数据流程**
 
     ---
 
-    掌握模型生命周期、张量、缓冲区和加速器。
+    准备图像或音频，并写入模型所需的准确张量。
 
-    [了解推理流程 →](guide/lifecycle.md)
+    [探索数据处理 →](dataprocess.md)
 
--   **03 / 选择平台**
+-   **03 / 理解运行时**
 
     ---
 
-    找到 Android、JVM、Native 与 Web 的接入细节。
+    了解模型生命周期、类型化缓冲区、硬件委托与资源所有权。
+
+    [探索 Core →](guide/lifecycle.md)
+
+-   **04 / 选择平台**
+
+    ---
+
+    查看 Android、JVM、Native、JavaScript 与 WasmJS 的集成细节。
 
     [查看平台指南 →](platforms.md)
 
--   **04 / 查阅 API**
-
-    ---
-
-    查询公共接口、数据类型和平台行为差异。
-
-    [查看 API 参考 →](core-api.md)
-
 </div>
 
-## 小而清晰的核心
+## 一个模型，一条可预期的生命周期
 
-`LiteRTCompiler` 管理模型推理，`TFBuffer` 负责张量读写。Core 只关注运行时；应用可以基于类型安全的张量 API 实现数据预处理和后处理。
+`LiteRTCompiler` 管理模型会话，`TFBuffer` 负责精确类型的张量读写。可选的 `dataproces` 模块可在共享 Kotlin 代码中将原始图像和音频转换为模型所需的数组。
 
 ```kotlin
 compiler.init()
@@ -65,4 +71,4 @@ compiler.run(inputs, outputs)
 val fahrenheit = outputs.single().readFloat().single() // 约 212f
 ```
 
-上面是流程概览；完整示例还包含模型准备和资源释放，请从[快速开始](getting-started.md)继续。
+这条流程同样驱动[浏览器在线示例](demo.md)。完整示例还包含模型准备和资源释放，请从[快速开始](getting-started.md)继续。

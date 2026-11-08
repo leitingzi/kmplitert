@@ -50,4 +50,4 @@ LiteRTCompiler(
 | `LiteRTBufferRequirements` | `supportedTypes`、字节数 `bufferSize` 和 `strides`；步长单位注意事项见[张量指南](guide/tensors.md#requirements)。 |
 | `LiteRTTensorBufferType` | 主机内存及各类平台缓冲区类型，`type` 是原生值；`from(type)` 用于转换。 |
 
-更多示例见[快速开始](getting-started.md)，Web 专用初始化入口见 [Web 初始化 API](api/web.md)。
+更多示例见[快速开始](getting-started.md)，可选预处理 API 见[图像与音频处理流程](dataprocess.md)，Web 专用初始化入口见 [Web 初始化 API](api/web.md)。
