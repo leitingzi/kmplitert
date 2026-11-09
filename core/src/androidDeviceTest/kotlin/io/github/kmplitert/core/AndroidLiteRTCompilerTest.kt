@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.junit.Assume
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -16,6 +17,28 @@ class AndroidLiteRTCompilerTest {
 
     @Test
     fun compilesModelReadsMetadataAndRunsCpuInference() = runBlocking {
+        runInference(LiteRTAccelerator.CPU)
+    }
+
+    @Test
+    fun compilesModelAndRunsGpuInferenceWhenEnabled() = runBlocking {
+        runInference(LiteRTAccelerator.GPU)
+    }
+
+    @Test
+    fun compilesModelAndRunsNpuInferenceWhenEnabled() = runBlocking {
+        runInference(LiteRTAccelerator.NPU)
+    }
+
+    private suspend fun runInference(accelerator: LiteRTAccelerator) {
+        if (accelerator != LiteRTAccelerator.CPU) {
+            val argumentName = "test${accelerator.name.lowercase().replaceFirstChar { it.uppercase() }}"
+            Assume.assumeTrue(
+                "$accelerator inference test is not enabled",
+                InstrumentationRegistry.getArguments().getBoolean(argumentName, false)
+            )
+        }
+
         val context = InstrumentationRegistry.getInstrumentation().context
         val modelFile = withContext(Dispatchers.IO) {
             val modelBytes = context.assets.open("CelsiusToFahrenheit.tflite").use { it.readBytes() }
@@ -26,7 +49,7 @@ class AndroidLiteRTCompilerTest {
 
         val compiler = LiteRTCompiler(
             filePath = modelFile.absolutePath,
-            accelerator = LiteRTAccelerator.CPU
+            accelerator = accelerator
         )
 
         try {

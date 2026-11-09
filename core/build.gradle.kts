@@ -129,7 +129,7 @@ kotlin {
     wasmJs {
         compilations.named("main") {
             packageJson {
-                name = "kmplitert-core-wasm"
+                name = "kmplitert-core-wasmjs"
             }
         }
         browser {

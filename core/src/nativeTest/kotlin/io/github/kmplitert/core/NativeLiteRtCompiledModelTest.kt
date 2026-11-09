@@ -13,12 +13,34 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalForeignApi::class)
 class NativeLiteRtCompiledModelTest {
     @Test
-    fun compilesModelReadsRequirementsAndRunsInference() = runTest(timeout = 60.seconds) {
+    fun compilesModelReadsRequirementsAndRunsCpuInference() = runTest(timeout = 60.seconds) {
+        runInference(LiteRTAccelerator.CPU)
+    }
+
+    @Test
+    fun runsGpuInferenceWhenEnabled() = runTest(timeout = 60.seconds) {
+        if (!isAcceleratorTestEnabled(LiteRTAccelerator.GPU)) {
+            println("Skipping GPU inference: set KMPLITERT_TEST_GPU=true to enable")
+            return@runTest
+        }
+        runInference(LiteRTAccelerator.GPU)
+    }
+
+    @Test
+    fun runsNpuInferenceWhenEnabled() = runTest(timeout = 60.seconds) {
+        if (!isAcceleratorTestEnabled(LiteRTAccelerator.NPU)) {
+            println("Skipping NPU inference: set KMPLITERT_TEST_NPU=true to enable")
+            return@runTest
+        }
+        runInference(LiteRTAccelerator.NPU)
+    }
+
+    private suspend fun runInference(accelerator: LiteRTAccelerator) {
         val modelPath = getenv("KMPLITERT_TEST_MODEL_PATH")?.toKString()
             ?: "core/CelsiusToFahrenheit.tflite"
         val compiler = LiteRTCompiler(
             filePath = modelPath,
-            accelerator = LiteRTAccelerator.CPU
+            accelerator = accelerator
         )
         var buffers: List<TFBuffer> = emptyList()
 
@@ -63,5 +85,10 @@ class NativeLiteRtCompiledModelTest {
                 compiler.close()
             }
         }
+    }
+
+    private fun isAcceleratorTestEnabled(accelerator: LiteRTAccelerator): Boolean {
+        val name = "KMPLITERT_TEST_${accelerator.name}"
+        return getenv(name)?.toKString().equals("true", ignoreCase = true)
     }
 }

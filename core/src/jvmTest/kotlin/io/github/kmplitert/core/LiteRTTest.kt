@@ -12,7 +12,10 @@ import kotlin.time.Duration.Companion.seconds
 
 class LiteRTTest {
 
-    private suspend fun runModelInferenceTest(config: ModelTestConfig) {
+    private suspend fun runModelInferenceTest(
+        config: ModelTestConfig,
+        accelerator: LiteRTAccelerator = LiteRTAccelerator.CPU
+    ) {
         val modelFile = withContext(Dispatchers.IO) {
             Files.createTempFile("kmplitert-${config.name}-", ".tflite")
         }
@@ -20,7 +23,7 @@ class LiteRTTest {
             withContext(Dispatchers.IO) { Files.write(modelFile, config.modelBytes) }
             val compiler = LiteRTCompiler(
                 filePath = modelFile.toAbsolutePath().toString(),
-                accelerator = LiteRTAccelerator.CPU
+                accelerator = accelerator
             )
             try {
                 compiler.init()
@@ -101,29 +104,28 @@ class LiteRTTest {
 
     @Test
     fun testCelsiusToFahrenheit() = runTest(timeout = 60.seconds) {
-        val bytes = loadModelBytes("CelsiusToFahrenheit.tflite")
-        val config = ModelTestConfig(
-            name = "CelsiusToFahrenheit",
-            modelBytes = bytes,
-            inputs = listOf(
-                TensorExpectation(
-                    name = "input_c",
-                    elementType = LiteRTElementType.FLOAT,
-                    dimensions = listOf(1, 1),
-                    testData = floatArrayOf(100f),
-                )
-            ),
-            outputs = listOf(
-                TensorExpectation(
-                    name = "Identity",
-                    elementType = LiteRTElementType.FLOAT,
-                    dimensions = listOf(1, 1),
-                    expectedValue = floatArrayOf(212f),
-                    tolerance = 1.0f
-                )
-            )
-        )
-        runModelInferenceTest(config)
+        runModelInferenceTest(celsiusToFahrenheitConfig())
+    }
+
+    @Test
+    fun testCelsiusToFahrenheitGpuWhenEnabled() = runTest(timeout = 60.seconds) {
+        if (!isAcceleratorTestEnabled(LiteRTAccelerator.GPU)) {
+            println("Skipping GPU inference: set KMPLITERT_TEST_GPU=true to enable")
+            return@runTest
+        }
+        check(LiteRtLibrary.isGpuAcceleratorAvailable) {
+            "GPU inference was enabled but the LiteRT GPU accelerator plugin is unavailable"
+        }
+        runModelInferenceTest(celsiusToFahrenheitConfig(), LiteRTAccelerator.GPU)
+    }
+
+    @Test
+    fun testCelsiusToFahrenheitNpuWhenEnabled() = runTest(timeout = 60.seconds) {
+        if (!isAcceleratorTestEnabled(LiteRTAccelerator.NPU)) {
+            println("Skipping NPU inference: set KMPLITERT_TEST_NPU=true to enable")
+            return@runTest
+        }
+        runModelInferenceTest(celsiusToFahrenheitConfig(), LiteRTAccelerator.NPU)
     }
 
     @Test
@@ -234,4 +236,29 @@ class LiteRTTest {
         }
         return stream.use { it.readBytes() }
     }
+
+    private fun celsiusToFahrenheitConfig() = ModelTestConfig(
+        name = "CelsiusToFahrenheit",
+        modelBytes = loadModelBytes("CelsiusToFahrenheit.tflite"),
+        inputs = listOf(
+            TensorExpectation(
+                name = "input_c",
+                elementType = LiteRTElementType.FLOAT,
+                dimensions = listOf(1, 1),
+                testData = floatArrayOf(100f),
+            )
+        ),
+        outputs = listOf(
+            TensorExpectation(
+                name = "Identity",
+                elementType = LiteRTElementType.FLOAT,
+                dimensions = listOf(1, 1),
+                expectedValue = floatArrayOf(212f),
+                tolerance = 1.0f
+            )
+        )
+    )
+
+    private fun isAcceleratorTestEnabled(accelerator: LiteRTAccelerator): Boolean =
+        System.getenv("KMPLITERT_TEST_${accelerator.name}").equals("true", ignoreCase = true)
 }

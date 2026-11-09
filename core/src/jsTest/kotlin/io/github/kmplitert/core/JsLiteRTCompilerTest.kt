@@ -1,5 +1,6 @@
 package io.github.kmplitert.core
 
+import io.github.kmplitert.core.model.isWebGPUSupported
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,9 +11,31 @@ class JsLiteRTCompilerTest {
 
     @Test
     fun loadsModelReadsTensorMetadataAndRunsCpuInference() = runTest(timeout = 60.seconds) {
+        runInference(LiteRTAccelerator.CPU)
+    }
+
+    @Test
+    fun runsGpuInferenceWhenWebGpuIsAvailable() = runTest(timeout = 60.seconds) {
+        if (!isWebGPUSupported()) {
+            println("Skipping GPU inference: WebGPU is unavailable")
+            return@runTest
+        }
+        runInference(LiteRTAccelerator.GPU)
+    }
+
+    @Test
+    fun runsNpuInferenceWhenWebNnIsAvailable() = runTest(timeout = 60.seconds) {
+        if (!isWebNNSupported()) {
+            println("Skipping NPU inference: WebNN is unavailable")
+            return@runTest
+        }
+        runInference(LiteRTAccelerator.NPU)
+    }
+
+    private suspend fun runInference(accelerator: LiteRTAccelerator) {
         val compiler = LiteRTCompiler(
             filePath = "/base/core/build/processedResources/js/test/CelsiusToFahrenheit.tflite",
-            accelerator = LiteRTAccelerator.CPU
+            accelerator = accelerator
         )
 
         try {
@@ -40,4 +63,7 @@ class JsLiteRTCompilerTest {
             compiler.close()
         }
     }
+
+    private fun isWebNNSupported(): Boolean =
+        js("typeof navigator !== 'undefined' && navigator.ml != null")
 }

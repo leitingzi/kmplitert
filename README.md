@@ -14,18 +14,9 @@ KMPLiteRT Platform Runtime Dependencies
 | Windows、Linux、iOS、macOS | LiteRT CompiledModel [C++ API](https://developers.google.com/edge/litert/next/cpp)| Kotlin/Native C interop|  
   
 KMPLiteRT Hardware Acceleration Support  
-  
-| Platform | CPU | GPU | NPU |
-|---|---|---|---|
-| Android | ✅ XNNPACK / CPU backend | ✅ OpenCL / OpenGL | ⚠️ Vendor-specific NPU delegates |
-| iOS  | ✅ XNNPACK | ✅ Metal | ⚠️ Apple Neural Engine (ANE) |
-| JVM  | ✅ XNNPACK via JNI / FFM | ⚠️ OpenCL / Vulkan, environment-dependent | ⚠️ Vendor-specific native delegates |
-| JS | ✅ WebAssembly | ✅ WebGPU | ⚠️ WebNN, browser-dependent |
-| WasmJS | ✅ WebAssembly | ✅ WebGPU | ⚠️ WebNN, browser-dependent |
-| Windows | ✅ XNNPACK | ⚠️ WebGPU / native GPU backends | ⚠️ Hardware-specific |
-| Linux  | ✅ XNNPACK | ⚠️ WebGPU / OpenCL / Vulkan | ⚠️ Hardware-specific |
-| macOS  | ✅ XNNPACK | ✅ Metal / WebGPU | ⚠️ Apple Neural Engine (ANE) |  
-  
+
+Accelerator inference tests use the same test model and output assertions as CPU tests. Android tests are enabled with `-Pandroid.testInstrumentationRunnerArguments.testGpu=true` and/or `-Pandroid.testInstrumentationRunnerArguments.testNpu=true`; JVM and Native tests use `KMPLITERT_TEST_GPU=true` and/or `KMPLITERT_TEST_NPU=true`. JS and WasmJS tests run GPU/NPU inference when the browser exposes WebGPU/WebNN and print a skip notice otherwise. Enabled tests fail normally if initialization or inference fails.
+
 ## Modules
 
 | Module | Responsibility |

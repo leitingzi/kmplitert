@@ -197,26 +197,22 @@ actual class LiteRTCompiler actual constructor(
             }
 
             LiteRTAccelerator.GPU -> {
-                if (isWebGPUSupported()) {
-                    createLiteRtCompileOptions(
-                        accelerator = "webgpu",
-                        gpuOptions = createLiteRtGpuOptions(),
-                        webNNOptions = null
-                    )
-                } else {
-                    createLiteRtCompileOptions(accelerator = "wasm")
-                }
+                check(isWebGPUSupported()) { "GPU inference requires WebGPU support" }
+                createLiteRtCompileOptions(
+                    accelerator = "webgpu",
+                    gpuOptions = createLiteRtGpuOptions(),
+                    webNNOptions = null
+                )
             }
 
             LiteRTAccelerator.NPU -> {
                 createLiteRtCompileOptions(
                     accelerator = "webnn",
                     gpuOptions = null,
-                    webNNOptions = createLiteRtWebNNOptions()
+                    webNNOptions = createLiteRtWebNNOptions(devicePreference = "npu")
                 )
             }
         }
     }
 }
-
 
