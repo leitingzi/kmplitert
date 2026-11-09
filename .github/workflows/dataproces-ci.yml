@@ -35,6 +35,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-konan-
 
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@v1
+        with:
+          firefox-version: latest
+
       - name: Build and Test (Linux, Android, JVM, JS, Wasm)
         run: |
           chmod +x gradlew

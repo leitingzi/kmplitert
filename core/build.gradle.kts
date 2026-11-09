@@ -118,11 +118,7 @@ kotlin {
             }
         }
         browser {
-            testTask {
-                useKarma {
-                    useFirefox()
-                }
-            }
+            testTask { useKarma { useFirefox() } }
         }
     }
 
@@ -133,11 +129,7 @@ kotlin {
             }
         }
         browser {
-            testTask {
-                useKarma {
-                    useFirefox()
-                }
-            }
+            testTask { useKarma { useFirefox() } }
         }
     }
 

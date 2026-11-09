@@ -110,7 +110,7 @@ kotlin {
             }
         }
         browser {
-            testTask { useKarma { useChromeHeadless() } }
+            testTask { useKarma { useFirefox() } }
         }
     }
 
@@ -121,7 +121,7 @@ kotlin {
             }
         }
         browser {
-            testTask { useKarma { useChromeHeadless() } }
+            testTask { useKarma { useFirefox() } }
         }
     }
 
