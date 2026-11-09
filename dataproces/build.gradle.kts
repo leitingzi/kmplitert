@@ -106,7 +106,7 @@ kotlin {
     js {
         compilations.named("main") {
             packageJson {
-                name = "kmplitert-core-js"
+                name = "kmplitert-dataproces-js"
             }
         }
         browser {
@@ -117,7 +117,7 @@ kotlin {
     wasmJs {
         compilations.named("main") {
             packageJson {
-                name = "kmplitert-core-wasmjs"
+                name = "kmplitert-dataproces-wasmjs"
             }
         }
         browser {
