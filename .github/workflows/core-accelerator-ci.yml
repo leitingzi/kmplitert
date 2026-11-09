@@ -42,12 +42,14 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew :core:assemble \
+                    :core:compileKotlinLinuxArm64 \
                     :core:jvmTest \
                     :core:linuxX64Test \
                     --stacktrace
 
+  # Kotlin/Native does not support Linux ARM64 as a build host.
   linux-arm64:
-    name: Linux ARM64 CPU (JVM & Native)
+    name: Linux ARM64 JVM (LiteRT native library)
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -57,28 +59,14 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - name: Cache Kotlin/Native toolchains
-        uses: actions/cache@v4
-        with:
-          path: ~/.konan
-          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-konan-
-
-      - name: Build and Test (Linux ARM64 CPU)
+      - name: Build and Test (Linux ARM64 JVM)
         run: |
           chmod +x gradlew
-          ./gradlew :core:assemble \
-                    :core:jvmTest \
-                    :core:linuxArm64Test \
-                    --stacktrace
+          ./gradlew :core:jvmTest --stacktrace
 
   macos-gpu:
     name: macOS GPU & iOS Simulator CPU
     runs-on: macos-latest
-    env:
-      KMPLITERT_TEST_GPU: "true"
-      SIMCTL_CHILD_KMPLITERT_TEST_GPU: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -95,13 +83,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-konan-
 
+      - name: JVM Tests (CPU)
+        env:
+          KMPLITERT_TEST_GPU: "false"
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:jvmTest --no-daemon --stacktrace
+
       - name: Build and Test (macOS GPU & iOS Simulator CPU)
+        env:
+          KMPLITERT_TEST_GPU: "true"
+          SIMCTL_CHILD_KMPLITERT_TEST_GPU: "false"
         run: |
           chmod +x gradlew
           ./gradlew :core:assemble \
-                    :core:jvmTest \
                     :core:macosArm64Test \
                     :core:iosSimulatorArm64Test \
+                    --no-daemon \
                     --stacktrace
 
   windows:
@@ -145,7 +143,9 @@ jobs:
           cache: gradle
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       - name: Cache Kotlin/Native toolchains
         uses: actions/cache@v4
