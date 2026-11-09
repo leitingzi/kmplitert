@@ -20,7 +20,7 @@ permissions:
 jobs:
   linux-x64-gpu:
     name: Linux x64 GPU (JVM & Native)
-    runs-on: [self-hosted, linux, x64, gpu]
+    runs-on: ubuntu-latest
     env:
       KMPLITERT_TEST_GPU: "true"
     steps:
@@ -49,7 +49,7 @@ jobs:
 
   linux-x64-npu:
     name: Linux x64 NPU (JVM & Native)
-    runs-on: [self-hosted, linux, x64, npu]
+    runs-on: ubuntu-latest
     env:
       KMPLITERT_TEST_NPU: "true"
     steps:
@@ -78,7 +78,7 @@ jobs:
 
   linux-arm64-gpu:
     name: Linux ARM64 GPU (JVM & Native)
-    runs-on: [self-hosted, linux, arm64, gpu]
+    runs-on: ubuntu-24.04-arm
     env:
       KMPLITERT_TEST_GPU: "true"
     steps:
@@ -107,7 +107,7 @@ jobs:
 
   macos-gpu:
     name: macOS & iOS Simulator GPU
-    runs-on: [self-hosted, macos, arm64, gpu]
+    runs-on: macos-latest
     env:
       KMPLITERT_TEST_GPU: "true"
       SIMCTL_CHILD_KMPLITERT_TEST_GPU: "true"
@@ -138,7 +138,7 @@ jobs:
 
   windows-gpu:
     name: Windows GPU (JVM & Native)
-    runs-on: [self-hosted, windows, x64, gpu]
+    runs-on: windows-latest
     env:
       KMPLITERT_TEST_GPU: "true"
     steps:
@@ -167,7 +167,7 @@ jobs:
 
   android-accelerators:
     name: Android Device GPU & NPU
-    runs-on: [self-hosted, linux, x64, android-device]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -194,7 +194,7 @@ jobs:
 
   web-accelerators:
     name: JS & Wasm GPU/WebNN
-    runs-on: [self-hosted, linux, x64, gpu, browser]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
