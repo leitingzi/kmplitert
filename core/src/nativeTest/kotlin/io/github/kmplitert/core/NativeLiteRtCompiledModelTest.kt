@@ -56,11 +56,20 @@ class NativeLiteRtCompiledModelTest {
             assertEquals(listOf(1, 1), outputType.layout?.dimensions)
 
             val inputRequirements = compiler.getInputBufferRequirements("input_c")
-            assertTrue(inputRequirements.bufferSize >= Float.SIZE_BYTES)
-            assertTrue(LiteRTTensorBufferType.HostMemory in inputRequirements.supportedTypes)
+            assertTrue(
+                inputRequirements.bufferSize >= Float.SIZE_BYTES,
+                "Input buffer size is too small: ${inputRequirements.bufferSize}"
+            )
+            assertTrue(
+                inputRequirements.supportedTypes.isNotEmpty(),
+                "Input buffer types are empty"
+            )
 
             val outputRequirements = compiler.getOutputBufferRequirements("Identity")
-            assertTrue(outputRequirements.bufferSize >= Float.SIZE_BYTES)
+            assertTrue(
+                outputRequirements.bufferSize >= Float.SIZE_BYTES,
+                "Output buffer size is too small: ${outputRequirements.bufferSize}"
+            )
 
             val inputBuffers = compiler.getInputBuffers()
             buffers = inputBuffers

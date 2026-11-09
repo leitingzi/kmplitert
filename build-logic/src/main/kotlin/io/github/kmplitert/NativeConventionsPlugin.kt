@@ -69,6 +69,11 @@ internal fun Project.configureNativeLiteRTBundling(coreProject: Project) {
                 from(libPathFile) {
                     include("*.dylib", "*.so", "*.dll")
                 }
+                if (konanTarget == KonanTarget.MINGW_X64) {
+                    from(coreProject.layout.projectDirectory.dir("src/jvmMain/resources/win32-x86-64")) {
+                        include("dxcompiler.dll", "dxil.dll")
+                    }
+                }
                 into(linkTaskProvider.flatMap { it.destinationDirectory })
 
                 if (isAppleTarget) {

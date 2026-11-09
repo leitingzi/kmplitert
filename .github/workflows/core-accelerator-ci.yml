@@ -1,0 +1,216 @@
+name: Core Accelerator CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'core/**'
+      - '.github/workflows/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+
+permissions:
+  contents: read
+
+jobs:
+  linux-x64-gpu:
+    name: Linux x64 GPU (JVM & Native)
+    runs-on: [self-hosted, linux, x64, gpu]
+    env:
+      KMPLITERT_TEST_GPU: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Linux x64 GPU)
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:assemble \
+                    :core:jvmTest \
+                    :core:linuxX64Test \
+                    --stacktrace
+
+  linux-x64-npu:
+    name: Linux x64 NPU (JVM & Native)
+    runs-on: [self-hosted, linux, x64, npu]
+    env:
+      KMPLITERT_TEST_NPU: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Linux x64 NPU)
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:assemble \
+                    :core:jvmTest \
+                    :core:linuxX64Test \
+                    --stacktrace
+
+  linux-arm64-gpu:
+    name: Linux ARM64 GPU (JVM & Native)
+    runs-on: [self-hosted, linux, arm64, gpu]
+    env:
+      KMPLITERT_TEST_GPU: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Linux ARM64 GPU)
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:assemble \
+                    :core:jvmTest \
+                    :core:linuxArm64Test \
+                    --stacktrace
+
+  macos-gpu:
+    name: macOS & iOS Simulator GPU
+    runs-on: [self-hosted, macos, arm64, gpu]
+    env:
+      KMPLITERT_TEST_GPU: "true"
+      SIMCTL_CHILD_KMPLITERT_TEST_GPU: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (macOS & iOS Simulator GPU)
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:assemble \
+                    :core:jvmTest \
+                    :core:macosArm64Test \
+                    :core:iosSimulatorArm64Test \
+                    --stacktrace
+
+  windows-gpu:
+    name: Windows GPU (JVM & Native)
+    runs-on: [self-hosted, windows, x64, gpu]
+    env:
+      KMPLITERT_TEST_GPU: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Windows GPU)
+        shell: bash
+        run: |
+          ./gradlew :core:assemble \
+                    :core:jvmTest \
+                    :core:mingwX64Test \
+                    --stacktrace
+
+  android-accelerators:
+    name: Android Device GPU & NPU
+    runs-on: [self-hosted, linux, x64, android-device]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-${{ runner.arch }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-konan-
+
+      - name: Build and Test (Android Device GPU & NPU)
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:connectedAndroidDeviceTest \
+                    -Pandroid.testInstrumentationRunnerArguments.testGpu=true \
+                    -Pandroid.testInstrumentationRunnerArguments.testNpu=true \
+                    --stacktrace
+
+  web-accelerators:
+    name: JS & Wasm GPU/WebNN
+    runs-on: [self-hosted, linux, x64, gpu, browser]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@v1
+        with:
+          firefox-version: latest
+
+      - name: Build and Test (JS & Wasm)
+        run: |
+          chmod +x gradlew
+          ./gradlew :core:jsBrowserTest \
+                    :core:wasmJsBrowserTest \
+                    --stacktrace
