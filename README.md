@@ -31,26 +31,13 @@ KMPLiteRT Platform Runtime Dependencies
 
 CI validates CPU inference on the hosted runners. GPU/NPU inference is enabled only on platforms where the runner/runtime can provide the required accelerator. Browser GPU/NPU tests are conditional on WebGPU/WebNN availability; Android GPU/NPU instrumentation tests require explicitly enabling their runner arguments.
 
-| Platform | CI runner | CI coverage | Acceleration coverage | Current result |
-|---|---|---|---|---|
-| Linux x64 | `ubuntu-latest` | JVM tests, `linuxX64Test`, and Linux ARM64 cross-compilation | CPU; no hosted GPU/NPU assumed | Previous JVM/Linux x64 tests passed; the added ARM64 cross-compilation task is **pending verification** |
-| Linux ARM64 | `ubuntu-24.04-arm` | JVM tests against the ARM64 LiteRT library; native ARM64 compilation runs on Linux x64 | CPU; no hosted GPU/NPU assumed | **Pending rerun** after replacing the unavailable `linuxArm64Test` task |
-| macOS | `macos-latest` | JVM CPU tests and `macosArm64Test` | Metal GPU test runs in the macOS native test step | **Pending rerun** after isolating JVM CPU tests from native GPU tests |
-| iOS Simulator | `macos-latest` | `iosSimulatorArm64Test` | CPU; Metal GPU inference is disabled in the simulator | **Pending rerun**; simulator GPU previously crashed in native code |
-| Windows | `windows-latest` | JVM tests and `mingwX64Test` | CPU; hosted Windows GPU is not assumed | **Pending rerun** with GPU tests disabled |
-| Android Emulator | `ubuntu-latest` + x86_64 emulator (API 35) | `connectedAndroidDeviceTest` | CPU; GPU/NPU instrumentation tests are disabled | **Pending rerun** after adding KVM setup for the ADB-offline startup issue |
-| JavaScript | `ubuntu-latest` + Firefox | `jsBrowserTest` | WebGPU/WebNN only when available in the browser | **Not yet confirmed** in the reported runs |
-| WasmJS | `ubuntu-latest` + Firefox | `wasmJsBrowserTest` | WebGPU/WebNN only when available in the browser | **Not yet confirmed** in the reported runs |
-
-Accelerator inference tests use the same test model and output assertions as CPU tests. Android GPU/NPU tests can be enabled with `-Pandroid.testInstrumentationRunnerArguments.testGpu=true` and/or `-Pandroid.testInstrumentationRunnerArguments.testNpu=true`; JVM and Native tests use `KMPLITERT_TEST_GPU=true` and/or `KMPLITERT_TEST_NPU=true`. Enabled tests fail if initialization or inference fails. The statuses above reflect the latest results shared during CI troubleshooting; changes marked pending or unconfirmed still need a new GitHub Actions run.
-
 ## Modules
 
 | Module | Responsibility |
 |---|---|
 | `core` | Core LiteRT runtime integration, model management, tensor handling, and inference execution. |
 | `file` | Resolves bundled model resource URIs to paths that LiteRT can load on each platform. |
-| `dataproces` | 	Input preprocessing and output postprocessing utilities for model inference, including image and audio processing. |
+| `dataproces` | Input preprocessing and output postprocessing utilities for model inference, including image and audio processing. |
 
 ## Quick start
 
@@ -65,6 +52,7 @@ kotlin {
             val kmplitert = "0.3.0"
             implementation("io.github.leitingzi:kmplitert-core:$kmplitert")
             implementation("io.github.leitingzi:kmplitert-file:$kmplitert")
+            implementation("io.github.leitingzi:kmplitert-dataproces:$kmplitert")
         }
     }
 }
@@ -88,6 +76,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kmplitert.core)
             implementation(libs.kmplitert.file)
+            implementation(libs.kmplitert.dataproces)
         }
     }
 }
@@ -148,7 +137,26 @@ The typical inference workflow consists of the following steps:
 
 ## API Introduction
 
+### Core 
+
 In most cases, the `LiteRTCompiler`, `LiteRTAccelerator`, and `TFBuffer` APIs are sufficient for typical development needs. Since model input and output tensor shapes and types are generally fixed, development primarily focuses on data preprocessing and postprocessing. For more advanced use cases, the `core` module also provides access to model metadata and additional low-level capabilities.
+
+- `LiteRTCompiler` loads a model, exposes its input/output buffers, and runs inference. Call `init()` before use and `close()` when finished.
+- `LiteRTAccelerator` selects `CPU`, `GPU`, or `NPU` where supported.
+- `TFBuffer` reads and writes typed tensor data, such as `writeFloat()` and `readFloat()`. Use `getInputTensorType()` and `getInputBufferRequirements()` when you need tensor metadata or buffer layout details.
+
+### File
+
+- `LiteRTFile.fromCommonRes("model.tflite")` resolves a model bundled in `commonMain/resources`.
+- `LiteRTFile.fromComposeUri(Res.getUri(...))` resolves a Compose Multiplatform resource URI. On Android, call `LiteRTFile.init(context)` first; this is an Android-only extension.
+- `LiteRTFile.createFileFromByteArray(bytes, "model.tflite")` writes model bytes to a file and returns its path. Browser targets return a Blob URL instead.
+
+### DataProcess
+
+- `LiteRtImage.fromBytes(bytes)` decodes encoded image data (supported formats vary by platform); `fromRawRgb(data, width, height)` creates an image from interleaved RGB pixels. Common operations include `resize()`, `crop()`, `rotate()`, `flip()`, `toGrayscale()`, and `toRgb()`.
+- Convert image data for inference with `toFloatArray()` or write it directly to a tensor using `writeFloatBuffer()` or `writeInt8Buffer()`.
+- `LiteRtAudio.fromWav(bytes)` decodes WAV data. Use `toMono()` and `resample(targetSampleRate)` to match the model's expected audio input.
+- `SignalProcessing` provides common audio features such as `fft()`, window functions, and `melSpectrogram()`.
 
 ## License
 

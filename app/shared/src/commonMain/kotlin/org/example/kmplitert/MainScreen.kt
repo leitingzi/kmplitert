@@ -37,6 +37,7 @@ import io.github.kmplitert.core.LiteRTCompiler
 import io.github.kmplitert.core.LiteRTElementType
 import io.github.kmplitert.core.LiteRTTensorType
 import io.github.kmplitert.core.TFBuffer
+import io.github.kmplitert.file.LiteRTFile
 import kmplitert.app.shared.generated.resources.Res
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -107,7 +108,7 @@ fun MainScreen() {
 
         try {
             val modelPath = selectedModel.filePath
-                ?: Res.getUri(checkNotNull(selectedModel.resourcePath))
+                ?: LiteRTFile.fromComposeUri(Res.getUri(checkNotNull(selectedModel.resourcePath)))
             val newCompiler = LiteRTCompiler(modelPath, LiteRTAccelerator.CPU)
             loadedCompiler = newCompiler
             newCompiler.init()
