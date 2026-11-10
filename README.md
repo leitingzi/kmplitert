@@ -49,6 +49,7 @@ Accelerator inference tests use the same test model and output assertions as CPU
 | Module | Responsibility |
 |---|---|
 | `core` | Core LiteRT runtime integration, model management, tensor handling, and inference execution. |
+| `file` | Resolves bundled model resource URIs to paths that LiteRT can load on each platform. |
 | `dataproces` | 	Input preprocessing and output postprocessing utilities for model inference, including image and audio processing. |
 
 ## Quick start
@@ -63,6 +64,7 @@ kotlin {
         commonMain.dependencies {
             val kmplitert = "0.3.0"
             implementation("io.github.leitingzi:kmplitert-core:$kmplitert")
+            implementation("io.github.leitingzi:kmplitert-file:$kmplitert")
         }
     }
 }
@@ -76,6 +78,7 @@ kmplitert = "0.3.0"
 
 [libraries]
 kmplitert-core = { module = "io.github.leitingzi:kmplitert-core", version.ref = "kmplitert" }
+kmplitert-file = { module = "io.github.leitingzi:kmplitert-file", version.ref = "kmplitert" }
 kmplitert-dataproces = { module = "io.github.leitingzi:kmplitert-core", version.ref = "kmplitert" }
 ```
 
@@ -84,6 +87,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kmplitert.core)
+            implementation(libs.kmplitert.file)
         }
     }
 }
@@ -92,6 +96,29 @@ kotlin {
 ### Instructions Use
 
 The following example demonstrates how to execute a `CelsiusToFahrenheit.tflite` model using KMPLiteRT.
+
+Place the model in the file module's `commonMain/resources` directory and resolve
+it with `LiteRTFile.fromCommonRes` before passing it to `LiteRTCompiler`. File
+system platforms return a filesystem path; browser targets return a relative
+resource URL.
+
+For Compose Multiplatform resources, pass `Res.getUri(...)` to
+`LiteRTFile.fromComposeUri(...)`. Android applications must initialize the file
+module once in `Application.onCreate` with `LiteRTFile.init(applicationContext)`;
+import the Android-only extension from `io.github.kmplitert.file.init`. The
+Android implementation copies asset-backed resources into the app cache.
+
+```kotlin
+@Composable
+fun ModelScreen() {
+    LaunchedEffect(Unit) {
+        val modelPath = LiteRTFile.fromCommonRes("CelsiusToFahrenheit.tflite")
+        val compiler = LiteRTCompiler(modelPath, LiteRTAccelerator.CPU)
+        compiler.init()
+        // Run inference, then close the compiler when it is no longer needed.
+    }
+}
+```
 
 ```kotlin
 suspend fun runInference(celsius: Float): Float {

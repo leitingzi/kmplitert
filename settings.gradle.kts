@@ -44,5 +44,6 @@ include(":app:webApp")
 include(":app:shared")
 
 include(":core")
+include(":file")
 // include(":tool")
 include(":dataproces")

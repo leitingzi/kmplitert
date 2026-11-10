@@ -113,6 +113,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
 
             api(projects.core)
+            implementation(projects.file)
         }
     }
 }

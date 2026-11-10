@@ -93,7 +93,6 @@ fun MainScreen() {
     var isModelMenuExpanded by remember { mutableStateOf(false) }
     var modelLoadAttempt by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
-    val resolveModelPath = rememberModelPathResolver()
 
     LaunchedEffect(selectedModel, modelLoadAttempt) {
         modelInfo = null
@@ -108,7 +107,7 @@ fun MainScreen() {
 
         try {
             val modelPath = selectedModel.filePath
-                ?: resolveModelPath(Res.getUri(checkNotNull(selectedModel.resourcePath)))
+                ?: Res.getUri(checkNotNull(selectedModel.resourcePath))
             val newCompiler = LiteRTCompiler(modelPath, LiteRTAccelerator.CPU)
             loadedCompiler = newCompiler
             newCompiler.init()
